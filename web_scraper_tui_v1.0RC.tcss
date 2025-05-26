@@ -1,10 +1,5 @@
 
 Screen{layout:vertical;overflow:hidden}Header{dock:top}Footer{dock:bottom}
-#app-grid{layout:vertical;overflow:hidden;height:1fr}
-#filter-container{height:auto;padding:0 1;background:$boost}
-#filter-container Label{padding:1 0 0 0;color:$text-muted}
-#filter-inputs-grid{grid-size:1 5;grid-gutter:0 1;padding:0 0 1 0}
-.filter-input{width:1fr}
 DataTable{height:1fr;width:100%;margin-bottom:0}
 DataTable .datatable--header-label { text-overflow: ellipsis; } /* Prevent header text wrapping */
 DataTable .tags-column { width: 20%; } /* Give more space to tags column */
@@ -17,6 +12,10 @@ Label.dialog-title{text-style:bold;width:100%;text-align:center;margin-bottom:1}
 ManageTagsModal #cur_tags_lbl{margin-bottom:1;max-height:3;overflow-y:auto;border:round $primary-darken-1;padding:0 1}
 ReadArticleModal VerticalScroll{border:panel $primary;padding:1;background:$surface}
 ReadArticleModal #art_ttl_lbl{background:$primary-background-darken-1;padding:0 1;color:$text}
+ViewSummaryModal .section-header{color:$primary;text-style:bold;margin-top:1;margin-bottom:0}
+ViewSummaryModal .summary-content{padding:0 1;margin-bottom:1;border-left:thick $primary-darken-1}
+ViewSummaryModal .sentiment-content{padding:0 1;color:$accent;text-style:italic}
+ViewSummaryModal .no-content{color:$text-muted;text-style:italic;text-align:center;margin:2}
 ManageScrapersModal ListView{border:panel $primary-background;background:$surface-lighten-1}
 ManageScrapersModal ListView:focus{border:panel $primary}
 ManageScrapersModal ListItem{padding:0 1} /* Reduced padding for more items */
