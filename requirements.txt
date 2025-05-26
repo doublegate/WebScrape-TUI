@@ -1,4 +1,4 @@
-# WebScrape-TUI v1.0RC - Python Dependencies
+# WebScrape-TUI v1.0 - Python Dependencies
 #
 # This file lists all the Python packages required to run WebScrape-TUI.
 # Install all dependencies with: pip install -r requirements.txt

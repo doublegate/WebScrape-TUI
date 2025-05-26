@@ -1,4 +1,4 @@
-# WebScrape-TUI v1.0RC
+# WebScrape-TUI v1.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -31,7 +31,8 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 ### 🗄️ Data Management
 - **SQLite Database**: Persistent storage with normalized schema design
 - **Advanced Filtering**: Dedicated filter screen (Ctrl+F) with multi-field filtering
-- **Visual Row Selection**: Spacebar selection with asterisk indicators and cursor navigation
+- **Visual Row Selection**: Spacebar and mouse click selection with asterisk indicators and cursor navigation
+- **Scraper Profile Context**: Visual indicators showing current scraper profile in status bar and modals
 - **Sequential Modal Dialogs**: Callback-based workflows preventing worker context errors
 - **Flexible Sorting**: 9 different sorting options with proper SQL table aliases
 - **Tag System**: Comma-separated tagging for article categorization
@@ -154,17 +155,17 @@ All configuration is managed through the `.env` file:
 |----------|-------------|---------|
 | `GEMINI_API_KEY` | Google Gemini API key for AI features | *(empty)* |
 | `DATABASE_PATH` | Custom database file location | `scraped_data_tui_v1.0RC.db` |
-| `LOG_FILE_PATH` | Custom log file location | `scraper_tui_v1.0RC.log` |
+| `LOG_FILE_PATH` | Custom log file location | `scraper_tui_v1.0.log` |
 | `LOG_LEVEL` | Logging verbosity level | `DEBUG` |
 
 ### Database Location
 The SQLite database is stored as `scraped_data_tui_v1.0RC.db` in the application directory (configurable via `.env`).
 
 ### Logging
-Logs are written to `scraper_tui_v1.0RC.log` with configurable levels (configurable via `.env`).
+Logs are written to `scraper_tui_v1.0.log` with configurable levels (configurable via `.env`).
 
 ### Styling
-Customize the appearance by editing `web_scraper_tui_v1.0RC.tcss`.
+Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 
 ## 📖 Usage Guide
 
@@ -297,7 +298,7 @@ CREATE TABLE saved_scrapers (
 );
 ```
 
-## ⌨️ Keyboard Shortcuts
+## ⌨️ Keyboard Shortcuts & Mouse Support
 
 ### Global Shortcuts
 | Key | Action |
@@ -311,11 +312,12 @@ CREATE TABLE saved_scrapers (
 | `Ctrl+E` | Export to CSV |
 | `R` | Refresh data |
 
-### Navigation
-| Key | Action |
-|-----|--------|
+### Navigation & Selection
+| Input | Action |
+|-------|--------|
 | `↑/↓` | Navigate table rows |
-| `Space` | Select current row (shows *ID indicator) |
+| `Space` | Select/unselect current row (shows *ID indicator) |
+| `Mouse Click` | Select/unselect clicked row (same as Space) |
 | `Enter` | View article details |
 | `Tab` | Next input field |
 | `Shift+Tab` | Previous input field |
@@ -395,7 +397,7 @@ logging.basicConfig(level="DEBUG")
 ```
 
 Log locations:
-- **Main log**: `scraper_tui_v1.0RC.log`
+- **Main log**: `scraper_tui_v1.0.log`
 - **Database**: Check for `.db-journal` files
 - **Application errors**: Console output
 
@@ -550,4 +552,4 @@ We love new ideas! Please:
 
 **Happy Scraping!** 🚀
 
-*WebScrape-TUI v1.0RC - Making web scraping accessible and powerful for everyone.*
+*WebScrape-TUI v1.0 - Making web scraping accessible and powerful for everyone.*

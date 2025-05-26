@@ -5,6 +5,49 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0] - 2025-05-26
+
+### 🎉 Official Stable Release
+
+This marks the stable v1.0 release of WebScrape-TUI with major enhancements in user interaction and visual feedback.
+
+### Added
+- **Mouse Click Support**: Full mouse click selection support for DataTable rows
+  - Click any row to select/unselect (same behavior as spacebar)
+  - Toggle selection: clicking selected row unselects it
+  - Consistent visual feedback with keyboard selection
+- **Scraper Profile Context Indicators**: 
+  - Status bar displays current active scraper profile ("Manual Entry" or profile name)
+  - ScrapeURLModal shows current profile context with accent color styling
+  - Real-time updates when switching between manual entry and saved profiles
+- **Enhanced Row Selection**:
+  - Mouse click and keyboard selection now work identically
+  - All selection methods trigger table refresh for visual indicators
+  - Improved consistency across selection mechanisms
+
+### Improved
+- **User Experience**: Intuitive mouse support makes row selection more accessible
+- **Visual Feedback**: Clear indication of current scraper context throughout the interface
+- **Selection Consistency**: Unified behavior between mouse, keyboard, and spacebar selection
+- **Interface Clarity**: Always visible scraper profile context reduces user confusion
+
+### Changed
+- **Version**: Updated from v1.0RC (Release Candidate) to v1.0 (Stable Release)
+- **File Names**: Renamed all versioned files from v1.0RC to v1.0
+  - `web_scraper_tui_v1.0RC.tcss` → `web_scraper_tui_v1.0.tcss`
+  - `scraped_data_tui_v1.0RC.db` → `scraped_data_tui_v1.0.db`
+  - `scraper_tui_v1.0RC.log` → `scraper_tui_v1.0.log`
+- **Documentation**: Updated all references from v1.0RC to v1.0 across README, CLAUDE.md, and requirements.txt
+
+### Technical Details
+- Added `on_data_table_cell_selected` event handler for mouse click support
+- Enhanced `StatusBar` with reactive `scraper_profile` property
+- Updated `ScrapeURLModal` with profile context display and styling
+- Improved event handler consistency for visual feedback
+- Maintained backward compatibility with existing keyboard shortcuts
+
+This stable release provides a complete, polished web scraping TUI with professional-grade user interaction patterns.
+
 ## [1.0RC-patch3] - 2025-05-26
 
 ### Fixed

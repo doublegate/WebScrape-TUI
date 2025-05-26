@@ -11,8 +11,8 @@ This is a Python-based Text User Interface (TUI) application for web scraping bu
 ### Core Components
 
 - **Main Application**: `scrapetui.py` - Single-file application containing the entire TUI app
-- **Database**: SQLite database (`scraped_data_tui_v1.0RC.db`) with tables for articles, tags, and scraper profiles
-- **Styling**: `web_scraper_tui_v1.0RC.tcss` - Textual CSS styling file
+- **Database**: SQLite database (`scraped_data_tui_v1.0.db`) with tables for articles, tags, and scraper profiles
+- **Styling**: `web_scraper_tui_v1.0.tcss` - Textual CSS styling file
 - **Configuration**: `.env` file for API keys (currently empty)
 
 ### Key Architecture Patterns
@@ -59,7 +59,7 @@ pip install textual requests beautifulsoup4 lxml
 ### Database Management
 - Database is auto-created on first run
 - Schema includes: `scraped_data`, `tags`, `article_tags`, `saved_scrapers`
-- Database file: `scraped_data_tui_v1.0RC.db`
+- Database file: `scraped_data_tui_v1.0.db`
 
 ### API Configuration
 - Gemini API key should be set in the `GEMINI_API_KEY` constant in `scrapetui.py`
@@ -205,8 +205,9 @@ class ConfirmModal(ModalScreen[bool]):
 - **AI Integration**: Gemini API for summarization (3 styles) and sentiment analysis
 - **Dedicated Filter Screen**: Ctrl+F opens modal dialog with all filter options
 - **Clean Main Interface**: Full-screen DataTable for optimal article viewing
-- **Advanced Row Selection**: Cursor navigation with visual indicators and intelligent fallback
+- **Advanced Row Selection**: Keyboard and mouse click selection with visual indicators and intelligent fallback
 - **Visual Selection Feedback**: Selected rows display asterisk prefix (*ID) for clear identification
+- **Scraper Profile Context**: Visual indicators in status bar and modals showing current active profile
 - **Sequential Modal Workflows**: Callback-based dialog chains for complex user interactions
 - **Worker Context Compatibility**: Fixed Textual API push_screen_wait issues with callback patterns
 - **Sorting**: 9 different sort options with proper table alias prefixes
@@ -219,7 +220,7 @@ class ConfirmModal(ModalScreen[bool]):
 ## File Locations
 
 - Main application: `scrapetui.py`
-- CSS styling: `web_scraper_tui_v1.0RC.tcss`
-- Database: `scraped_data_tui_v1.0RC.db`
-- Logs: `scraper_tui_v1.0RC.log`
+- CSS styling: `web_scraper_tui_v1.0.tcss`
+- Database: `scraped_data_tui_v1.0.db`
+- Logs: `scraper_tui_v1.0.log`
 - Config: `.env` (currently empty)

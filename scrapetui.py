@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-WebScrape-TUI v1.0RC - Text User Interface Web Scraping Application
+WebScrape-TUI v1.0 - Text User Interface Web Scraping Application
 
 A comprehensive Python-based terminal application for web scraping, data management,
 and AI-powered content analysis built with the Textual framework.
@@ -84,12 +84,12 @@ PENDING FEATURES & IMPROVEMENTS:
 
 CONFIGURATION:
 - Database: scraped_data_tui_v1.0RC.db (configurable via .env)
-- Logs: scraper_tui_v1.0RC.log (configurable via .env)
-- Styles: web_scraper_tui_v1.0RC.tcss
+- Logs: scraper_tui_v1.0.log (configurable via .env)
+- Styles: web_scraper_tui_v1.0.tcss
 - API Keys: Set GEMINI_API_KEY in .env file for AI features
 - Environment: Configure via .env file (copy from .env.example)
 
-VERSION: 1.0RC (Release Candidate)
+VERSION: 1.0 (Stable Release)
 AUTHOR: WebScrape-TUI Development Team
 LICENSE: MIT
 PYTHON: Requires Python 3.8+
@@ -170,8 +170,8 @@ def load_env_file(env_path: Path = Path(".env")) -> Dict[str, str]:
 env_vars = load_env_file()
 
 # --- Globals and Configuration ---
-DB_PATH = Path(env_vars.get("DATABASE_PATH", "scraped_data_tui_v1.0RC.db"))
-LOG_FILE = Path(env_vars.get("LOG_FILE_PATH", "scraper_tui_v1.0RC.log"))
+DB_PATH = Path(env_vars.get("DATABASE_PATH", "scraped_data_tui_v1.0.db"))
+LOG_FILE = Path(env_vars.get("LOG_FILE_PATH", "scraper_tui_v1.0.log"))
 GEMINI_API_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
 GEMINI_API_KEY = env_vars.get("GEMINI_API_KEY", "")
 
@@ -289,9 +289,9 @@ def init_db():
                     VALUES (?, ?, ?, ?, ?, ?, 1)
                 """, (ps["name"], ps["url"], ps["selector"], ps["default_limit"], ps["default_tags_csv"], ps["description"]))
             conn.commit()
-        logger.info("Database initialized/updated successfully for v1.0RC.")
+        logger.info("Database initialized/updated successfully for v1.0.")
         return True
-    except sqlite3.Error as e: logger.critical(f"DB init error v1.0RC: {e}", exc_info=True); return False
+    except sqlite3.Error as e: logger.critical(f"DB init error v1.0: {e}", exc_info=True); return False
 
 def get_tags_for_article(conn: sqlite3.Connection, article_id: int) -> List[str]:
     cursor = conn.execute("SELECT t.name FROM tags t JOIN article_tags at ON t.id = at.tag_id WHERE at.article_id = ? ORDER BY t.name", (article_id,))
@@ -652,10 +652,15 @@ class ScrapeURLModal(ModalScreen[tuple[str, str, int] | None]):
         text-align: center;
         margin-bottom: 1;
     }
+    ScrapeURLModal Static.profile-context {
+        text-align: center;
+        color: $accent;
+        margin-bottom: 1;
+    }
     """
     def __init__(self,lu:str="",ls:str="h2 a",ll:int=0):super().__init__();self.lu,self.ls,self.ll=lu,ls,ll
     def compose(self)->ComposeResult:
-        with Vertical():yield Label("Scrape New URL",classes="dialog-title");yield Input(value=self.lu,placeholder="URL",id="s_url_in");yield Input(value=self.ls,placeholder="CSS Selector",id="s_sel_in");yield Input(value=str(self.ll),placeholder="Limit (0=all)",id="s_lim_in",type="integer");yield Horizontal(Button("Scrape",variant="primary",id="sc_b"),Button("Cancel",id="scc_b"),classes="modal-buttons")
+        with Vertical():yield Label("Scrape New URL",classes="dialog-title");yield Static(f"Profile: {self.app.current_scraper_profile}",classes="profile-context");yield Input(value=self.lu,placeholder="URL",id="s_url_in");yield Input(value=self.ls,placeholder="CSS Selector",id="s_sel_in");yield Input(value=str(self.ll),placeholder="Limit (0=all)",id="s_lim_in",type="integer");yield Horizontal(Button("Scrape",variant="primary",id="sc_b"),Button("Cancel",id="scc_b"),classes="modal-buttons")
     def on_button_pressed(self,e:Button.Pressed)->None:
         if e.button.id=="sc_b":
             u,s,l_s=self.query_one("#s_url_in",Input).value,self.query_one("#s_sel_in",Input).value,self.query_one("#s_lim_in",Input).value
@@ -957,7 +962,7 @@ class HelpModal(ModalScreen):
         for ps_data in PREINSTALLED_SCRAPERS:
             ps_desc += f"- **{ps_data['name']}**: {ps_data['description']}\n  - *Example/Target URL Hint*: `{ps_data['url']}`\n  - *Suggested Selector*: `{ps_data['selector']}`\n  - *Default Tags*: `{ps_data['default_tags_csv'] or 'None'}`\n\n"
         ht=f"""\
-## Keybindings & Help (v1.0RC)
+## Keybindings & Help (v1.0)
 | Key      | Action              | Description                                        |
 |----------|---------------------|----------------------------------------------------|
 | `UP`/`DN`| Navigate Table      | Move selection in articles list.                   |
@@ -969,7 +974,7 @@ class HelpModal(ModalScreen):
 | `ctrl+t` | Manage Tags         | Add/remove tags for selected.                      |
 | `r`      | Refresh List        | Reload articles from DB.                           |
 | `ctrl+s` | Cycle Sort          | Change article list sorting.                       |
-| `ctrl+p` | Scraper Profiles    | Manage & execute saved/pre-installed scrapers.     |
+| `ctrl+m` | Scraper Profiles    | Manage & execute saved/pre-installed scrapers.     |
 | `ctrl+n` | New Scrape          | Open dialog to scrape new URL (generic).           |
 | `ctrl+e` | Export CSV          | Export current view to CSV.                        |
 | `ctrl+x` | Clear DB            | Delete ALL articles (confirm).                     |
@@ -985,17 +990,17 @@ class HelpModal(ModalScreen):
     def action_dismiss_screen(self)->None:self.dismiss()
 
 class StatusBar(Static):
-    total_articles=reactive(0);selected_id=reactive[Optional[int]](None);filter_status=reactive("");sort_status=reactive("");current_theme=reactive("Dark")
-    def render(self)->str:parts=[f"Total: {self.total_articles}",f"Theme: {self.current_theme}"];(parts.append(f"Sel ID: {self.selected_id}")if self.selected_id is not None else None);(parts.append(f"Filter: {self.filter_status}")if self.filter_status else None);(parts.append(f"Sort: {self.sort_status}")if self.sort_status else None);return " | ".join(parts)
+    total_articles=reactive(0);selected_id=reactive[Optional[int]](None);filter_status=reactive("");sort_status=reactive("");current_theme=reactive("Dark");scraper_profile=reactive("Manual Entry")
+    def render(self)->str:parts=[f"Total: {self.total_articles}",f"Profile: {self.scraper_profile}",f"Theme: {self.current_theme}"];(parts.append(f"Sel ID: {self.selected_id}")if self.selected_id is not None else None);(parts.append(f"Filter: {self.filter_status}")if self.filter_status else None);(parts.append(f"Sort: {self.sort_status}")if self.sort_status else None);return " | ".join(parts)
 
 class WebScraperApp(App[None]):
-    CSS_PATH="web_scraper_tui_v1.0RC.tcss"
+    CSS_PATH="web_scraper_tui_v1.0.tcss"
     BINDINGS=[
         Binding("q,ctrl+c","quit","Quit",priority=True),Binding("r","refresh_data","Refresh"),
         Binding("enter","view_details","View Details"),Binding("space","select_row","Toggle Selection"),Binding("v","view_summary","View Summary"),Binding("s","summarize_selected","Summarize"),Binding("ctrl+k","sentiment_analysis_selected","Sentiment"),
         Binding("d,delete","delete_selected","Delete"),Binding("ctrl+r","read_article","Read Full"),
         Binding("ctrl+t","manage_tags","Tags"),Binding("ctrl+s","cycle_sort_order","Sort"),
-        Binding("ctrl+p","manage_saved_scrapers","Profiles"),Binding("ctrl+n","scrape_new","New Scrape"),
+        Binding("ctrl+m","manage_saved_scrapers","Profiles"),Binding("ctrl+n","scrape_new","New Scrape"),
         Binding("ctrl+e","export_csv","Export"),Binding("ctrl+x","clear_database","Clear DB"),
         Binding("ctrl+f","open_filters","Filters"),Binding("ctrl+l","toggle_dark_mode","Theme"),Binding("f1,ctrl+h","toggle_help","Help")
     ]
@@ -1003,12 +1008,13 @@ class WebScraperApp(App[None]):
     selected_row_id:reactive[int|None]=reactive(None);db_init_ok:bool=False
     last_scrape_url,last_scrape_selector,last_scrape_limit="","h2 a",0
     title_filter,url_filter,date_filter,tags_filter,sentiment_filter=reactive(""),reactive(""),reactive(""),reactive(""),reactive("")
+    current_scraper_profile:reactive[str]=reactive("Manual Entry")
     SORT_OPTIONS:List[Tuple[str,str]]=[("sd.timestamp DESC","Date Newest"),("sd.timestamp ASC","Date Oldest"),("sd.title COLLATE NOCASE ASC","Title A-Z"),("sd.title COLLATE NOCASE DESC","Title Z-A"),("sd.sentiment ASC, sd.timestamp DESC","Sentiment"),("sd.id ASC","ID Asc"),("sd.id DESC","ID Desc"),("sd.url COLLATE NOCASE ASC","Src URL A-Z"),("sd.url COLLATE NOCASE DESC","Src URL Z-A")]
     current_sort_index=reactive(0)
     def __init__(self):super().__init__();self.db_init_ok=init_db();self.row_metadata={};self._summarize_context={}
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True, name="Web Scraper TUI v1.0RC")
+        yield Header(show_clock=True, name="Web Scraper TUI v1.0")
         yield DataTable(id="article_table", cursor_type="row", zebra_stripes=True)
         yield LoadingIndicator(id="loading_indicator", classes="hidden")
         yield StatusBar(id="status_bar")
@@ -1016,7 +1022,7 @@ class WebScraperApp(App[None]):
         # yield Notifications() # Intentionally removed as App handles this
 
     async def on_mount(self)->None:
-        sbar=self.query_one(StatusBar);sbar.current_theme="Dark" if self.dark else "Light"
+        sbar=self.query_one(StatusBar);sbar.current_theme="Dark" if self.dark else "Light";sbar.scraper_profile=self.current_scraper_profile
         if not self.db_init_ok:self.notify("CRITICAL: DB init failed!",title="DB Error",severity="error",timeout=0);return
         tbl=self.query_one(DataTable);tbl.add_columns("ID","S","Sentiment","Title","Source URL","Tags","Scraped At");sbar.sort_status=self.SORT_OPTIONS[self.current_sort_index][1]
         await self.refresh_article_table()
@@ -1108,7 +1114,24 @@ class WebScraperApp(App[None]):
         except Exception as e:
             logger.error(f"Error viewing summary for ID {self.selected_row_id}: {e}",exc_info=True)
             self.notify(f"Error loading summary: {e}",title="Error",severity="error")
-    def on_data_table_row_selected(self,e:DataTable.RowSelected)->None:self.selected_row_id=int(e.row_key.value)if e.row_key else None;self.query_one(StatusBar).selected_id=self.selected_row_id;logger.debug(f"Row selected, ID: {self.selected_row_id}")
+    async def on_data_table_row_selected(self,e:DataTable.RowSelected)->None:self.selected_row_id=int(e.row_key.value)if e.row_key else None;self.query_one(StatusBar).selected_id=self.selected_row_id;logger.debug(f"Row selected, ID: {self.selected_row_id}");await self.refresh_article_table()
+    async def on_data_table_cell_selected(self,e:DataTable.CellSelected)->None:
+        """Handle mouse clicks on DataTable cells for row selection."""
+        if e.row_key:
+            row_id = int(e.row_key.value)
+            # Toggle selection like spacebar does
+            if self.selected_row_id == row_id:
+                self.selected_row_id = None
+                self.query_one(StatusBar).selected_id = None
+                logger.debug(f"Row unselected via mouse click, ID: {row_id}")
+                self.notify(f"Unselected article ID {row_id}",title="Selection",severity="info",timeout=2)
+            else:
+                self.selected_row_id = row_id
+                self.query_one(StatusBar).selected_id = self.selected_row_id
+                logger.debug(f"Row selected via mouse click, ID: {self.selected_row_id}")
+                self.notify(f"Selected article ID {row_id}",title="Selection",severity="info",timeout=2)
+            # Refresh table to show selection indicator
+            await self.refresh_article_table()
     def _get_current_row_id(self)->int|None:
         if self.selected_row_id is not None:return self.selected_row_id
         tbl=self.query_one(DataTable)
@@ -1236,7 +1259,7 @@ class WebScraperApp(App[None]):
             url,selector,limit=result
             worker_with_args = functools.partial(self._scrape_url_worker, url, selector, limit, default_tags_csv)
             self.run_worker(worker_with_args, group="scraping",exclusive=True)
-    async def action_scrape_new(self)->None:await self.app.push_screen(ScrapeURLModal(self.last_scrape_url,self.last_scrape_selector,self.last_scrape_limit),self._handle_scrape_new_result)
+    async def action_scrape_new(self)->None:self.current_scraper_profile="Manual Entry";self.query_one(StatusBar).scraper_profile=self.current_scraper_profile;await self.app.push_screen(ScrapeURLModal(self.last_scrape_url,self.last_scrape_selector,self.last_scrape_limit),self._handle_scrape_new_result)
     async def action_delete_selected(self)->None:
         current_id=self._get_current_row_id()
         if current_id is None:self.notify("No row selected.",title="Info",severity="warning");return
@@ -1438,6 +1461,8 @@ class WebScraperApp(App[None]):
                 self.last_scrape_url = "" 
                 self.last_scrape_selector = data['selector']
                 self.last_scrape_limit = data['default_limit']
+                self.current_scraper_profile = data['name']
+                self.query_one(StatusBar).scraper_profile = self.current_scraper_profile
                 self.notify(f"Profile '{data['name']}' loaded. Please provide target URL.", title="Scraper Profile", severity="information")
                 callback_with_tags = functools.partial(self._handle_scrape_new_result, default_tags_csv=data['default_tags_csv'])
                 await self.app.push_screen(ScrapeURLModal("", data['selector'], data['default_limit']), callback_with_tags)
@@ -1446,6 +1471,8 @@ class WebScraperApp(App[None]):
             self.last_scrape_selector = data['selector']
             self.last_scrape_limit = data['default_limit']
             default_tags = data['default_tags_csv']
+            self.current_scraper_profile = data['name']
+            self.query_one(StatusBar).scraper_profile = self.current_scraper_profile
             self.notify(f"Executing scraper profile '{data['name']}'. Parameters loaded.", title="Scraper Profile", severity="information")
             callback_with_tags = functools.partial(self._handle_scrape_new_result, default_tags_csv=default_tags)
             await self.app.push_screen(ScrapeURLModal(final_url_to_scrape, data['selector'], data['default_limit']), callback_with_tags)
@@ -1514,10 +1541,10 @@ def print_shutdown_banner():
 ║                              ║                       ║                           ║
 ║                              ║  Database Location:   ║                           ║
 ║                              ║  scraped_data_tui_    ║                           ║
-║                              ║  v1.0RC.db            ║                           ║
+║                              ║  v1.0.db              ║                           ║
 ║                              ║                       ║                           ║
 ║                              ║  Logs saved to:       ║                           ║
-║                              ║  scraper_tui_v1.0RC   ║                           ║
+║                              ║  scraper_tui_v1.0     ║                           ║
 ║                              ║  .log                 ║                           ║
 ║                              ╚═══════════════════════╝                           ║
 ║                                                                                   ║
@@ -1573,7 +1600,7 @@ AddEditScraperModal Static.warning-text { color: $warning; padding: 0 1; text-al
 .scraper-item-name{text-style:bold;}
 .scraper-item-subtext{color:$text-muted;text-style:italic;}
     """
-    css_file=Path("web_scraper_tui_v1.0RC.tcss")
+    css_file=Path("web_scraper_tui_v1.0.tcss")
     if not css_file.exists():
         with open(css_file,"w",encoding="utf-8") as f:f.write(css_file_content)
         logger.info(f"Created CSS file: {css_file.resolve()}")
