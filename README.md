@@ -6,7 +6,7 @@
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
-![WebScrape-TUI Banner](https://via.placeholder.com/800x200/1e1e1e/00d4ff?text=WebScrape-TUI+v1.0RC)
+![WebScrape-TUI Banner](WebScrape-TUI.png)
 
 ## 🚀 Features
 
