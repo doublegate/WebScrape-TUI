@@ -176,7 +176,7 @@ GEMINI_API_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/mode
 GEMINI_API_KEY = env_vars.get("GEMINI_API_KEY", "")
 
 logging.basicConfig(
-    level="DEBUG",
+    level=env_vars.get("LOG_LEVEL", "DEBUG"),
     handlers=[
         logging.FileHandler(LOG_FILE, mode='a', encoding='utf-8'),
         TextualHandler()
@@ -184,7 +184,14 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
+# Reduce noise from third-party libraries
 logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("markdown_it").setLevel(logging.WARNING)
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger("textual").setLevel(logging.INFO)
+logging.getLogger("asyncio").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 # --- Database Utilities ---
@@ -401,6 +408,8 @@ class ConfirmModal(ModalScreen[bool]):
     ConfirmModal > Vertical {
         width: auto;
         max-width: 80%;
+        min-width: 50;
+        height: auto;
         padding: 2 4;
         border: thick $primary-lighten-1;
         background: $panel;
@@ -410,16 +419,40 @@ class ConfirmModal(ModalScreen[bool]):
         width: 100%;
         text-align: center;
     }
-    ConfirmModal .modal-buttons {
+    ConfirmModal Horizontal {
         width: 100%;
+        height: auto;
         align-horizontal: center;
         padding-top: 1;
     }
+    ConfirmModal Button {
+        margin: 0 1;
+        min-width: 10;
+    }
     """
-    def __init__(self,p:str,ct:str="Confirm",clt:str="Cancel"):super().__init__();self.p,self.ct,self.clt=p,ct,clt
-    def compose(self)->ComposeResult:
-        with Vertical():yield Label(self.p);yield Horizontal(Button(self.ct,variant="primary",id="confirm"),Button(self.clt,id="cancel"),classes="modal-buttons")
-    def on_button_pressed(self,e:Button.Pressed)->None:self.dismiss(e.button.id=="confirm")
+    BINDINGS = [Binding("escape", "dismiss_modal", "Cancel"), Binding("enter", "confirm_action", "Confirm")]
+    
+    def __init__(self, prompt: str, confirm_text: str = "Confirm", cancel_text: str = "Cancel"):
+        super().__init__()
+        self.prompt = prompt
+        self.confirm_text = confirm_text  
+        self.cancel_text = cancel_text
+    
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label(self.prompt)
+            with Horizontal():
+                yield Button(self.confirm_text, variant="primary", id="confirm")
+                yield Button(self.cancel_text, id="cancel")
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss(event.button.id == "confirm")
+    
+    def action_dismiss_modal(self) -> None:
+        self.dismiss(False)
+    
+    def action_confirm_action(self) -> None:
+        self.dismiss(True)
 
 class FilenameModal(ModalScreen[Optional[str]]):
     DEFAULT_CSS="""
@@ -513,6 +546,51 @@ class SelectSummaryStyleModal(ModalScreen[Optional[str]]):
     def on_button_pressed(self,e:Button.Pressed)->None:
         if e.button.id=="cs_b":rs=self.query_one(RadioSet);self.dismiss(rs.pressed_button.id if rs.pressed_button else "overview")
         else:self.dismiss(None)
+
+class ViewSummaryModal(ModalScreen):
+    CSS="""
+    ViewSummaryModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    ViewSummaryModal > VerticalScroll {
+        width: 90%;
+        max-width: 100;
+        height: 80%;
+        max-height: 35;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    """
+    BINDINGS = [Binding("escape", "dismiss", "Close")]
+    
+    def __init__(self, title: str, summary_data: dict):
+        super().__init__()
+        self.article_title = title
+        self.summary_data = summary_data
+    
+    def compose(self) -> ComposeResult:
+        with VerticalScroll():
+            yield Label(f"Summary: {self.article_title}", id="summary_title", classes="dialog-title")
+            
+            if self.summary_data.get('summary'):
+                yield Label("Summary:", classes="section-header")
+                yield Static(self.summary_data['summary'], classes="summary-content")
+            else:
+                yield Label("No summary available for this article.", classes="no-content")
+            
+            if self.summary_data.get('sentiment'):
+                yield Label("Sentiment Analysis:", classes="section-header")
+                yield Static(self.summary_data['sentiment'], classes="sentiment-content")
+            
+            yield Horizontal(Button("Close", id="close_btn"), classes="modal-buttons")
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss()
+    
+    def action_dismiss(self) -> None:
+        self.dismiss()
 
 class ReadArticleModal(ModalScreen):
     DEFAULT_CSS="""
@@ -795,6 +873,65 @@ class AddEditScraperModal(ModalScreen[Optional[Dict[str, Any]]]):
             self.dismiss(data)
         else:self.dismiss(None)
 
+class FilterScreen(ModalScreen[bool]):
+    CSS="""
+    FilterScreen {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    FilterScreen > Vertical {
+        width: 80%;
+        max-width: 80;
+        height: auto;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    """
+    BINDINGS = [Binding("escape", "dismiss", "Close"), Binding("enter", "apply_filters", "Apply")]
+    
+    def __init__(self, app_ref):
+        super().__init__()
+        self.app_ref = app_ref
+    
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Article Filters", classes="dialog-title")
+            yield Label("Title Filter:")
+            yield Input(placeholder="Title...", id="title_filter_input", value=self.app_ref.title_filter)
+            yield Label("URL Filter:")
+            yield Input(placeholder="Source URL...", id="url_filter_input", value=self.app_ref.url_filter)
+            yield Label("Date Filter:")
+            yield Input(placeholder="Date (YYYY-MM-DD)...", id="date_filter_input", value=self.app_ref.date_filter)
+            yield Label("Tags Filter:")
+            yield Input(placeholder="Tags (comma-sep)...", id="tags_filter_input", value=self.app_ref.tags_filter)
+            yield Label("Sentiment Filter:")
+            yield Input(placeholder="Sentiment (Pos/Neg/Neu)...", id="sentiment_filter_input", value=self.app_ref.sentiment_filter)
+            with Horizontal(classes="modal-buttons"):
+                yield Button("Clear All", id="clear_btn")
+                yield Button("Apply", id="apply_btn", variant="primary")
+                yield Button("Cancel", id="cancel_btn")
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "apply_btn":
+            self.action_apply_filters()
+        elif event.button.id == "clear_btn":
+            for input_widget in self.query(Input):
+                input_widget.value = ""
+        elif event.button.id == "cancel_btn":
+            self.dismiss(False)
+    
+    def action_apply_filters(self) -> None:
+        self.app_ref.title_filter = self.query_one("#title_filter_input", Input).value
+        self.app_ref.url_filter = self.query_one("#url_filter_input", Input).value
+        self.app_ref.date_filter = self.query_one("#date_filter_input", Input).value
+        self.app_ref.tags_filter = self.query_one("#tags_filter_input", Input).value
+        self.app_ref.sentiment_filter = self.query_one("#sentiment_filter_input", Input).value
+        self.dismiss(True)
+    
+    def action_dismiss(self) -> None:
+        self.dismiss(False)
+
 class HelpModal(ModalScreen):
     DEFAULT_CSS = """
     HelpModal {
@@ -836,11 +973,12 @@ class HelpModal(ModalScreen):
 | `ctrl+n` | New Scrape          | Open dialog to scrape new URL (generic).           |
 | `ctrl+e` | Export CSV          | Export current view to CSV.                        |
 | `ctrl+x` | Clear DB            | Delete ALL articles (confirm).                     |
+| `ctrl+f` | Filters             | Open filter dialog (Title, URL, Date, Tags, Sentiment). |
 | `ctrl+l` | Toggle Theme        | Switch between Light/Dark mode.                    |
 | `F1`/`ctrl+h`| Help           | Show/hide this help screen.                        |
 | `q`/`ctrl+c`| Quit            | Exit application.                                  |
 
-**Filtering:** Use input boxes for Title, Source URL, Date (YYYY-MM-DD), Tags (comma-sep, AND), Sentiment (Positive/Negative/Neutral).
+**Filtering:** Use `ctrl+f` to open filter dialog. Set Title, Source URL, Date (YYYY-MM-DD), Tags (comma-sep, AND), Sentiment (Positive/Negative/Neutral).
 {ps_desc}"""
         with VerticalScroll(): yield Markdown(ht); yield Horizontal(Button("Close",id="ch_b"),classes="modal-buttons")
     def on_button_pressed(self,e:Button.Pressed)->None:self.dismiss()
@@ -854,35 +992,26 @@ class WebScraperApp(App[None]):
     CSS_PATH="web_scraper_tui_v1.0RC.tcss"
     BINDINGS=[
         Binding("q,ctrl+c","quit","Quit",priority=True),Binding("r","refresh_data","Refresh"),
-        Binding("s","summarize_selected","Summarize"),Binding("ctrl+k","sentiment_analysis_selected","Sentiment"),
+        Binding("enter","view_details","View Details"),Binding("space","select_row","Toggle Selection"),Binding("v","view_summary","View Summary"),Binding("s","summarize_selected","Summarize"),Binding("ctrl+k","sentiment_analysis_selected","Sentiment"),
         Binding("d,delete","delete_selected","Delete"),Binding("ctrl+r","read_article","Read Full"),
         Binding("ctrl+t","manage_tags","Tags"),Binding("ctrl+s","cycle_sort_order","Sort"),
         Binding("ctrl+p","manage_saved_scrapers","Profiles"),Binding("ctrl+n","scrape_new","New Scrape"),
         Binding("ctrl+e","export_csv","Export"),Binding("ctrl+x","clear_database","Clear DB"),
-        Binding("ctrl+l","toggle_dark_mode","Theme"),Binding("f1,ctrl+h","toggle_help","Help")
+        Binding("ctrl+f","open_filters","Filters"),Binding("ctrl+l","toggle_dark_mode","Theme"),Binding("f1,ctrl+h","toggle_help","Help")
     ]
     dark = reactive(True, layout=True)
     selected_row_id:reactive[int|None]=reactive(None);db_init_ok:bool=False
     last_scrape_url,last_scrape_selector,last_scrape_limit="","h2 a",0
     title_filter,url_filter,date_filter,tags_filter,sentiment_filter=reactive(""),reactive(""),reactive(""),reactive(""),reactive("")
-    SORT_OPTIONS:List[Tuple[str,str]]=[("timestamp DESC","Date Newest"),("timestamp ASC","Date Oldest"),("title COLLATE NOCASE ASC","Title A-Z"),("title COLLATE NOCASE DESC","Title Z-A"),("sentiment ASC, timestamp DESC","Sentiment"),("id ASC","ID Asc"),("id DESC","ID Desc"),("url COLLATE NOCASE ASC","Src URL A-Z"),("url COLLATE NOCASE DESC","Src URL Z-A")]
+    SORT_OPTIONS:List[Tuple[str,str]]=[("sd.timestamp DESC","Date Newest"),("sd.timestamp ASC","Date Oldest"),("sd.title COLLATE NOCASE ASC","Title A-Z"),("sd.title COLLATE NOCASE DESC","Title Z-A"),("sd.sentiment ASC, sd.timestamp DESC","Sentiment"),("sd.id ASC","ID Asc"),("sd.id DESC","ID Desc"),("sd.url COLLATE NOCASE ASC","Src URL A-Z"),("sd.url COLLATE NOCASE DESC","Src URL Z-A")]
     current_sort_index=reactive(0)
-    def __init__(self):super().__init__();self.db_init_ok=init_db()
+    def __init__(self):super().__init__();self.db_init_ok=init_db();self.row_metadata={};self._summarize_context={}
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True, name="Web Scraper TUI v1.0RC")
-        with Container(id="app-grid"):
-            with Vertical(id="filter-container"):
-                yield Label("Filters:")
-                with Grid(id="filter-inputs-grid"):
-                    yield Input(placeholder="Title...", id="title_filter_input", classes="filter-input")
-                    yield Input(placeholder="Source URL...", id="url_filter_input", classes="filter-input")
-                    yield Input(placeholder="Date (YYYY-MM-DD)...", id="date_filter_input", classes="filter-input")
-                    yield Input(placeholder="Tags (comma-sep)...", id="tags_filter_input", classes="filter-input")
-                    yield Input(placeholder="Sentiment (Pos/Neg/Neu)...", id="sentiment_filter_input", classes="filter-input")
-            yield LoadingIndicator(id="loading_indicator", classes="hidden")
-            yield DataTable(id="article_table", cursor_type="row", zebra_stripes=True)
-            yield StatusBar(id="status_bar")
+        yield DataTable(id="article_table", cursor_type="row", zebra_stripes=True)
+        yield LoadingIndicator(id="loading_indicator", classes="hidden")
+        yield StatusBar(id="status_bar")
         yield Footer()
         # yield Notifications() # Intentionally removed as App handles this
 
@@ -890,7 +1019,8 @@ class WebScraperApp(App[None]):
         sbar=self.query_one(StatusBar);sbar.current_theme="Dark" if self.dark else "Light"
         if not self.db_init_ok:self.notify("CRITICAL: DB init failed!",title="DB Error",severity="error",timeout=0);return
         tbl=self.query_one(DataTable);tbl.add_columns("ID","S","Sentiment","Title","Source URL","Tags","Scraped At");sbar.sort_status=self.SORT_OPTIONS[self.current_sort_index][1]
-        await self.refresh_article_table();self.query_one("#title_filter_input",Input).focus()
+        await self.refresh_article_table()
+        tbl.focus()
 
     async def refresh_article_table(self)->None:
         tbl=self.query_one(DataTable);cur_row=tbl.cursor_row;tbl.clear();s_col,s_disp=self.SORT_OPTIONS[self.current_sort_index];self.query_one(StatusBar).sort_status=s_disp
@@ -916,29 +1046,91 @@ class WebScraperApp(App[None]):
         self.query_one(StatusBar).filter_status=", ".join(fdesc) if fdesc else "None"
         try:
             with get_db_connection() as conn:rows=conn.execute(bq,params).fetchall()
+            logger.debug(f"Query returned {len(rows)} rows")
+            self.row_metadata.clear()
             for r_d in rows:
                 s_ind="✓" if r_d["has_s"] else " ";tags_d=(", ".join(sorted(r_d["tags_c"].split(','))) if r_d["tags_c"] else "");senti_d=r_d["sentiment"] or "-"
                 timestamp_val = r_d["timestamp"];timestamp_str = timestamp_val.strftime('%Y-%m-%d %H:%M:%S') if isinstance(timestamp_val, datetime) else str(timestamp_val)
-                tbl.add_row(r_d["id"],s_ind,senti_d,r_d["title"],r_d["url"],tags_d,timestamp_str,key=str(r_d["id"]),meta={'link':r_d['link'],'has_s':bool(r_d['has_s']),'tags':r_d["tags_c"] or ""})
+                row_key=str(r_d["id"])
+                # Add asterisk to selected row's ID
+                id_display = f"*{r_d['id']}" if self.selected_row_id == r_d["id"] else str(r_d["id"])
+                tbl.add_row(id_display,s_ind,senti_d,r_d["title"],r_d["url"],tags_d,timestamp_str,key=row_key)
+                self.row_metadata[row_key]={'link':r_d['link'],'has_s':bool(r_d['has_s']),'tags':r_d["tags_c"] or ""}
             self.query_one(StatusBar).total_articles=len(rows)
-            if cur_row is not None and cur_row<len(rows):tbl.cursor_row=cur_row
-            elif len(rows)>0:tbl.cursor_row=0
+            logger.debug(f"Added {len(rows)} rows to table, table now has {tbl.row_count} rows")
+            if cur_row is not None and cur_row<len(rows):tbl.move_cursor(row=cur_row)
+            elif len(rows)>0:tbl.move_cursor(row=0)
             if not rows and any([self.title_filter,self.url_filter,self.date_filter,self.tags_filter,self.sentiment_filter]):self.notify("No articles match filters.",title="Filter Info",severity="info",timeout=3)
             elif not rows:self.notify("No articles in DB.",title="Info",severity="info",timeout=3)
         except Exception as e:logger.error(f"Refresh err: {e}",exc_info=True);self.notify(f"Refresh err: {e}",title="DB Error",severity="error");self.query_one(StatusBar).total_articles=0
-    async def on_input_changed(self,e:Input.Changed)->None:
-        if e.input.id=="title_filter_input":self.title_filter=e.value
-        elif e.input.id=="url_filter_input":self.url_filter=e.value
-        elif e.input.id=="date_filter_input":self.date_filter=e.value
-        elif e.input.id=="tags_filter_input":self.tags_filter=e.value
-        elif e.input.id=="sentiment_filter_input":self.sentiment_filter=e.value
-        await self.refresh_article_table()
+    async def action_open_filters(self)->None:
+        def handle_filter_result(result):
+            if result:  # If filters were applied
+                self.call_later(self.refresh_article_table)
+        self.push_screen(FilterScreen(self), handle_filter_result)
+    async def action_select_row(self)->None:
+        current_id=self._get_current_row_id()
+        if current_id is not None:
+            # Toggle selection: if already selected, unselect it
+            if self.selected_row_id == current_id:
+                self.selected_row_id = None
+                self.query_one(StatusBar).selected_id = None
+                logger.debug(f"Row unselected via spacebar, ID: {current_id}")
+                self.notify(f"Unselected article ID {current_id}",title="Selection",severity="info",timeout=2)
+            else:
+                self.selected_row_id = current_id
+                self.query_one(StatusBar).selected_id = self.selected_row_id
+                logger.debug(f"Row selected via spacebar, ID: {self.selected_row_id}")
+                self.notify(f"Selected article ID {current_id}",title="Selection",severity="info",timeout=2)
+            # Refresh table to show selection indicator
+            await self.refresh_article_table()
+    async def action_view_summary(self)->None:
+        current_id=self._get_current_row_id()
+        if current_id is None:self.notify("No row selected.",title="Info",severity="warning");return
+        self.selected_row_id=current_id
+        try:
+            def _get_summary_data_blocking():
+                with get_db_connection() as conn_blocking:
+                    return conn_blocking.execute("SELECT title, summary, sentiment FROM scraped_data WHERE id=?",(self.selected_row_id,)).fetchone()
+            
+            summary_data = _get_summary_data_blocking()
+            if summary_data:
+                summary_info = {
+                    'summary': summary_data['summary'] if summary_data['summary'] else None,
+                    'sentiment': summary_data['sentiment'] if summary_data['sentiment'] else None
+                }
+                if summary_info['summary'] or summary_info['sentiment']:
+                    self.push_screen(ViewSummaryModal(summary_data['title'], summary_info))
+                else:
+                    self.notify("No summary or sentiment data available for this article.",title="Info",severity="info")
+            else:
+                self.notify(f"Article ID {self.selected_row_id} not found.",title="Error",severity="error")
+        except Exception as e:
+            logger.error(f"Error viewing summary for ID {self.selected_row_id}: {e}",exc_info=True)
+            self.notify(f"Error loading summary: {e}",title="Error",severity="error")
     def on_data_table_row_selected(self,e:DataTable.RowSelected)->None:self.selected_row_id=int(e.row_key.value)if e.row_key else None;self.query_one(StatusBar).selected_id=self.selected_row_id;logger.debug(f"Row selected, ID: {self.selected_row_id}")
+    def _get_current_row_id(self)->int|None:
+        if self.selected_row_id is not None:return self.selected_row_id
+        tbl=self.query_one(DataTable)
+        if tbl.row_count>0:
+            try:
+                # Get the row key at the current cursor position
+                cursor_row = tbl.cursor_row
+                if cursor_row < tbl.row_count:
+                    # Get the row at cursor position and extract the ID from the first column
+                    row_data = tbl.get_row_at(cursor_row)
+                    if row_data and len(row_data) > 0:
+                        return int(row_data[0])  # First column is the ID
+            except Exception as e:
+                logger.debug(f"Error getting current row ID: {e}")
+        return None
     def _toggle_loading(self,show:bool)->None:self.query_one(LoadingIndicator).remove_class("hidden")if show else self.query_one(LoadingIndicator).add_class("hidden")
     async def action_refresh_data(self)->None:self.notify("Refreshing...",title="Data Update",severity="info",timeout=2);await self.refresh_article_table()
     async def action_toggle_dark_mode(self)->None:self.dark=not self.dark;self.query_one(StatusBar).current_theme="Dark" if self.dark else "Light"
     async def action_view_details(self)->None:
-        if self.selected_row_id is None:self.notify("No row selected.",title="Info",severity="warning");return
+        current_id=self._get_current_row_id()
+        if current_id is None:self.notify("No row selected.",title="Info",severity="warning");return
+        self.selected_row_id=current_id
         try:
             with get_db_connection() as conn:ad=conn.execute("SELECT * FROM scraped_data WHERE id=?",(self.selected_row_id,)).fetchone();tags=get_tags_for_article(conn,self.selected_row_id)
             if ad:self.push_screen(ArticleDetailModal(ad,tags))
@@ -962,15 +1154,35 @@ class WebScraperApp(App[None]):
         except Exception as e:logger.error(f"Err summ ID {eid}: {e}",exc_info=True);self.notify(f"Err summ ID {eid}: {e}",title="Error",severity="error")
         finally:self._toggle_loading(False)
     async def action_summarize_selected(self)->None:
-        if self.selected_row_id is None:self.notify("No row selected.",title="Info",severity="warning");return
-        meta=self.query_one(DataTable).get_row_meta(str(self.selected_row_id))
+        current_id=self._get_current_row_id()
+        if current_id is None:self.notify("No row selected.",title="Info",severity="warning");return
+        self.selected_row_id=current_id
+        row_key=str(self.selected_row_id)
+        meta=self.row_metadata.get(row_key)
         if not meta or'link'not in meta:self.notify(f"No link for ID {self.selected_row_id}.",title="Error",severity="error");return
+        
+        # Store summarization context for callbacks
+        self._summarize_context = {'row_id': self.selected_row_id, 'link': meta['link']}
+        
         if meta.get('has_s'):
-            if not await self.app.push_screen_wait(ConfirmModal(f"ID {self.selected_row_id} has summary. Re-summarize?")):self.notify("Cancelled.",title="Info",severity="info");return
-        style=await self.app.push_screen_wait(SelectSummaryStyleModal())
-        if style is None:self.notify("Cancelled (no style).",title="Info",severity="info");return
-        worker_with_args = functools.partial(self._summarize_worker, self.selected_row_id, meta['link'], style)
-        self.run_worker(worker_with_args, group="llm", exclusive=True)
+            def handle_confirm_result(confirmed):
+                if confirmed:
+                    self._show_summary_style_selector()
+                else:
+                    self.notify("Cancelled.",title="Info",severity="info")
+            self.push_screen(ConfirmModal(f"ID {self.selected_row_id} has summary. Re-summarize?"), handle_confirm_result)
+        else:
+            self._show_summary_style_selector()
+    
+    def _show_summary_style_selector(self):
+        def handle_style_result(style):
+            if style is not None:
+                context = self._summarize_context
+                worker_with_args = functools.partial(self._summarize_worker, context['row_id'], context['link'], style)
+                self.run_worker(worker_with_args, group="llm", exclusive=True)
+            else:
+                self.notify("Cancelled (no style).",title="Info",severity="info")
+        self.push_screen(SelectSummaryStyleModal(), handle_style_result)
 
     async def _sentiment_worker(self,eid:int,link:str)->None:
         self._toggle_loading(True)
@@ -993,8 +1205,11 @@ class WebScraperApp(App[None]):
         except Exception as e:logger.error(f"Err sentiment worker ID {eid}: {e}",exc_info=True);self.notify(f"Err analyzing sentiment ID {eid}: {e}",title="Error",severity="error")
         finally:self._toggle_loading(False)
     async def action_sentiment_analysis_selected(self)->None:
-        if self.selected_row_id is None:self.notify("No row selected for sentiment.",title="Info",severity="warning");return
-        meta=self.query_one(DataTable).get_row_meta(str(self.selected_row_id))
+        current_id=self._get_current_row_id()
+        if current_id is None:self.notify("No row selected for sentiment.",title="Info",severity="warning");return
+        self.selected_row_id=current_id
+        row_key=str(self.selected_row_id)
+        meta=self.row_metadata.get(row_key)
         if not meta or'link'not in meta:self.notify(f"No link for ID {self.selected_row_id}.",title="Error",severity="error");return
         worker_with_args = functools.partial(self._sentiment_worker, self.selected_row_id, meta['link'])
         self.run_worker(worker_with_args, group="llm", exclusive=True)
@@ -1023,27 +1238,54 @@ class WebScraperApp(App[None]):
             self.run_worker(worker_with_args, group="scraping",exclusive=True)
     async def action_scrape_new(self)->None:await self.app.push_screen(ScrapeURLModal(self.last_scrape_url,self.last_scrape_selector,self.last_scrape_limit),self._handle_scrape_new_result)
     async def action_delete_selected(self)->None:
-        if self.selected_row_id is None:self.notify("No row selected.",title="Info",severity="warning");return
-        if not await self.app.push_screen_wait(ConfirmModal(f"Delete article ID {self.selected_row_id}?")):self.notify("Cancelled.",title="Info",severity="info");return
-        try:
-            def _delete_blocking():
-                with get_db_connection() as conn_blocking:
-                    cur=conn_blocking.execute("DELETE FROM scraped_data WHERE id=?",(self.selected_row_id,));conn_blocking.commit()
-                    return cur.rowcount
-            rowcount = _delete_blocking()
-            if rowcount >0:self.notify(f"Deleted ID {self.selected_row_id}.",title="Success",severity="info");self.selected_row_id=None;self.query_one(StatusBar).selected_id=None;await self.refresh_article_table()
-            else:self.notify(f"Not found ID {self.selected_row_id}.",title="Warning",severity="warning")
-        except Exception as e:logger.error(f"Err del ID {self.selected_row_id}: {e}",exc_info=True);self.notify(f"Err del ID {self.selected_row_id}: {e}",title="Error",severity="error")
+        current_id=self._get_current_row_id()
+        if current_id is None:self.notify("No row selected.",title="Info",severity="warning");return
+        self.selected_row_id=current_id
+        
+        def handle_delete_confirmation(confirmed):
+            if confirmed:
+                try:
+                    def _delete_blocking():
+                        with get_db_connection() as conn_blocking:
+                            cur=conn_blocking.execute("DELETE FROM scraped_data WHERE id=?",(self.selected_row_id,));conn_blocking.commit()
+                            return cur.rowcount
+                    rowcount = _delete_blocking()
+                    if rowcount >0:
+                        self.notify(f"Deleted ID {self.selected_row_id}.",title="Success",severity="info")
+                        self.selected_row_id=None
+                        self.query_one(StatusBar).selected_id=None
+                        self.call_later(self.refresh_article_table)
+                    else:
+                        self.notify(f"Not found ID {self.selected_row_id}.",title="Warning",severity="warning")
+                except Exception as e:
+                    logger.error(f"Err del ID {self.selected_row_id}: {e}",exc_info=True)
+                    self.notify(f"Err del ID {self.selected_row_id}: {e}",title="Error",severity="error")
+            else:
+                self.notify("Cancelled.",title="Info",severity="info")
+        
+        self.push_screen(ConfirmModal(f"Delete article ID {self.selected_row_id}?"), handle_delete_confirmation)
     async def action_clear_database(self)->None:
-        if not await self.app.push_screen_wait(ConfirmModal("Delete ALL articles from DB? Irreversible!",confirm_text="Yes, Delete All")):self.notify("Clear DB cancelled.",title="Info",severity="info");return
-        self._toggle_loading(True)
-        try:
-            def _clear_db_blocking():
-                with get_db_connection() as conn_blocking:conn_blocking.executescript("DELETE FROM article_tags;DELETE FROM tags;DELETE FROM scraped_data;DELETE FROM saved_scrapers WHERE is_preinstalled=0;DELETE FROM sqlite_sequence WHERE name IN ('scraped_data','tags','saved_scrapers');");conn_blocking.commit()
-            _clear_db_blocking()
-            self.notify("User data cleared (pre-installed scrapers kept).",title="DB Cleared",severity="info");logger.info("DB cleared.");self.selected_row_id=None;self.query_one(StatusBar).selected_id=None;await self.refresh_article_table()
-        except Exception as e:logger.error(f"Err clearing DB: {e}",exc_info=True);self.notify(f"Err clearing DB: {e}",title="DB Error",severity="error")
-        finally:self._toggle_loading(False)
+        def handle_clear_confirmation(confirmed):
+            if confirmed:
+                self._toggle_loading(True)
+                try:
+                    def _clear_db_blocking():
+                        with get_db_connection() as conn_blocking:conn_blocking.executescript("DELETE FROM article_tags;DELETE FROM tags;DELETE FROM scraped_data;DELETE FROM saved_scrapers WHERE is_preinstalled=0;DELETE FROM sqlite_sequence WHERE name IN ('scraped_data','tags','saved_scrapers');");conn_blocking.commit()
+                    _clear_db_blocking()
+                    self.notify("User data cleared (pre-installed scrapers kept).",title="DB Cleared",severity="info")
+                    logger.info("DB cleared.")
+                    self.selected_row_id=None
+                    self.query_one(StatusBar).selected_id=None
+                    self.call_later(self.refresh_article_table)
+                except Exception as e:
+                    logger.error(f"Err clearing DB: {e}",exc_info=True)
+                    self.notify(f"Err clearing DB: {e}",title="DB Error",severity="error")
+                finally:
+                    self._toggle_loading(False)
+            else:
+                self.notify("Clear DB cancelled.",title="Info",severity="info")
+        
+        self.push_screen(ConfirmModal("Delete ALL articles from DB? Irreversible!",confirm_text="Yes, Delete All"), handle_clear_confirmation)
     async def action_toggle_help(self)->None:await self.app.push_screen(HelpModal())
     async def action_cycle_sort_order(self)->None:self.current_sort_index=(self.current_sort_index+1)%len(self.SORT_OPTIONS);await self.refresh_article_table();self.notify(f"Sorted by: {self.SORT_OPTIONS[self.current_sort_index][1]}",title="Sort Changed",severity="info",timeout=2)
     async def _handle_manage_tags_result(self,aid:int,nts:Optional[str])->None:
@@ -1055,7 +1297,9 @@ class WebScraperApp(App[None]):
             except Exception as e:logger.error(f"Err tags ID {aid}: {e}",exc_info=True);self.notify(f"Err tags: {e}",title="Tag Error",severity="error")
             finally:self._toggle_loading(False)
     async def action_manage_tags(self)->None:
-        if self.selected_row_id is None:self.notify("No row selected.",title="Info",severity="warning");return
+        current_id=self._get_current_row_id()
+        if current_id is None:self.notify("No row selected.",title="Info",severity="warning");return
+        self.selected_row_id=current_id
         try:
             def _get_tags_blocking():
                 with get_db_connection() as conn_blocking:
@@ -1099,10 +1343,12 @@ class WebScraperApp(App[None]):
         except Exception as e:logger.error(f"Err export CSV '{filename}': {e}",exc_info=True);self.notify(f"Err export CSV: {e}",title="Export Error",severity="error")
         finally:self._toggle_loading(False)
     async def action_export_csv(self)->None:
-        dfn=f"scraped_articles_{datetime.now():%Y%m%d_%H%M%S}.csv";fn=await self.app.push_screen_wait(FilenameModal(default_filename=dfn))
-        if fn:
-            worker_with_args = functools.partial(self._export_csv_worker, fn)
-            self.run_worker(worker_with_args, group="exporting", exclusive=True)
+        dfn=f"scraped_articles_{datetime.now():%Y%m%d_%H%M%S}.csv"
+        def handle_filename_result(fn):
+            if fn:
+                worker_with_args = functools.partial(self._export_csv_worker, fn)
+                self.run_worker(worker_with_args, group="exporting", exclusive=True)
+        self.push_screen(FilenameModal(default_filename=dfn), handle_filename_result)
 
     async def _read_article_worker(self,eid:int,link:str,title:str)->None:
         self._toggle_loading(True);self.notify(f"Fetching '{title[:30]}...' (ID {eid})",title="Reading Article",severity="info")
@@ -1113,7 +1359,9 @@ class WebScraperApp(App[None]):
         except Exception as e:logger.error(f"Err read worker ID {eid}: {e}",exc_info=True);self.notify(f"Err reading ID {eid}: {e}",title="Read Error",severity="error")
         finally:self._toggle_loading(False)
     async def action_read_article(self)->None:
-        if self.selected_row_id is None:self.notify("No row selected.",title="Info",severity="warning");return
+        current_id=self._get_current_row_id()
+        if current_id is None:self.notify("No row selected.",title="Info",severity="warning");return
+        self.selected_row_id=current_id
         try:
             def _get_article_data_blocking():
                 with get_db_connection() as conn_blocking:
@@ -1128,30 +1376,32 @@ class WebScraperApp(App[None]):
         if not result:return
         action,data=result
         if action=="add":
-            sd=await self.app.push_screen_wait(AddEditScraperModal())
-            if sd:
-                try:
-                    def _add_scraper_blocking():
-                        with get_db_connection() as conn_blocking:conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0)",sd);conn_blocking.commit()
-                    _add_scraper_blocking()
-                    self.notify(f"Scraper '{sd['name']}' added.",title="Success",severity="info")
-                except sqlite3.IntegrityError:self.notify(f"Scraper name '{sd['name']}' already exists.",title="Error",severity="error")
-                except Exception as e:logger.error(f"Err adding scraper: {e}",exc_info=True);self.notify(f"Error adding scraper: {e}",severity="error")
+            def handle_add_scraper_result(sd):
+                if sd:
+                    try:
+                        def _add_scraper_blocking():
+                            with get_db_connection() as conn_blocking:conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0)",sd);conn_blocking.commit()
+                        _add_scraper_blocking()
+                        self.notify(f"Scraper '{sd['name']}' added.",title="Success",severity="info")
+                    except sqlite3.IntegrityError:self.notify(f"Scraper name '{sd['name']}' already exists.",title="Error",severity="error")
+                    except Exception as e:logger.error(f"Err adding scraper: {e}",exc_info=True);self.notify(f"Error adding scraper: {e}",severity="error")
+            self.push_screen(AddEditScraperModal(), handle_add_scraper_result)
         elif action=="edit" and data:
-            sd=await self.app.push_screen_wait(AddEditScraperModal(scraper_data=data))
-            if sd:
-                try:
-                    def _edit_scraper_blocking():
-                        with get_db_connection() as conn_blocking:
-                            if 'id' in sd: 
-                                 conn_blocking.execute("UPDATE saved_scrapers SET name=:name,url=:url,selector=:selector,default_limit=:default_limit,default_tags_csv=:default_tags_csv,description=:description,is_preinstalled=:is_preinstalled WHERE id=:id",sd)
-                            else: 
-                                 conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0)",sd)
-                            conn_blocking.commit()
-                    _edit_scraper_blocking()
-                    self.notify(f"Scraper '{sd['name']}' saved.",title="Success",severity="info")
-                except sqlite3.IntegrityError:self.notify(f"Scraper name '{sd['name']}' conflict.",title="Error",severity="error")
-                except Exception as e:logger.error(f"Err saving scraper: {e}",exc_info=True);self.notify(f"Error saving scraper: {e}",severity="error")
+            def handle_edit_scraper_result(sd):
+                if sd:
+                    try:
+                        def _edit_scraper_blocking():
+                            with get_db_connection() as conn_blocking:
+                                if 'id' in sd: 
+                                     conn_blocking.execute("UPDATE saved_scrapers SET name=:name,url=:url,selector=:selector,default_limit=:default_limit,default_tags_csv=:default_tags_csv,description=:description,is_preinstalled=:is_preinstalled WHERE id=:id",sd)
+                                else: 
+                                     conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0)",sd)
+                                conn_blocking.commit()
+                        _edit_scraper_blocking()
+                        self.notify(f"Scraper '{sd['name']}' saved.",title="Success",severity="info")
+                    except sqlite3.IntegrityError:self.notify(f"Scraper name '{sd['name']}' conflict.",title="Error",severity="error")
+                    except Exception as e:logger.error(f"Err saving scraper: {e}",exc_info=True);self.notify(f"Error saving scraper: {e}",severity="error")
+            self.push_screen(AddEditScraperModal(scraper_data=data), handle_edit_scraper_result)
         elif action=="delete" and data: 
             sid_to_del=data
             try:
@@ -1161,21 +1411,29 @@ class WebScraperApp(App[None]):
                 s_to_del = _get_scraper_name_blocking()
                 if not s_to_del:self.notify("Scraper not found.",severity="error");return
                 if s_to_del['is_preinstalled']: self.notify("Pre-installed profiles cannot be deleted. Edit them to create custom versions.", severity="warning"); return
-                confirmed=await self.app.push_screen_wait(ConfirmModal(f"Delete saved scraper '{s_to_del['name']}'?"))
-                if confirmed:
-                    def _delete_scraper_blocking():
-                        with get_db_connection() as conn_blocking:conn_blocking.execute("DELETE FROM saved_scrapers WHERE id=?",(sid_to_del,));conn_blocking.commit()
-                    _delete_scraper_blocking()
-                    self.notify(f"Scraper '{s_to_del['name']}' deleted.",title="Success",severity="info")
+                def handle_delete_scraper_confirmation(confirmed):
+                    if confirmed:
+                        def _delete_scraper_blocking():
+                            with get_db_connection() as conn_blocking:conn_blocking.execute("DELETE FROM saved_scrapers WHERE id=?",(sid_to_del,));conn_blocking.commit()
+                        _delete_scraper_blocking()
+                        self.notify(f"Scraper '{s_to_del['name']}' deleted.",title="Success",severity="info")
+                self.push_screen(ConfirmModal(f"Delete saved scraper '{s_to_del['name']}'?"), handle_delete_scraper_confirmation)
             except Exception as e:logger.error(f"Err deleting scraper: {e}",exc_info=True);self.notify(f"Error deleting scraper: {e}",severity="error")
         elif action=="execute" and data: 
             scrape_target_url = data['url']
             final_url_to_scrape = scrape_target_url
             if scrape_target_url == "[ARCHIVE_WAYBACK_URL]":
-                original_url = await self.app.push_screen_wait(OriginalURLModal())
-                if not original_url: self.notify("Wayback scrape cancelled.", title="Info", severity="information"); return
-                final_url_to_scrape = f"https://web.archive.org/web/timestamp_latest/{quote_plus(original_url)}"
-                self.notify(f"Attempting to fetch latest archive for: {original_url}", title="Archive Fetch", severity="information")
+                def handle_original_url_result(original_url):
+                    if original_url:
+                        final_url = f"https://web.archive.org/web/timestamp_latest/{quote_plus(original_url)}"
+                        self.notify(f"Attempting to fetch latest archive for: {original_url}", title="Archive Fetch", severity="information")
+                        # Execute the scraping with the final URL
+                        worker_with_args = functools.partial(self._scrape_url_worker, final_url, data['selector'], data['default_limit'], data.get('default_tags_csv'))
+                        self.run_worker(worker_with_args, group="scraping", exclusive=True)
+                    else:
+                        self.notify("Wayback scrape cancelled.", title="Info", severity="information")
+                self.push_screen(OriginalURLModal(), handle_original_url_result)
+                return  # Exit early since we'll handle the scraping in the callback
             elif scrape_target_url == "[USER_PROVIDES_URL]":
                 self.last_scrape_url = "" 
                 self.last_scrape_selector = data['selector']

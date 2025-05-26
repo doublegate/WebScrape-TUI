@@ -12,8 +12,12 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 
 ### 🖥️ Interactive Terminal Interface
 - **Modern TUI**: Built with Textual framework for responsive terminal-based interaction
+- **Clean Main Interface**: Full-screen DataTable for optimal article viewing and navigation
+- **Dedicated Filter Screen**: Ctrl+F opens comprehensive filter modal dialog
 - **Modal Dialogs**: Intuitive popup windows for user input and data display
-- **Real-time Tables**: Dynamic data tables with live sorting and filtering
+- **Real-time Tables**: Dynamic data tables with live sorting and visual selection indicators
+- **Intelligent Row Selection**: Spacebar selection with asterisk indicators (*ID) and cursor fallback
+- **Sequential Modal Workflows**: Callback-based dialog chains for complex interactions
 - **Status Indicators**: Visual feedback for operations and progress tracking
 - **Keyboard Navigation**: Full keyboard support with intuitive shortcuts
 
@@ -26,8 +30,10 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 
 ### 🗄️ Data Management
 - **SQLite Database**: Persistent storage with normalized schema design
-- **Advanced Filtering**: Multi-field filtering by title, URL, date, tags, and sentiment
-- **Flexible Sorting**: 9 different sorting options for comprehensive data organization
+- **Advanced Filtering**: Dedicated filter screen (Ctrl+F) with multi-field filtering
+- **Visual Row Selection**: Spacebar selection with asterisk indicators and cursor navigation
+- **Sequential Modal Dialogs**: Callback-based workflows preventing worker context errors
+- **Flexible Sorting**: 9 different sorting options with proper SQL table aliases
 - **Tag System**: Comma-separated tagging for article categorization
 - **CSV Export**: Export filtered data for external analysis
 - **Transaction Safety**: Context managers ensure data integrity
@@ -185,9 +191,11 @@ Customize the appearance by editing `web_scraper_tui_v1.0RC.tcss`.
 ### Managing Your Data
 
 **Filtering Articles:**
-- Use filter inputs at the top of the main screen
-- Filter by title, URL, date range, tags, or sentiment
-- Filters apply in real-time
+- Press `Ctrl+F` to open the dedicated filter dialog
+- Set filters for title, URL, date range, tags, or sentiment
+- Use "Clear All" to reset all filters quickly
+- Filters preserve current values when reopening
+- Apply filters to return to main screen with filtered results
 
 **Sorting Options:**
 - Date (newest/oldest first)
@@ -296,31 +304,32 @@ CREATE TABLE saved_scrapers (
 |-----|--------|
 | `q` | Quit application |
 | `h` | Show help dialog |
-| `Ctrl+S` | New scrape dialog |
-| `S` | Saved scrapers |
-| `T` | Manage tags |
-| `F` | Toggle filters |
-| `E` | Export to CSV |
+| `Ctrl+N` | New scrape dialog |
+| `Ctrl+P` | Saved scrapers |
+| `Ctrl+T` | Manage tags |
+| `Ctrl+F` | Open filter dialog |
+| `Ctrl+E` | Export to CSV |
 | `R` | Refresh data |
 
 ### Navigation
 | Key | Action |
 |-----|--------|
 | `↑/↓` | Navigate table rows |
-| `←/→` | Navigate table columns |
+| `Space` | Select current row (shows *ID indicator) |
+| `Enter` | View article details |
 | `Tab` | Next input field |
 | `Shift+Tab` | Previous input field |
-| `Enter` | Select/Open item |
 | `Esc` | Close dialog/Cancel |
 
 ### Data Management
 | Key | Action |
 |-----|--------|
-| `Delete` | Remove selected article |
-| `Space` | Toggle selection |
-| `Ctrl+A` | Select all |
-| `Ctrl+D` | Duplicate scraper |
-| `F5` | Refresh view |
+| `s` | Summarize selected article |
+| `Ctrl+K` | Sentiment analysis for selected |
+| `Ctrl+R` | Read full article content |
+| `d`/`Del` | Remove selected article |
+| `Ctrl+T` | Manage tags for selected |
+| `R` | Refresh view |
 
 ## 🔍 Troubleshooting
 
@@ -439,13 +448,30 @@ python -m pytest tests/
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
-### Recent Updates (v1.0RC)
-- **Version Update**: Renamed from v5 to v1.0RC
+### Recent Updates (v1.0RC-patch3)
+- **Fixed Confirmation Dialogs**: Resolved elongated blue box issue - buttons now display properly
+- **Enhanced Modal Layout**: Improved ConfirmModal CSS with proper Horizontal container sizing
+- **Better Delete Operations**: All confirmation dialogs now work correctly for delete actions
+- **Visual Improvements**: Proper button layout and spacing in confirmation modals
+
+### Previous Updates (v1.0RC-patch2)
+- **Visual Selection Indicators**: Selected rows show asterisk prefix (*ID) for clear feedback
+- **Fixed Summarization**: Resolved worker context errors with callback-based modal workflows
+- **Enhanced Row Selection**: Spacebar selection with immediate visual feedback
+- **Sequential Modal Dialogs**: Callback chains for complex interactions (confirm → style selection)
+- **Improved User Experience**: Real-time table updates showing selection state
+- **Worker Context Compatibility**: All modal dialogs now use callback patterns
+- **UI Restructure**: Separated main screen (DataTable) from filter screen (Ctrl+F modal)
+- **Enhanced Row Selection**: Intelligent cursor-based selection with fallback detection
+- **Textual API Compatibility**: Fixed DataTable metadata and cursor positioning issues
+- **Improved Filtering**: Dedicated filter dialog with state preservation
+- **SQL Optimization**: Added table aliases to prevent ambiguous column errors
+- **Better Navigation**: Full-screen DataTable for optimal article viewing
+- **Version Update**: Renamed from v5 to v1.0RC with consistent file references
 - **Enhanced UI**: Beautiful startup and shutdown banners
 - **Documentation**: Comprehensive README and documentation
 - **Code Quality**: Detailed inline documentation and type hints
 - **Stability**: Improved error handling and logging
-- **GitHub Ready**: Full repository structure with all necessary files
 
 ## 📄 License
 

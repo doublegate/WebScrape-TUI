@@ -5,6 +5,76 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0RC-patch3] - 2025-05-26
+
+### Fixed
+- **Confirmation Dialog Layout**: Fixed elongated blue box issue - buttons now display properly
+- **Modal Dialog CSS**: Improved ConfirmModal CSS with proper Horizontal container sizing
+- **Button Display**: Resolved button visibility issues in deletion confirmations
+- **Dialog Responsiveness**: Enhanced confirmation dialog layout with min-width and auto-height
+
+### Enhanced
+- **User Experience**: Confirmation dialogs now work correctly for all delete operations
+- **Visual Consistency**: Proper button layout and spacing in confirmation modals
+- **Modal Structure**: Improved compose() method with proper context managers
+
+## [1.0RC-patch2] - 2025-05-26
+
+### Fixed
+- **Sequential Modal Dialogs**: Resolved worker context errors in summarization workflow
+- **Row Selection Visual Feedback**: Added asterisk indicator (*ID) for selected rows
+- **Summarization Function**: Fixed push_screen_wait errors with callback-based approach
+- **Filter Screen Access**: Resolved Ctrl+F modal dialog worker context issues
+
+### Added
+- **Visual Selection Indicators**: Selected rows display asterisk prefix (*ID) in ID column
+- **Spacebar Row Selection**: Manual row selection with immediate visual feedback
+- **Callback-based Modal Workflows**: Sequential dialog chains for complex interactions
+- **State Management**: Context storage for multi-step modal dialog sequences
+- **Real-time Table Updates**: Table refreshes after row selection to show indicators
+
+### Changed
+- **Modal Dialog Pattern**: Converted from push_screen_wait to callback-based push_screen
+- **Selection Workflow**: Enhanced spacebar selection with table refresh for visual feedback
+- **Summarization Flow**: Now uses confirm dialog → style selector → worker execution chain
+- **User Feedback**: Immediate notification and visual indicators for all row selections
+
+### Enhanced
+- **User Experience**: Clear visual feedback for all selection and interaction states
+- **Error Prevention**: Eliminated all worker context errors through callback patterns
+- **Navigation Clarity**: Asterisk indicators make current selection immediately visible
+- **Workflow Reliability**: Robust sequential modal handling prevents crashes
+
+## [1.0RC-patch1] - 2025-05-26
+
+### Fixed
+- **Textual API Compatibility**: Fixed DataTable.add_row() meta parameter compatibility issue
+- **Row Selection**: Implemented intelligent row selection with cursor-position fallback
+- **SQL Query Errors**: Added table aliases to prevent ambiguous column name errors in JOINs
+- **UI Layout**: Separated main screen from filter inputs for improved visibility
+- **Database References**: Corrected all file references to use v1.0RC instead of v5
+
+### Added
+- **Dedicated Filter Screen**: Ctrl+F opens comprehensive modal filter dialog
+- **Row Metadata Storage**: Custom dictionary-based metadata storage for row-specific data
+- **Enhanced Row Detection**: Fallback row selection using cursor coordinate system
+- **Filter State Preservation**: Filter dialog preserves current values when reopened
+- **Enter Key Binding**: Added Enter key for article detail viewing
+- **Improved Help Documentation**: Updated help text to reflect new filter workflow
+
+### Changed
+- **Main Interface Layout**: Full-screen DataTable for optimal article viewing
+- **Filter Workflow**: Moved from inline filters to dedicated modal screen (Ctrl+F)
+- **CSS Styling**: Simplified main screen CSS, removed filter container styles
+- **Row Selection Method**: Changed from direct cursor_row assignment to move_cursor() API
+- **Keybindings**: Added Ctrl+F for filters, Enter for details
+
+### Enhanced
+- **User Experience**: Clean main interface with dedicated filter workflow
+- **Navigation**: Improved keyboard navigation with proper row selection
+- **Error Handling**: Better error handling for DataTable operations
+- **Code Maintainability**: Updated all functions to use new row selection helper method
+
 ## [1.0RC] - 2024-12-XX
 
 ### Added
