@@ -1,0 +1,29 @@
+
+Screen{layout:vertical;overflow:hidden}Header{dock:top}Footer{dock:bottom}
+#app-grid{layout:vertical;overflow:hidden;height:1fr}
+#filter-container{height:auto;padding:0 1;background:$boost}
+#filter-container Label{padding:1 0 0 0;color:$text-muted}
+#filter-inputs-grid{grid-size:1 5;grid-gutter:0 1;padding:0 0 1 0}
+.filter-input{width:1fr}
+DataTable{height:1fr;width:100%;margin-bottom:0}
+DataTable .datatable--header-label { text-overflow: ellipsis; } /* Prevent header text wrapping */
+DataTable .tags-column { width: 20%; } /* Give more space to tags column */
+StatusBar{dock:bottom;height:1;padding:0 1;background:$primary-background;color:$text;width:100%}
+LoadingIndicator{width:100%;height:100%;background:$surface-darken-2 50%;align:center middle;display:block;overlay:screen;}
+LoadingIndicator.hidden{display:none}
+.modal-buttons{width:100%;align-horizontal:center;padding-top:1}
+.modal-buttons Button{margin:0 1}
+Label.dialog-title{text-style:bold;width:100%;text-align:center;margin-bottom:1}
+ManageTagsModal #cur_tags_lbl{margin-bottom:1;max-height:3;overflow-y:auto;border:round $primary-darken-1;padding:0 1}
+ReadArticleModal VerticalScroll{border:panel $primary;padding:1;background:$surface}
+ReadArticleModal #art_ttl_lbl{background:$primary-background-darken-1;padding:0 1;color:$text}
+ManageScrapersModal ListView{border:panel $primary-background;background:$surface-lighten-1}
+ManageScrapersModal ListView:focus{border:panel $primary}
+ManageScrapersModal ListItem{padding:0 1} /* Reduced padding for more items */
+ManageScrapersModal ListItem:hover{background:$primary 20%}
+ManageScrapersModal ListItem.--highlight{background:$primary 40%}
+ManageScrapersModal .buttons-top Button,ManageScrapersModal .buttons-bottom Button{width:auto;padding:0 2}
+AddEditScraperModal Input#scraper_description { height: 3; border: round $border; padding: 0 1; } /* Basic multiline-like appearance */
+AddEditScraperModal Static.warning-text { color: $warning; padding: 0 1; text-align: center; }
+.scraper-item-name{text-style:bold;}
+.scraper-item-subtext{color:$text-muted;text-style:italic;}
