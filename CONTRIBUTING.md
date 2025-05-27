@@ -163,9 +163,13 @@ We follow **PEP 8** with some project-specific conventions:
 #### General Guidelines
 - **Line length**: Maximum 88 characters (Black formatter default)
 - **Indentation**: 4 spaces (no tabs)
-- **Imports**: Group imports (standard library, third-party, local)
+- **Imports**: Group imports (standard library, third-party, local) and remove unused imports
 - **Docstrings**: Use Google-style docstrings
 - **Type hints**: Use type hints for function parameters and return values
+- **Code Quality**: Follow PEP 8 standards (run flake8 before submitting)
+- **Multi-line Strings**: Break long strings across multiple lines for readability
+- **Error Handling**: Use proper exception handling with multi-line formatting
+- **Database Operations**: Use context managers for safe resource management
 
 #### Example Code Style
 

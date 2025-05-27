@@ -103,36 +103,34 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, quote_plus
 import logging
-import math
-import json
 import csv
-import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Tuple, Dict
+from typing import Any, List, Optional, Tuple, Dict
 import functools
 
 # Textual imports
-from textual.app import App, ComposeResult, CSSPathType
+from textual.app import App, ComposeResult
 from textual.widgets import (
-    Header, Footer, DataTable, Static, Button, Input, Label, Markdown, LoadingIndicator, Checkbox, RadioSet, RadioButton, ListView, ListItem
+    Header, Footer, DataTable, Static, Button, Input, Label, Markdown,
+    LoadingIndicator, RadioSet, RadioButton, ListView, ListItem
 )
-from textual.containers import Vertical, Horizontal, ScrollableContainer, Container, VerticalScroll, Grid
+from textual.containers import Vertical, Horizontal, VerticalScroll
 from textual.screen import ModalScreen
 from textual.reactive import reactive
 from textual.binding import Binding
 from textual.logging import TextualHandler
 # from textual.notifications import Notifications # Rely on App.notify()
-from textual.css.query import DOMQuery
+
 
 # --- Environment Configuration ---
 def load_env_file(env_path: Path = Path(".env")) -> Dict[str, str]:
     """
     Load environment variables from .env file.
-    
+
     Args:
         env_path: Path to the .env file
-        
+
     Returns:
         Dictionary of environment variables
     """
@@ -158,12 +156,13 @@ def load_env_file(env_path: Path = Path(".env")) -> Dict[str, str]:
                             value = value[1:-1]
                         env_vars[key] = value
                     else:
-                        print(f"Warning: Invalid format in .env file at line {line_num}: {line}")
+                        print(f"Warning: Invalid format in .env file at "
+                              f"line {line_num}: {line}")
         except Exception as e:
             print(f"Warning: Could not read .env file: {e}")
     else:
         print("Info: No .env file found. Using default configuration.")
-    
+
     return env_vars
 
 # Load environment variables
@@ -172,7 +171,10 @@ env_vars = load_env_file()
 # --- Globals and Configuration ---
 DB_PATH = Path(env_vars.get("DATABASE_PATH", "scraped_data_tui_v1.0.db"))
 LOG_FILE = Path(env_vars.get("LOG_FILE_PATH", "scraper_tui_v1.0.log"))
-GEMINI_API_URL_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+GEMINI_API_URL_TEMPLATE = (
+    "https://generativelanguage.googleapis.com/v1beta/models/"
+    "gemini-2.0-flash:generateContent?key={api_key}"
+)
 GEMINI_API_KEY = env_vars.get("GEMINI_API_KEY", "")
 
 logging.basicConfig(
@@ -181,7 +183,8 @@ logging.basicConfig(
         logging.FileHandler(LOG_FILE, mode='a', encoding='utf-8'),
         TextualHandler()
     ],
-    format="%(asctime)s - %(name)s - %(levelname)s - %(module)s:%(lineno)d - %(message)s"
+    format=("%(asctime)s - %(name)s - %(levelname)s - "
+            "%(module)s:%(lineno)d - %(message)s")
 )
 logger = logging.getLogger(__name__)
 
@@ -194,107 +197,225 @@ logging.getLogger("textual").setLevel(logging.INFO)
 logging.getLogger("asyncio").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
+
 # --- Database Utilities ---
 def get_db_connection():
     try:
-        conn = sqlite3.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES)
+        conn = sqlite3.connect(
+            DB_PATH,
+            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
+        )
         conn.row_factory = sqlite3.Row
         return conn
-    except sqlite3.Error as e: logger.critical(f"DB connection error: {e}", exc_info=True); raise
+    except sqlite3.Error as e:
+        logger.critical(f"DB connection error: {e}", exc_info=True)
+        raise
 
 PREINSTALLED_SCRAPERS = [
     {
-        "name": "Generic Article Cleaner", "url": "[USER_PROVIDES_URL]", "selector": "article, main, div[role='main']",
-        "default_limit": 1, "default_tags_csv": "article, general",
-        "description": "Tries to extract main content from any article-like page. Selectors are broad; may need refinement for specific sites."
+        "name": "Generic Article Cleaner",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": "article, main, div[role='main']",
+        "default_limit": 1,
+        "default_tags_csv": "article, general",
+        "description": ("Tries to extract main content from any "
+                       "article-like page. Selectors are broad; may need "
+                       "refinement for specific sites.")
     },
     {
-        "name": "Wikipedia Article Text", "url": "https://en.wikipedia.org/wiki/Web_scraping", "selector": "div.mw-parser-output p",
-        "default_limit": 0, "default_tags_csv": "wikipedia, reference",
-        "description": "Extracts main paragraph text from Wikipedia articles. Aims to exclude infoboxes/navs."
+        "name": "Wikipedia Article Text",
+        "url": "https://en.wikipedia.org/wiki/Web_scraping",
+        "selector": "div.mw-parser-output p",
+        "default_limit": 0,
+        "default_tags_csv": "wikipedia, reference",
+        "description": ("Extracts main paragraph text from Wikipedia "
+                       "articles. Aims to exclude infoboxes/navs.")
     },
     {
-        "name": "StackOverflow Q&A", "url": "[USER_PROVIDES_URL]", "selector": "#question .s-prose, .answer .s-prose",
-        "default_limit": 0, "default_tags_csv": "stackoverflow, q&a, tech",
-        "description": "Extracts questions and answers from StackOverflow pages. Point to a specific question URL."
+        "name": "StackOverflow Q&A",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": "#question .s-prose, .answer .s-prose",
+        "default_limit": 0,
+        "default_tags_csv": "stackoverflow, q&a, tech",
+        "description": ("Extracts questions and answers from StackOverflow "
+                       "pages. Point to a specific question URL.")
     },
     {
-        "name": "News Headlines (General)", "url": "[USER_PROVIDES_URL]", "selector": "h1 a, h2 a, h3 a, article header a, .headline a, .story-title a",
-        "default_limit": 20, "default_tags_csv": "news, headlines",
-        "description": "Attempts to extract headlines and links from news websites. Selector covers common patterns."
+        "name": "News Headlines (General)",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": ("h1 a, h2 a, h3 a, article header a, "
+                    ".headline a, .story-title a"),
+        "default_limit": 20,
+        "default_tags_csv": "news, headlines",
+        "description": ("Attempts to extract headlines and links from "
+                       "news websites. Selector covers common patterns.")
     },
     {
-        "name": "Academic Abstract (arXiv)", "url": "https://arxiv.org/abs/2103.00020", "selector": "blockquote.abstract",
-        "default_limit": 1, "default_tags_csv": "academic, abstract, arxiv",
-        "description": "Specifically targets arXiv.org to extract the abstract of a paper. Replace URL with desired arXiv paper."
+        "name": "Academic Abstract (arXiv)",
+        "url": "https://arxiv.org/abs/2103.00020",
+        "selector": "blockquote.abstract",
+        "default_limit": 1,
+        "default_tags_csv": "academic, abstract, arxiv",
+        "description": ("Specifically targets arXiv.org to extract the "
+                       "abstract of a paper. Replace URL with desired "
+                       "arXiv paper.")
     },
     {
-        "name": "Tech Specs (Simple Table)", "url": "[USER_PROVIDES_URL]", "selector": "table.specifications td, table.specs td",
-        "default_limit": 0, "default_tags_csv": "technical, specs, table-data",
-        "description": "Aims to pull cell data from simple HTML tables often found in product specifications."
+        "name": "Tech Specs (Simple Table)",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": "table.specifications td, table.specs td",
+        "default_limit": 0,
+        "default_tags_csv": "technical, specs, table-data",
+        "description": ("Aims to pull cell data from simple HTML tables "
+                       "often found in product specifications.")
     },
     {
-        "name": "Forum Posts (Generic)", "url": "[USER_PROVIDES_URL]", "selector": ".post-content, .comment-text, .messageText",
-        "default_limit": 0, "default_tags_csv": "forum, discussion",
-        "description": "Designed for typical forum thread structures to extract individual posts/comments."
+        "name": "Forum Posts (Generic)",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": ".post-content, .comment-text, .messageText",
+        "default_limit": 0,
+        "default_tags_csv": "forum, discussion",
+        "description": ("Designed for typical forum thread structures "
+                       "to extract individual posts/comments.")
     },
     {
-        "name": "Recipe Ingredients", "url": "[USER_PROVIDES_URL]", "selector": ".recipe-ingredients li, .ingredient-list p, ul.ingredients li",
-        "default_limit": 0, "default_tags_csv": "recipe, ingredients, food",
-        "description": "Focuses on extracting lists of ingredients from recipe web pages using common list patterns."
+        "name": "Recipe Ingredients",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": (".recipe-ingredients li, .ingredient-list p, "
+                    "ul.ingredients li"),
+        "default_limit": 0,
+        "default_tags_csv": "recipe, ingredients, food",
+        "description": ("Focuses on extracting lists of ingredients from "
+                       "recipe web pages using common list patterns.")
     },
     {
-        "name": "Product Details (Basic)", "url": "[USER_PROVIDES_URL]", "selector": "h1.product-title, .product-name, span.price, .product-price, #priceblock_ourprice, .pdp-title, .pdp-price",
-        "default_limit": 5, "default_tags_csv": "product, e-commerce",
-        "description": "Extracts product title and price from e-commerce pages using common selectors. Limit is low as it might pick up related product info."
+        "name": "Product Details (Basic)",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": ("h1.product-title, .product-name, span.price, "
+                    ".product-price, #priceblock_ourprice, .pdp-title, "
+                    ".pdp-price"),
+        "default_limit": 5,
+        "default_tags_csv": "product, e-commerce",
+        "description": ("Extracts product title and price from e-commerce "
+                       "pages using common selectors. Limit is low as it "
+                       "might pick up related product info.")
     },
     {
-        "name": "Archived Page (Wayback)", "url": "[ARCHIVE_WAYBACK_URL]", "selector": "body", # Special handling for URL
-        "default_limit": 1, "default_tags_csv": "archive, wayback",
-        "description": "SPECIAL: Prompts for an original URL, then tries to fetch its latest version from the Wayback Machine. Scrapes entire body."
+        "name": "Archived Page (Wayback)",
+        "url": "[ARCHIVE_WAYBACK_URL]",
+        "selector": "body",  # Special handling for URL
+        "default_limit": 1,
+        "default_tags_csv": "archive, wayback",
+        "description": ("SPECIAL: Prompts for an original URL, then tries "
+                       "to fetch its latest version from the Wayback "
+                       "Machine. Scrapes entire body.")
     }
 ]
+
 
 def init_db():
     try:
         with get_db_connection() as conn:
-            conn.execute("CREATE TABLE IF NOT EXISTS scraped_data (id INTEGER PRIMARY KEY AUTOINCREMENT, url TEXT NOT NULL, title TEXT NOT NULL, link TEXT NOT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, summary TEXT, sentiment TEXT)")
-            try: conn.execute("ALTER TABLE scraped_data ADD COLUMN summary TEXT")
-            except sqlite3.OperationalError: pass
-            try: conn.execute("ALTER TABLE scraped_data ADD COLUMN sentiment TEXT")
-            except sqlite3.OperationalError: pass
-            conn.execute("CREATE TABLE IF NOT EXISTS tags (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE)")
-            conn.execute("CREATE TABLE IF NOT EXISTS article_tags (article_id INTEGER NOT NULL, tag_id INTEGER NOT NULL, FOREIGN KEY (article_id) REFERENCES scraped_data(id) ON DELETE CASCADE, FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE, PRIMARY KEY (article_id, tag_id))")
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS scraped_data ("
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                "url TEXT NOT NULL, "
+                "title TEXT NOT NULL, "
+                "link TEXT NOT NULL, "
+                "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+                "summary TEXT, "
+                "sentiment TEXT)"
+            )
+            try:
+                conn.execute("ALTER TABLE scraped_data ADD COLUMN summary TEXT")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                conn.execute("ALTER TABLE scraped_data ADD COLUMN sentiment TEXT")
+            except sqlite3.OperationalError:
+                pass
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS tags ("
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                "name TEXT NOT NULL UNIQUE)"
+            )
+            conn.execute(
+                "CREATE TABLE IF NOT EXISTS article_tags ("
+                "article_id INTEGER NOT NULL, "
+                "tag_id INTEGER NOT NULL, "
+                "FOREIGN KEY (article_id) REFERENCES scraped_data(id) "
+                "ON DELETE CASCADE, "
+                "FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE, "
+                "PRIMARY KEY (article_id, tag_id))"
+            )
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS saved_scrapers (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, url TEXT NOT NULL, selector TEXT NOT NULL,
-                    default_limit INTEGER DEFAULT 0, default_tags_csv TEXT,
-                    description TEXT, is_preinstalled INTEGER DEFAULT 0
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    url TEXT NOT NULL,
+                    selector TEXT NOT NULL,
+                    default_limit INTEGER DEFAULT 0,
+                    default_tags_csv TEXT,
+                    description TEXT,
+                    is_preinstalled INTEGER DEFAULT 0
                 )
             """)
-            try: conn.execute("ALTER TABLE saved_scrapers ADD COLUMN description TEXT")
-            except sqlite3.OperationalError: pass
-            try: conn.execute("ALTER TABLE saved_scrapers ADD COLUMN is_preinstalled INTEGER DEFAULT 0")
-            except sqlite3.OperationalError: pass
-            for idx_sql in [
-                "CREATE UNIQUE INDEX IF NOT EXISTS idx_link_unique ON scraped_data (link);", "CREATE INDEX IF NOT EXISTS idx_url ON scraped_data (url);",
-                "CREATE INDEX IF NOT EXISTS idx_timestamp ON scraped_data (timestamp);", "CREATE INDEX IF NOT EXISTS idx_title ON scraped_data (title);",
-                "CREATE INDEX IF NOT EXISTS idx_sentiment ON scraped_data (sentiment);", "CREATE INDEX IF NOT EXISTS idx_tag_name ON tags (name);",
-                "CREATE INDEX IF NOT EXISTS idx_article_tags_article ON article_tags (article_id);", "CREATE INDEX IF NOT EXISTS idx_article_tags_tag ON article_tags (tag_id);",
-                "CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_scraper_name ON saved_scrapers (name);"
-            ]: conn.execute(idx_sql)
+            try:
+                conn.execute(
+                    "ALTER TABLE saved_scrapers ADD COLUMN description TEXT"
+                )
+            except sqlite3.OperationalError:
+                pass
+            try:
+                conn.execute(
+                    "ALTER TABLE saved_scrapers ADD COLUMN "
+                    "is_preinstalled INTEGER DEFAULT 0"
+                )
+            except sqlite3.OperationalError:
+                pass
+            index_statements = [
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_link_unique "
+                "ON scraped_data (link);",
+                "CREATE INDEX IF NOT EXISTS idx_url ON scraped_data (url);",
+                "CREATE INDEX IF NOT EXISTS idx_timestamp "
+                "ON scraped_data (timestamp);",
+                "CREATE INDEX IF NOT EXISTS idx_title ON scraped_data (title);",
+                "CREATE INDEX IF NOT EXISTS idx_sentiment "
+                "ON scraped_data (sentiment);",
+                "CREATE INDEX IF NOT EXISTS idx_tag_name ON tags (name);",
+                "CREATE INDEX IF NOT EXISTS idx_article_tags_article "
+                "ON article_tags (article_id);",
+                "CREATE INDEX IF NOT EXISTS idx_article_tags_tag "
+                "ON article_tags (tag_id);",
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_scraper_name "
+                "ON saved_scrapers (name);"
+            ]
+            for idx_sql in index_statements:
+                conn.execute(idx_sql)
             for ps in PREINSTALLED_SCRAPERS:
                 conn.execute("""
-                    INSERT OR IGNORE INTO saved_scrapers (name, url, selector, default_limit, default_tags_csv, description, is_preinstalled)
+                    INSERT OR IGNORE INTO saved_scrapers (
+                        name, url, selector, default_limit,
+                        default_tags_csv, description, is_preinstalled
+                    )
                     VALUES (?, ?, ?, ?, ?, ?, 1)
-                """, (ps["name"], ps["url"], ps["selector"], ps["default_limit"], ps["default_tags_csv"], ps["description"]))
+                """, (ps["name"], ps["url"], ps["selector"],
+                      ps["default_limit"], ps["default_tags_csv"],
+                      ps["description"]))
             conn.commit()
         logger.info("Database initialized/updated successfully for v1.0.")
         return True
-    except sqlite3.Error as e: logger.critical(f"DB init error v1.0: {e}", exc_info=True); return False
+    except sqlite3.Error as e:
+        logger.critical(f"DB init error v1.0: {e}", exc_info=True)
+        return False
 
 def get_tags_for_article(conn: sqlite3.Connection, article_id: int) -> List[str]:
-    cursor = conn.execute("SELECT t.name FROM tags t JOIN article_tags at ON t.id = at.tag_id WHERE at.article_id = ? ORDER BY t.name", (article_id,))
+    cursor = conn.execute(
+        "SELECT t.name FROM tags t "
+        "JOIN article_tags at ON t.id = at.tag_id "
+        "WHERE at.article_id = ? ORDER BY t.name",
+        (article_id,)
+    )
     return [row['name'] for row in cursor.fetchall()]
 
 def _update_tags_for_article_blocking(article_id: int, new_tags_str: str):
@@ -356,22 +477,40 @@ def get_summary_from_llm(text_content: str, summary_style: str = "overview", max
 def get_sentiment_from_llm(text_content: str, max_length: int = 10000) -> Optional[str]:
     if not text_content: return None
     if len(text_content) > max_length: text_content = text_content[:max_length]
-    prompt = f"Analyze sentiment. Respond: Positive, Negative, or Neutral.\n\nText:\n\"\"\"\n{text_content}\n\"\"\"\n\nSentiment:"
-    payload = {"contents": [{"role": "user", "parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.2, "maxOutputTokens": 10}}
+    prompt = (f"Analyze sentiment. Respond: Positive, Negative, or Neutral.\n\n"
+              f"Text:\n\"\"\"\n{text_content}\n\"\"\"\n\nSentiment:")
+    payload = {
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+        "generationConfig": {"temperature": 0.2, "maxOutputTokens": 10}
+    }
     api_url = GEMINI_API_URL_TEMPLATE.format(api_key=GEMINI_API_KEY)
-    logger.info(f"Requesting sentiment from Gemini API.")
+    logger.info("Requesting sentiment from Gemini API.")
     try:
-        response = requests.post(api_url, json=payload, timeout=45); response.raise_for_status(); result = response.json()
-        if result.get("candidates") and result["candidates"][0]["content"]["parts"][0].get("text"):
+        response = requests.post(api_url, json=payload, timeout=45)
+        response.raise_for_status()
+        result = response.json()
+        if (result.get("candidates") and 
+                result["candidates"][0]["content"]["parts"][0].get("text")):
             s_text = result["candidates"][0]["content"]["parts"][0]["text"].strip().capitalize()
-            if s_text in ["Positive", "Negative", "Neutral"]: logger.info(f"Sentiment: {s_text}."); return s_text
-            else: logger.warning(f"LLM non-standard sentiment: '{s_text}'. Defaulting Neutral."); return "Neutral"
-        else: logger.error(f"Unexpected Gemini sentiment response: {result}")
-    except Exception as e: logger.error(f"Err calling Gemini for sentiment: {e}", exc_info=True)
+            if s_text in ["Positive", "Negative", "Neutral"]:
+                logger.info(f"Sentiment: {s_text}.")
+                return s_text
+            else:
+                logger.warning(f"LLM non-standard sentiment: '{s_text}'. "
+                             "Defaulting Neutral.")
+                return "Neutral"
+        else:
+            logger.error(f"Unexpected Gemini sentiment response: {result}")
+    except Exception as e:
+        logger.error(f"Err calling Gemini for sentiment: {e}", exc_info=True)
     return None
 
-def scrape_url_action(source_url: str, selector: str, limit: int = 0) -> tuple[int, int, str, Optional[List[int]]]:
-    logger.info(f"Scraping {source_url} with selector '{selector}', limit {limit}")
+def scrape_url_action(
+    source_url: str, selector: str, limit: int = 0
+) -> tuple[int, int, str, Optional[List[int]]]:
+    logger.info(
+        f"Scraping {source_url} with selector '{selector}', limit {limit}"
+    )
     inserted_ids: List[int] = []
     try:
         headers = {'User-Agent': 'Mozilla/5.0 WebScraperTUI/5.0'}
@@ -1246,8 +1385,8 @@ class WebScraperApp(App[None]):
             if inserted_ids and default_tags_csv:
                 logger.info(f"Applying default tags '{default_tags_csv}' to {len(inserted_ids)} new articles.")
                 def _apply_tags_blocking():
-                    with get_db_connection() as conn_blocking:
-                        for aid in inserted_ids:_update_tags_for_article_blocking(aid,default_tags_csv)
+                    for aid in inserted_ids:
+                        _update_tags_for_article_blocking(aid, default_tags_csv)
                 _apply_tags_blocking()
                 self.notify(f"Applied default tags to {len(inserted_ids)} new articles.",title="Tags Applied",severity="info")
             self.notify(f"Scrape of {url} done. New: {inserted}, Skipped: {skipped}.",title="Scrape Finished",severity="info")

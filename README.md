@@ -44,7 +44,16 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Multiple Summarization Styles**: Brief, detailed, and bullet-point summaries
 - **Sentiment Analysis**: Confidence-scored sentiment detection
 - **Async Processing**: Non-blocking AI operations to maintain UI responsiveness
+- **Optimized API Calls**: Efficient request handling and error management
 - **Configurable API Keys**: Easy setup for AI features
+
+### 🔧 Code Quality & Performance
+- **Optimized Codebase**: Comprehensive formatting and performance improvements
+- **Memory Efficiency**: Removed unused imports and optimized resource usage
+- **Enhanced Error Handling**: Robust exception management and logging
+- **Clean Architecture**: PEP 8 compliant code structure
+- **Database Optimization**: Efficient SQL queries and connection management
+- **Async Operations**: Non-blocking workers for responsive UI
 
 ### 📖 Content Management
 - **Full-text Reading**: Complete article fetching and display
@@ -154,12 +163,12 @@ All configuration is managed through the `.env` file:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `GEMINI_API_KEY` | Google Gemini API key for AI features | *(empty)* |
-| `DATABASE_PATH` | Custom database file location | `scraped_data_tui_v1.0RC.db` |
+| `DATABASE_PATH` | Custom database file location | `scraped_data_tui_v1.0.db` |
 | `LOG_FILE_PATH` | Custom log file location | `scraper_tui_v1.0.log` |
 | `LOG_LEVEL` | Logging verbosity level | `DEBUG` |
 
 ### Database Location
-The SQLite database is stored as `scraped_data_tui_v1.0RC.db` in the application directory (configurable via `.env`).
+The SQLite database is stored as `scraped_data_tui_v1.0.db` in the application directory (configurable via `.env`).
 
 ### Logging
 Logs are written to `scraper_tui_v1.0.log` with configurable levels (configurable via `.env`).
@@ -450,7 +459,16 @@ python -m pytest tests/
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
-### Recent Updates (v1.0RC-patch3)
+### Recent Updates (v1.0.1)
+- **Code Quality & Performance**: Comprehensive code optimization and formatting improvements
+- **Import Optimization**: Removed unused imports reducing memory footprint (math, json, os, etc.)
+- **Database Performance**: Enhanced SQL query formatting and connection management
+- **Logic Improvements**: Fixed unused variables and improved error handling patterns
+- **Code Readability**: Improved multi-line string formatting and parameter organization
+- **Stability Enhancements**: Better exception handling and resource management
+- **Developer Experience**: Cleaner code structure following PEP 8 standards
+
+### Previous Updates (v1.0RC-patch3)
 - **Fixed Confirmation Dialogs**: Resolved elongated blue box issue - buttons now display properly
 - **Enhanced Modal Layout**: Improved ConfirmModal CSS with proper Horizontal container sizing
 - **Better Delete Operations**: All confirmation dialogs now work correctly for delete actions

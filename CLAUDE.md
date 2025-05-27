@@ -62,15 +62,25 @@ pip install textual requests beautifulsoup4 lxml
 - Database file: `scraped_data_tui_v1.0.db`
 
 ### API Configuration
-- Gemini API key should be set in the `GEMINI_API_KEY` constant in `scrapetui.py`
-- Currently uses placeholder empty string - requires manual configuration
+- Gemini API key should be set in the `.env` file using `GEMINI_API_KEY` variable
+- Environment variables are loaded via `load_env_file()` function
+- Uses proper environment variable management for security
 
 ## Code Structure Guidelines
+
+### Code Quality Standards (Updated v1.0.1)
+- **PEP 8 Compliance**: Follow Python coding standards for readability
+- **Import Optimization**: Remove unused imports to reduce memory footprint
+- **Error Handling**: Use proper exception handling with multi-line formatting
+- **Database Connections**: Use context managers for safe resource management
+- **Multi-line Strings**: Format long strings for better readability
+- **Function Signatures**: Break long parameter lists across multiple lines
 
 ### Threading and Async Patterns
 - Use `self.run_worker()` for long-running operations
 - Background tasks use `functools.partial()` for parameter passing
 - All database operations in workers use blocking functions wrapped with `await self.run_in_thread()`
+- Avoid unused variables in database connection contexts
 
 ### Modal Screen Pattern
 - All user input uses modal screens (e.g., `ScrapeURLModal`, `ManageTagsModal`, `FilterScreen`, `ConfirmModal`)
@@ -216,6 +226,10 @@ class ConfirmModal(ModalScreen[bool]):
 - **Tag Management**: Comma-separated tagging system
 - **Improved Error Handling**: Fixed Textual API compatibility issues
 - **Robust Confirmation Dialogs**: Fixed button display issues with proper CSS layout
+- **Code Optimization (v1.0.1)**: Comprehensive formatting improvements and performance enhancements
+- **Memory Efficiency**: Removed unused imports (math, json, os, Callable, etc.)
+- **Database Performance**: Enhanced SQL query formatting and connection management
+- **Enhanced Stability**: Better exception handling and resource cleanup
 
 ## File Locations
 

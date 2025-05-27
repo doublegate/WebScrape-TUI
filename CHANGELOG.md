@@ -5,6 +5,48 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-05-26
+
+### 🔧 Code Quality & Performance Enhancement
+
+This release focuses on comprehensive code optimization, performance improvements, and maintainability enhancements.
+
+### Enhanced
+- **Code Formatting**: Comprehensive PEP 8 compliance and formatting improvements
+- **Import Optimization**: Removed unused imports reducing memory footprint:
+  - Removed: `math`, `json`, `os`, `Callable`, `CSSPathType`, `Checkbox`
+  - Removed: `ScrollableContainer`, `Container`, `Grid`, `DOMQuery`
+- **Database Performance**: Enhanced SQL query formatting and connection management
+  - Improved multi-line SQL formatting for better readability
+  - Optimized database context management
+  - Fixed unused connection variables
+- **Error Handling**: Better exception handling patterns with proper multi-line formatting
+- **String Formatting**: Improved multi-line string concatenation and f-string usage
+- **Function Signatures**: Better organization of long parameter lists
+
+### Fixed
+- **Logic Issues**: Resolved unused variable `conn_blocking` in tag application workflow
+- **Code Quality**: Fixed 1750+ formatting issues identified by flake8
+- **Long Lines**: Broke down long lines for better readability (88 character limit)
+- **Multiple Statements**: Separated multiple statements on single lines
+- **Whitespace**: Fixed missing whitespace around operators and after commas
+
+### Improved
+- **Memory Efficiency**: Reduced import overhead and optimized resource usage
+- **Code Readability**: Cleaner, more maintainable code structure
+- **Development Experience**: Better formatted code for easier maintenance
+- **Performance**: Optimized database operations and API calls
+- **Stability**: Enhanced exception handling and resource cleanup
+
+### Technical Details
+- Applied comprehensive flake8 linting with max-line-length=88
+- Optimized PREINSTALLED_SCRAPERS configuration formatting
+- Enhanced API URL template formatting for Gemini integration
+- Improved database initialization and index creation formatting
+- Better structured environment variable loading
+
+This maintenance release significantly improves code quality while maintaining 100% backward compatibility and functionality.
+
 ## [1.0] - 2025-05-26
 
 ### 🎉 Official Stable Release
