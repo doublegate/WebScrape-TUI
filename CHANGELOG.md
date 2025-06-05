@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 This release focuses on comprehensive code optimization, performance improvements, and maintainability enhancements.
 
 ### Enhanced
+
 - **Code Formatting**: Comprehensive PEP 8 compliance and formatting improvements
 - **Import Optimization**: Removed unused imports reducing memory footprint:
   - Removed: `math`, `json`, `os`, `Callable`, `CSSPathType`, `Checkbox`
@@ -25,6 +26,7 @@ This release focuses on comprehensive code optimization, performance improvement
 - **Function Signatures**: Better organization of long parameter lists
 
 ### Fixed
+
 - **Logic Issues**: Resolved unused variable `conn_blocking` in tag application workflow
 - **Code Quality**: Fixed 1750+ formatting issues identified by flake8
 - **Long Lines**: Broke down long lines for better readability (88 character limit)
@@ -32,6 +34,7 @@ This release focuses on comprehensive code optimization, performance improvement
 - **Whitespace**: Fixed missing whitespace around operators and after commas
 
 ### Improved
+
 - **Memory Efficiency**: Reduced import overhead and optimized resource usage
 - **Code Readability**: Cleaner, more maintainable code structure
 - **Development Experience**: Better formatted code for easier maintenance
@@ -39,6 +42,7 @@ This release focuses on comprehensive code optimization, performance improvement
 - **Stability**: Enhanced exception handling and resource cleanup
 
 ### Technical Details
+
 - Applied comprehensive flake8 linting with max-line-length=88
 - Optimized PREINSTALLED_SCRAPERS configuration formatting
 - Enhanced API URL template formatting for Gemini integration
@@ -54,6 +58,7 @@ This maintenance release significantly improves code quality while maintaining 1
 This marks the stable v1.0 release of WebScrape-TUI with major enhancements in user interaction and visual feedback.
 
 ### Added
+
 - **Mouse Click Support**: Full mouse click selection support for DataTable rows
   - Click any row to select/unselect (same behavior as spacebar)
   - Toggle selection: clicking selected row unselects it
@@ -68,12 +73,14 @@ This marks the stable v1.0 release of WebScrape-TUI with major enhancements in u
   - Improved consistency across selection mechanisms
 
 ### Improved
+
 - **User Experience**: Intuitive mouse support makes row selection more accessible
 - **Visual Feedback**: Clear indication of current scraper context throughout the interface
 - **Selection Consistency**: Unified behavior between mouse, keyboard, and spacebar selection
 - **Interface Clarity**: Always visible scraper profile context reduces user confusion
 
 ### Changed
+
 - **Version**: Updated from v1.0RC (Release Candidate) to v1.0 (Stable Release)
 - **File Names**: Renamed all versioned files from v1.0RC to v1.0
   - `web_scraper_tui_v1.0RC.tcss` → `web_scraper_tui_v1.0.tcss`
@@ -82,6 +89,7 @@ This marks the stable v1.0 release of WebScrape-TUI with major enhancements in u
 - **Documentation**: Updated all references from v1.0RC to v1.0 across README, CLAUDE.md, and requirements.txt
 
 ### Technical Details
+
 - Added `on_data_table_cell_selected` event handler for mouse click support
 - Enhanced `StatusBar` with reactive `scraper_profile` property
 - Updated `ScrapeURLModal` with profile context display and styling
@@ -93,12 +101,14 @@ This stable release provides a complete, polished web scraping TUI with professi
 ## [1.0RC-patch3] - 2025-05-26
 
 ### Fixed
+
 - **Confirmation Dialog Layout**: Fixed elongated blue box issue - buttons now display properly
 - **Modal Dialog CSS**: Improved ConfirmModal CSS with proper Horizontal container sizing
 - **Button Display**: Resolved button visibility issues in deletion confirmations
 - **Dialog Responsiveness**: Enhanced confirmation dialog layout with min-width and auto-height
 
 ### Enhanced
+
 - **User Experience**: Confirmation dialogs now work correctly for all delete operations
 - **Visual Consistency**: Proper button layout and spacing in confirmation modals
 - **Modal Structure**: Improved compose() method with proper context managers
@@ -106,12 +116,14 @@ This stable release provides a complete, polished web scraping TUI with professi
 ## [1.0RC-patch2] - 2025-05-26
 
 ### Fixed
+
 - **Sequential Modal Dialogs**: Resolved worker context errors in summarization workflow
 - **Row Selection Visual Feedback**: Added asterisk indicator (*ID) for selected rows
 - **Summarization Function**: Fixed push_screen_wait errors with callback-based approach
 - **Filter Screen Access**: Resolved Ctrl+F modal dialog worker context issues
 
 ### Added
+
 - **Visual Selection Indicators**: Selected rows display asterisk prefix (*ID) in ID column
 - **Spacebar Row Selection**: Manual row selection with immediate visual feedback
 - **Callback-based Modal Workflows**: Sequential dialog chains for complex interactions
@@ -119,12 +131,14 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **Real-time Table Updates**: Table refreshes after row selection to show indicators
 
 ### Changed
+
 - **Modal Dialog Pattern**: Converted from push_screen_wait to callback-based push_screen
 - **Selection Workflow**: Enhanced spacebar selection with table refresh for visual feedback
 - **Summarization Flow**: Now uses confirm dialog → style selector → worker execution chain
 - **User Feedback**: Immediate notification and visual indicators for all row selections
 
 ### Enhanced
+
 - **User Experience**: Clear visual feedback for all selection and interaction states
 - **Error Prevention**: Eliminated all worker context errors through callback patterns
 - **Navigation Clarity**: Asterisk indicators make current selection immediately visible
@@ -133,6 +147,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 ## [1.0RC-patch1] - 2025-05-26
 
 ### Fixed
+
 - **Textual API Compatibility**: Fixed DataTable.add_row() meta parameter compatibility issue
 - **Row Selection**: Implemented intelligent row selection with cursor-position fallback
 - **SQL Query Errors**: Added table aliases to prevent ambiguous column name errors in JOINs
@@ -140,6 +155,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **Database References**: Corrected all file references to use v1.0RC instead of v5
 
 ### Added
+
 - **Dedicated Filter Screen**: Ctrl+F opens comprehensive modal filter dialog
 - **Row Metadata Storage**: Custom dictionary-based metadata storage for row-specific data
 - **Enhanced Row Detection**: Fallback row selection using cursor coordinate system
@@ -148,6 +164,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **Improved Help Documentation**: Updated help text to reflect new filter workflow
 
 ### Changed
+
 - **Main Interface Layout**: Full-screen DataTable for optimal article viewing
 - **Filter Workflow**: Moved from inline filters to dedicated modal screen (Ctrl+F)
 - **CSS Styling**: Simplified main screen CSS, removed filter container styles
@@ -155,6 +172,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **Keybindings**: Added Ctrl+F for filters, Enter for details
 
 ### Enhanced
+
 - **User Experience**: Clean main interface with dedicated filter workflow
 - **Navigation**: Improved keyboard navigation with proper row selection
 - **Error Handling**: Better error handling for DataTable operations
@@ -163,6 +181,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 ## [1.0RC] - 2024-12-XX
 
 ### Added
+
 - **Professional Version Management**: Updated from v5 to v1.0RC (Release Candidate)
 - **Startup/Shutdown Banners**: Beautiful ASCII art banners for application start and exit
 - **Comprehensive Documentation**: Detailed Python script preamble with technical specifications
@@ -174,6 +193,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **Professional Naming Convention**: Consistent v1.0RC naming across all files and references
 
 ### Changed
+
 - **Database File**: Renamed from `scraped_data_tui_v5.db` to `scraped_data_tui_v1.0RC.db`
 - **CSS File**: Renamed from `web_scraper_tui_v5.tcss` to `web_scraper_tui_v1.0RC.tcss`
 - **Log File**: Renamed from `scraper_tui_v5.log` to `scraper_tui_v1.0RC.log`
@@ -182,6 +202,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **Application Exit**: Graceful shutdown with farewell banner display
 
 ### Enhanced
+
 - **Code Documentation**: Added comprehensive docstring header with:
   - Detailed purpose and feature descriptions
   - Technical implementation overview
@@ -197,6 +218,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 ## [0.5] - Previous Development Phase
 
 ### Features Implemented in Previous Versions
+
 - **Core TUI Framework**: Built with Textual for modern terminal interface
 - **Web Scraping Engine**: BeautifulSoup4-powered HTML content extraction
 - **Database Management**: SQLite database with normalized schema
@@ -214,6 +236,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **Background Processing**: Async workers for non-blocking operations
 
 ### Technical Architecture
+
 - **Async/Await Pattern**: Non-blocking operations for UI responsiveness
 - **Worker Pattern**: Background task management
 - **Modal Screen Pattern**: Structured user interaction flow
@@ -226,6 +249,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 ## Upcoming Releases
 
 ### [1.0] - Stable Release (Planned)
+
 - **Performance Optimizations**: Enhanced memory management and faster operations
 - **Bug Fixes**: Resolution of any issues found during RC testing
 - **Documentation Polish**: Final documentation refinements
@@ -233,6 +257,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **User Feedback Integration**: Community-driven improvements
 
 ### [1.1] - Feature Enhancement (Planned)
+
 - **Enhanced Scraper Profiles**: Additional pre-configured website scrapers
 - **Advanced Filtering**: More sophisticated search and filter capabilities
 - **Bulk Operations**: Multi-select functionality for batch operations
@@ -240,6 +265,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **Configuration Management**: YAML/JSON configuration file support
 
 ### [1.2] - AI Enhancement (Planned)
+
 - **Multiple AI Providers**: OpenAI, Anthropic Claude integration
 - **Custom Summarization**: User-defined summarization styles
 - **Content Classification**: Automatic article categorization
@@ -247,6 +273,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 - **AI Model Selection**: Choose between different AI models
 
 ### [2.0] - Major Feature Release (Future)
+
 - **Plugin System**: Extensible architecture for custom processors
 - **Scheduled Scraping**: Automated scraping with cron-like scheduling
 - **Data Visualization**: Charts and graphs for data analysis
@@ -261,6 +288,7 @@ This stable release provides a complete, polished web scraping TUI with professi
 ### From v5 to v1.0RC
 
 #### File Changes
+
 ```bash
 # Old files (v5)
 scraped_data_tui_v5.db
@@ -274,6 +302,7 @@ scraper_tui_v1.0RC.log
 ```
 
 #### Automatic Migration
+
 - Files are automatically renamed when upgrading
 - Database schema remains compatible
 - No data loss during version transition
@@ -281,12 +310,14 @@ scraper_tui_v1.0RC.log
 - Log history is maintained
 
 #### Configuration Updates
+
 - No configuration changes required
 - All existing scrapers and data are preserved
 - API keys remain in the same location
 - User preferences are maintained
 
 ### Breaking Changes
+
 - **None**: v1.0RC maintains full backward compatibility with v5
 - **File Names**: Only cosmetic file name changes, no functional impact
 - **API Compatibility**: All existing integrations continue to work
@@ -296,12 +327,14 @@ scraper_tui_v1.0RC.log
 ## Development Process
 
 ### Version Numbering
+
 - **v1.0RC**: Release Candidate - Feature complete, testing phase
 - **v1.0**: Stable Release - Production ready
 - **v1.x**: Minor releases - New features, backward compatible
 - **v2.x**: Major releases - Significant changes, possible breaking changes
 
 ### Release Cycle
+
 1. **Development**: Feature development and bug fixes
 2. **Testing**: Internal testing and quality assurance
 3. **Release Candidate**: Community testing and feedback
@@ -309,6 +342,7 @@ scraper_tui_v1.0RC.log
 5. **Maintenance**: Bug fixes and security updates
 
 ### Community Involvement
+
 - **Issue Reporting**: GitHub Issues for bug reports and feature requests
 - **Pull Requests**: Community contributions and improvements
 - **Discussions**: GitHub Discussions for community interaction
@@ -319,13 +353,16 @@ scraper_tui_v1.0RC.log
 ## Security Updates
 
 ### Security Practices
+
 - **Dependency Updates**: Regular security updates for all dependencies
 - **Code Review**: All changes undergo security review
 - **Vulnerability Scanning**: Automated security vulnerability detection
 - **Secure Defaults**: Secure configuration out of the box
 
 ### Reporting Security Issues
+
 For security vulnerabilities, please email: security@webscrape-tui.com
+
 - Do not report security issues in public GitHub issues
 - We will respond within 24 hours
 - Security patches will be prioritized
@@ -335,11 +372,14 @@ For security vulnerabilities, please email: security@webscrape-tui.com
 ## Contributors
 
 ### Core Team
+
 - **Development Team**: WebScrape-TUI Core Contributors
 - **Community**: GitHub contributors and issue reporters
 
 ### Recognition
+
 We thank all contributors who have helped make WebScrape-TUI better:
+
 - Bug reporters and testers
 - Feature suggestion providers
 - Documentation writers
@@ -347,6 +387,7 @@ We thank all contributors who have helped make WebScrape-TUI better:
 - Community supporters
 
 ### Contributing
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute to this project.
 
 ---

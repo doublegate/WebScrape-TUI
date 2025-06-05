@@ -11,6 +11,7 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 ## 🚀 Features
 
 ### 🖥️ Interactive Terminal Interface
+
 - **Modern TUI**: Built with Textual framework for responsive terminal-based interaction
 - **Clean Main Interface**: Full-screen DataTable for optimal article viewing and navigation
 - **Dedicated Filter Screen**: Ctrl+F opens comprehensive filter modal dialog
@@ -22,6 +23,7 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Keyboard Navigation**: Full keyboard support with intuitive shortcuts
 
 ### 🌐 Advanced Web Scraping
+
 - **Pre-configured Profiles**: 10+ built-in scraper profiles for popular websites
 - **Custom Scrapers**: Create your own scraper profiles with URL patterns and CSS selectors
 - **Robust Parsing**: BeautifulSoup4-powered HTML parsing with error handling
@@ -29,6 +31,7 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Retry Mechanisms**: Automatic retry logic for failed requests
 
 ### 🗄️ Data Management
+
 - **SQLite Database**: Persistent storage with normalized schema design
 - **Advanced Filtering**: Dedicated filter screen (Ctrl+F) with multi-field filtering
 - **Visual Row Selection**: Spacebar and mouse click selection with asterisk indicators and cursor navigation
@@ -40,6 +43,7 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Transaction Safety**: Context managers ensure data integrity
 
 ### 🤖 AI Integration
+
 - **Google Gemini API**: State-of-the-art AI for content analysis
 - **Multiple Summarization Styles**: Brief, detailed, and bullet-point summaries
 - **Sentiment Analysis**: Confidence-scored sentiment detection
@@ -48,6 +52,7 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Configurable API Keys**: Easy setup for AI features
 
 ### 🔧 Code Quality & Performance
+
 - **Optimized Codebase**: Comprehensive formatting and performance improvements
 - **Memory Efficiency**: Removed unused imports and optimized resource usage
 - **Enhanced Error Handling**: Robust exception management and logging
@@ -56,6 +61,7 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Async Operations**: Non-blocking workers for responsive UI
 
 ### 📖 Content Management
+
 - **Full-text Reading**: Complete article fetching and display
 - **Markdown Rendering**: Enhanced readability with formatted text
 - **Article Preview**: Quick preview before full content view
@@ -79,11 +85,13 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 ## 🛠️ Installation
 
 ### Prerequisites
+
 - **Python 3.8+** (Python 3.9+ recommended)
 - **Terminal with Unicode support** for proper display
 - **Internet connection** for web scraping
 
 ### Method 1: Clone and Install
+
 ```bash
 # Clone the repository
 git clone https://github.com/doublegate/WebScrape-TUI.git
@@ -97,6 +105,7 @@ python scrapetui.py
 ```
 
 ### Method 2: Manual Dependencies
+
 ```bash
 # Install required packages individually
 pip install textual requests beautifulsoup4 lxml
@@ -106,6 +115,7 @@ python scrapetui.py
 ```
 
 ### Dependencies
+
 - **textual** (>=0.38.0) - Modern Python TUI framework
 - **requests** (>=2.28.0) - HTTP library for web requests
 - **beautifulsoup4** (>=4.11.0) - HTML parsing library
@@ -137,6 +147,7 @@ python scrapetui.py
 ## ⚙️ Configuration
 
 ### API Keys Setup
+
 For AI features, configure your Google Gemini API key using environment variables:
 
 1. **Copy the environment template:**
@@ -158,22 +169,26 @@ For AI features, configure your Google Gemini API key using environment variable
 **Important:** The `.env` file is automatically ignored by Git to keep your API keys secure.
 
 ### Environment Configuration
+
 All configuration is managed through the `.env` file:
 
 | Variable | Description | Default |
-|----------|-------------|---------|
+|:---------|:------------|:--------|
 | `GEMINI_API_KEY` | Google Gemini API key for AI features | *(empty)* |
 | `DATABASE_PATH` | Custom database file location | `scraped_data_tui_v1.0.db` |
 | `LOG_FILE_PATH` | Custom log file location | `scraper_tui_v1.0.log` |
 | `LOG_LEVEL` | Logging verbosity level | `DEBUG` |
 
 ### Database Location
+
 The SQLite database is stored as `scraped_data_tui_v1.0.db` in the application directory (configurable via `.env`).
 
 ### Logging
+
 Logs are written to `scraper_tui_v1.0.log` with configurable levels (configurable via `.env`).
 
 ### Styling
+
 Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 
 ## 📖 Usage Guide
@@ -242,7 +257,7 @@ Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 ### Pre-installed Scraper Profiles
 
 | Website | Profile Name | Description |
-|---------|--------------|-------------|
+|:--------|:-------------|:------------|
 | Hacker News | HN Front Page | Latest technology news and discussions |
 | Reddit | Reddit Hot Posts | Trending posts from various subreddits |
 | Medium | Medium Latest | Recent articles from Medium platform |
@@ -257,6 +272,7 @@ Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 ### Custom Scraper Creation
 
 Create powerful custom scrapers with:
+
 - **URL Patterns**: Support for wildcards and regex
 - **CSS Selectors**: Target specific page elements
 - **Default Limits**: Set standard article counts
@@ -310,8 +326,9 @@ CREATE TABLE saved_scrapers (
 ## ⌨️ Keyboard Shortcuts & Mouse Support
 
 ### Global Shortcuts
+
 | Key | Action |
-|-----|--------|
+|:----|:-------|
 | `q` | Quit application |
 | `h` | Show help dialog |
 | `Ctrl+N` | New scrape dialog |
@@ -322,8 +339,9 @@ CREATE TABLE saved_scrapers (
 | `R` | Refresh data |
 
 ### Navigation & Selection
+
 | Input | Action |
-|-------|--------|
+|:------|:-------|
 | `↑/↓` | Navigate table rows |
 | `Space` | Select/unselect current row (shows *ID indicator) |
 | `Mouse Click` | Select/unselect clicked row (same as Space) |
@@ -333,8 +351,9 @@ CREATE TABLE saved_scrapers (
 | `Esc` | Close dialog/Cancel |
 
 ### Data Management
+
 | Key | Action |
-|-----|--------|
+|:----|:-------|
 | `s` | Summarize selected article |
 | `Ctrl+K` | Sentiment analysis for selected |
 | `Ctrl+R` | Read full article content |
@@ -347,6 +366,7 @@ CREATE TABLE saved_scrapers (
 ### Common Issues
 
 **1. Application won't start**
+
 ```bash
 # Check Python version
 python --version  # Should be 3.8+
@@ -359,12 +379,14 @@ echo $TERM  # Should support Unicode
 ```
 
 **2. Scraping fails**
+
 - Verify URL accessibility in browser
 - Check CSS selector validity
 - Review website's robots.txt
 - Ensure stable internet connection
 
 **3. AI features not working**
+
 - Verify Gemini API key is set in `.env` file
 - Ensure `.env` file exists (copy from `.env.example`)
 - Check API quota and billing in Google AI Studio
@@ -372,12 +394,14 @@ echo $TERM  # Should support Unicode
 - Validate API key permissions
 
 **4. Database errors**
+
 - Check file permissions in application directory
 - Ensure sufficient disk space
 - Verify SQLite is available
 - Review log files for specifics
 
 **5. Display issues**
+
 - Use terminal with Unicode support
 - Increase terminal size (minimum 80x24)
 - Check color support
@@ -386,12 +410,14 @@ echo $TERM  # Should support Unicode
 ### Performance Optimization
 
 **For large datasets:**
+
 - Use filters to limit displayed data
 - Regular database maintenance
 - Export and archive old data
 - Optimize CSS selectors
 
 **For slow scraping:**
+
 - Reduce concurrent requests
 - Implement delays between requests
 - Use more specific selectors
@@ -400,12 +426,14 @@ echo $TERM  # Should support Unicode
 ### Debugging
 
 Enable detailed logging:
+
 ```python
 # In scrapetui.py, modify logging level
 logging.basicConfig(level="DEBUG")
 ```
 
 Log locations:
+
 - **Main log**: `scraper_tui_v1.0.log`
 - **Database**: Check for `.db-journal` files
 - **Application errors**: Console output
