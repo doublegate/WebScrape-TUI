@@ -5,6 +5,36 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.5] - 2025-10-01
+
+### 🔧 Bugfix Release: CI/CD Test Fixes
+
+This release fixes GitHub Actions workflow failures by correcting database test fixtures and schema references.
+
+### Fixed
+
+- **Database Test Fixtures**
+  - Fixed `initialized_db` fixture to correctly monkeypatch `DB_PATH` instead of `DATABASE_PATH`
+  - Added monkeypatch to `test_database_file_created` test
+  - All 14 database initialization tests now pass successfully
+
+- **Database Schema Test Updates**
+  - Corrected field references from `content` to `link` in article tests
+  - Updated summary field references from `summary_brief`/`summary_detailed` to `summary`/`sentiment`
+  - Fixed URL field assertions to match actual schema (`url` + `link` instead of combined `url`)
+  - Updated duplicate constraint test to reflect UNIQUE constraint on `link` field
+
+- **Scraper Profile Tests**
+  - Fixed `test_list_all_scrapers` to filter out pre-installed scrapers (`is_preinstalled = 0`)
+  - Tests now correctly handle 24 built-in scraper profiles
+
+### Technical Details
+
+- All 97 tests now pass successfully (14 database, 9 AI providers, 12 bulk operations, 14 JSON export, 20 scraping, 26 utils, 2 basic)
+- GitHub Actions CI/CD pipeline should now complete successfully
+- No functional changes to application code
+- Test improvements ensure better coverage and reliability
+
 ## [1.3.0] - 2025-10-01
 
 ### 🚀 Major Feature Release: Multi-Provider AI & Advanced Filtering

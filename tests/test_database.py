@@ -27,8 +27,8 @@ def initialized_db(temp_db_path, monkeypatch):
     sys.path.insert(0, str(Path(__file__).parent.parent))
     import scrapetui
 
-    # Use monkeypatch to override DATABASE_PATH
-    monkeypatch.setattr(scrapetui, 'DATABASE_PATH', temp_db_path)
+    # Use monkeypatch to override DB_PATH (not DATABASE_PATH)
+    monkeypatch.setattr(scrapetui, 'DB_PATH', temp_db_path)
 
     # Initialize database with the patched path
     scrapetui.init_db()
@@ -39,12 +39,14 @@ def initialized_db(temp_db_path, monkeypatch):
 class TestDatabaseInitialization:
     """Test database initialization and schema creation."""
 
-    def test_database_file_created(self, temp_db_path):
+    def test_database_file_created(self, temp_db_path, monkeypatch):
         """Test that database file is created."""
         import sys
         sys.path.insert(0, str(Path(__file__).parent.parent))
         import scrapetui
-        scrapetui.DATABASE_PATH = temp_db_path
+
+        # Use monkeypatch to override DB_PATH
+        monkeypatch.setattr(scrapetui, 'DB_PATH', temp_db_path)
 
         from scrapetui import init_db
         assert init_db() is True
@@ -110,10 +112,10 @@ class TestArticleOperations:
             conn.row_factory = sqlite3.Row
             cursor = conn.execute(
                 """
-                INSERT INTO scraped_data (url, title, content)
+                INSERT INTO scraped_data (url, title, link)
                 VALUES (?, ?, ?)
                 """,
-                ('https://example.com/test', 'Test Article', 'Test content')
+                ('https://example.com', 'Test Article', 'https://example.com/test')
             )
             conn.commit()
             article_id = cursor.lastrowid
@@ -126,28 +128,29 @@ class TestArticleOperations:
             article = cursor.fetchone()
             assert article is not None
             assert article['title'] == 'Test Article'
-            assert article['url'] == 'https://example.com/test'
+            assert article['url'] == 'https://example.com'
+            assert article['link'] == 'https://example.com/test'
 
     def test_duplicate_url_constraint(self, initialized_db):
-        """Test that duplicate URLs are prevented by UNIQUE constraint."""
+        """Test that duplicate link URLs are prevented by UNIQUE constraint."""
         with sqlite3.connect(initialized_db) as conn:
             conn.execute(
                 """
-                INSERT INTO scraped_data (url, title, content)
+                INSERT INTO scraped_data (url, title, link)
                 VALUES (?, ?, ?)
                 """,
-                ('https://example.com/test', 'Test 1', 'Content 1')
+                ('https://example.com', 'Test 1', 'https://example.com/test')
             )
             conn.commit()
 
-            # Attempt to insert duplicate URL
+            # Attempt to insert duplicate link - should fail
             with pytest.raises(sqlite3.IntegrityError):
                 conn.execute(
                     """
-                    INSERT INTO scraped_data (url, title, content)
+                    INSERT INTO scraped_data (url, title, link)
                     VALUES (?, ?, ?)
                     """,
-                    ('https://example.com/test', 'Test 2', 'Content 2')
+                    ('https://example.com', 'Test 2', 'https://example.com/test')
                 )
                 conn.commit()
 
@@ -159,22 +162,22 @@ class TestArticleOperations:
             # Insert article
             cursor = conn.execute(
                 """
-                INSERT INTO scraped_data (url, title, content)
+                INSERT INTO scraped_data (url, title, link)
                 VALUES (?, ?, ?)
                 """,
-                ('https://example.com/test', 'Test Article', 'Test content')
+                ('https://example.com', 'Test Article', 'https://example.com/test')
             )
             conn.commit()
             article_id = cursor.lastrowid
 
-            # Update with summary
+            # Update with summary and sentiment
             conn.execute(
                 """
                 UPDATE scraped_data
-                SET summary_brief = ?, summary_detailed = ?
+                SET summary = ?, sentiment = ?
                 WHERE id = ?
                 """,
-                ('Brief summary', 'Detailed summary here', article_id)
+                ('Test summary', 'Positive', article_id)
             )
             conn.commit()
 
@@ -184,8 +187,8 @@ class TestArticleOperations:
                 (article_id,)
             )
             article = cursor.fetchone()
-            assert article['summary_brief'] == 'Brief summary'
-            assert article['summary_detailed'] == 'Detailed summary here'
+            assert article['summary'] == 'Test summary'
+            assert article['sentiment'] == 'Positive'
 
 
 class TestTagOperations:
@@ -219,10 +222,10 @@ class TestTagOperations:
             # Create article
             cursor = conn.execute(
                 """
-                INSERT INTO scraped_data (url, title, content)
+                INSERT INTO scraped_data (url, title, link)
                 VALUES (?, ?, ?)
                 """,
-                ('https://example.com/test', 'Test', 'Content')
+                ('https://example.com', 'Test', 'https://example.com/test')
             )
             article_id = cursor.lastrowid
 
@@ -264,19 +267,19 @@ class TestTagOperations:
             # Create articles
             cursor = conn.execute(
                 """
-                INSERT INTO scraped_data (url, title, content)
+                INSERT INTO scraped_data (url, title, link)
                 VALUES (?, ?, ?)
                 """,
-                ('https://example.com/python1', 'Python Article', 'Content')
+                ('https://example.com', 'Python Article', 'https://example.com/python1')
             )
             python_article_id = cursor.lastrowid
 
             cursor = conn.execute(
                 """
-                INSERT INTO scraped_data (url, title, content)
+                INSERT INTO scraped_data (url, title, link)
                 VALUES (?, ?, ?)
                 """,
-                ('https://example.com/rust1', 'Rust Article', 'Content')
+                ('https://example.com', 'Rust Article', 'https://example.com/rust1')
             )
             rust_article_id = cursor.lastrowid
 
@@ -383,9 +386,9 @@ class TestScraperProfiles:
                 )
             conn.commit()
 
-            # Retrieve all scrapers
+            # Retrieve only our test scrapers (not pre-installed ones)
             cursor = conn.execute(
-                "SELECT * FROM saved_scrapers ORDER BY name"
+                "SELECT * FROM saved_scrapers WHERE is_preinstalled = 0 ORDER BY name"
             )
             scrapers = cursor.fetchall()
             assert len(scrapers) == 3
