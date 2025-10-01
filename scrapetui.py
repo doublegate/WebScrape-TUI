@@ -105,6 +105,7 @@ from urllib.parse import urljoin, quote_plus
 import logging
 import csv
 import json
+import yaml
 import re
 from datetime import datetime
 from pathlib import Path
@@ -587,12 +588,33 @@ def init_db():
                     name TEXT NOT NULL UNIQUE,
                     title_filter TEXT,
                     url_filter TEXT,
-                    date_filter TEXT,
+                    date_from TEXT,
+                    date_to TEXT,
                     tags_filter TEXT,
                     sentiment_filter TEXT,
+                    use_regex INTEGER DEFAULT 0,
+                    tags_logic TEXT DEFAULT 'AND',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+
+            # Migrate old filter_presets if date_filter column exists
+            try:
+                conn.execute("ALTER TABLE filter_presets ADD COLUMN date_from TEXT")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                conn.execute("ALTER TABLE filter_presets ADD COLUMN date_to TEXT")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                conn.execute("ALTER TABLE filter_presets ADD COLUMN use_regex INTEGER DEFAULT 0")
+            except sqlite3.OperationalError:
+                pass
+            try:
+                conn.execute("ALTER TABLE filter_presets ADD COLUMN tags_logic TEXT DEFAULT 'AND'")
+            except sqlite3.OperationalError:
+                pass
 
             index_statements = [
                 "CREATE UNIQUE INDEX IF NOT EXISTS idx_link_unique "
@@ -1131,6 +1153,190 @@ class TemplateManager:
         result = result.replace("{url}", url)
         result = result.replace("{date}", date)
         return result
+
+
+class ConfigManager:
+    """Manages application configuration with YAML/JSON persistence."""
+
+    DEFAULT_CONFIG = {
+        'ai': {
+            'default_provider': 'gemini',
+            'default_model': None,
+        },
+        'export': {
+            'default_format': 'csv',
+            'output_directory': '.',
+        },
+        'ui': {
+            'theme': 'default',
+            'table_columns': ['ID', 'Title', 'URL', 'Link', 'Timestamp', 'Summary', 'Sentiment', 'Tags'],
+        },
+        'database': {
+            'auto_vacuum': False,
+            'backup_on_exit': False,
+        },
+        'logging': {
+            'level': 'INFO',
+            'max_file_size_mb': 10,
+        }
+    }
+
+    CONFIG_PATH = Path('config.yaml')
+
+    @classmethod
+    def load_config(cls) -> Dict[str, Any]:
+        """Load configuration from YAML file or create default."""
+        if cls.CONFIG_PATH.exists():
+            try:
+                with open(cls.CONFIG_PATH, 'r', encoding='utf-8') as f:
+                    config = yaml.safe_load(f) or {}
+                    # Merge with defaults for any missing keys
+                    return cls._merge_config(cls.DEFAULT_CONFIG.copy(), config)
+            except Exception as e:
+                logger.error(f"Failed to load config: {e}")
+                return cls.DEFAULT_CONFIG.copy()
+        else:
+            # Create default config file
+            cls.save_config(cls.DEFAULT_CONFIG)
+            return cls.DEFAULT_CONFIG.copy()
+
+    @classmethod
+    def save_config(cls, config: Dict[str, Any]) -> bool:
+        """Save configuration to YAML file."""
+        try:
+            with open(cls.CONFIG_PATH, 'w', encoding='utf-8') as f:
+                yaml.safe_dump(config, f, default_flow_style=False, sort_keys=False)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to save config: {e}")
+            return False
+
+    @classmethod
+    def save_as_json(cls, config: Dict[str, Any], path: Path) -> bool:
+        """Save configuration as JSON (alternative format)."""
+        try:
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(config, f, indent=2)
+            return True
+        except Exception as e:
+            logger.error(f"Failed to save JSON config: {e}")
+            return False
+
+    @classmethod
+    def _merge_config(cls, base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+        """Deep merge override config into base config."""
+        result = base.copy()
+        for key, value in override.items():
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                result[key] = cls._merge_config(result[key], value)
+            else:
+                result[key] = value
+        return result
+
+
+class FilterPresetManager:
+    """Manages filter presets with database persistence."""
+
+    @staticmethod
+    def save_preset(name: str, title_filter: str, url_filter: str, date_from: str,
+                   date_to: str, tags_filter: str, sentiment_filter: str,
+                   use_regex: bool, tags_logic: str) -> bool:
+        """Save a new filter preset or update existing."""
+        try:
+            with get_db_connection() as conn:
+                # Check if preset exists
+                cursor = conn.execute(
+                    "SELECT id FROM filter_presets WHERE name = ?",
+                    (name,)
+                )
+                existing = cursor.fetchone()
+
+                if existing:
+                    # Update existing preset
+                    conn.execute(
+                        """
+                        UPDATE filter_presets
+                        SET title_filter = ?, url_filter = ?, date_from = ?,
+                            date_to = ?, tags_filter = ?, sentiment_filter = ?,
+                            use_regex = ?, tags_logic = ?
+                        WHERE name = ?
+                        """,
+                        (title_filter, url_filter, date_from, date_to,
+                         tags_filter, sentiment_filter, int(use_regex), tags_logic, name)
+                    )
+                else:
+                    # Insert new preset
+                    conn.execute(
+                        """
+                        INSERT INTO filter_presets
+                        (name, title_filter, url_filter, date_from, date_to,
+                         tags_filter, sentiment_filter, use_regex, tags_logic)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (name, title_filter, url_filter, date_from, date_to,
+                         tags_filter, sentiment_filter, int(use_regex), tags_logic)
+                    )
+                conn.commit()
+                return True
+        except Exception as e:
+            logger.error(f"Error saving filter preset: {e}")
+            return False
+
+    @staticmethod
+    def load_preset(name: str) -> Optional[Dict[str, Any]]:
+        """Load a filter preset by name."""
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.execute(
+                    """
+                    SELECT title_filter, url_filter, date_from, date_to,
+                           tags_filter, sentiment_filter, use_regex, tags_logic
+                    FROM filter_presets
+                    WHERE name = ?
+                    """,
+                    (name,)
+                )
+                row = cursor.fetchone()
+                if row:
+                    return {
+                        'title_filter': row['title_filter'] or '',
+                        'url_filter': row['url_filter'] or '',
+                        'date_from': row['date_from'] or '',
+                        'date_to': row['date_to'] or '',
+                        'tags_filter': row['tags_filter'] or '',
+                        'sentiment_filter': row['sentiment_filter'] or '',
+                        'use_regex': bool(row['use_regex']),
+                        'tags_logic': row['tags_logic'] or 'AND'
+                    }
+                return None
+        except Exception as e:
+            logger.error(f"Error loading filter preset: {e}")
+            return None
+
+    @staticmethod
+    def list_presets() -> List[str]:
+        """List all available filter preset names."""
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.execute(
+                    "SELECT name FROM filter_presets ORDER BY created_at DESC"
+                )
+                return [row['name'] for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"Error listing filter presets: {e}")
+            return []
+
+    @staticmethod
+    def delete_preset(name: str) -> bool:
+        """Delete a filter preset."""
+        try:
+            with get_db_connection() as conn:
+                conn.execute("DELETE FROM filter_presets WHERE name = ?", (name,))
+                conn.commit()
+                return True
+        except Exception as e:
+            logger.error(f"Error deleting filter preset: {e}")
+            return False
 
 
 # Legacy function wrappers for backward compatibility
@@ -2086,6 +2292,246 @@ class FilterScreen(ModalScreen[bool]):
         self.dismiss(False)
 
 
+class FilterPresetModal(ModalScreen[Optional[str]]):
+    """Modal for managing filter presets."""
+
+    DEFAULT_CSS = """
+    FilterPresetModal > Vertical {
+        width: 70;
+        height: auto;
+        max-height: 80%;
+        padding: 2;
+        border: thick $primary-lighten-1;
+        background: $panel;
+    }
+    FilterPresetModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    FilterPresetModal ListView {
+        height: 15;
+        border: solid $primary;
+        margin-bottom: 1;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Filter Presets (Ctrl+Shift+F)", classes="dialog-title")
+            yield Label("Select a preset to load:")
+
+            # List of presets
+            presets = FilterPresetManager.list_presets()
+            with ListView(id="preset_list"):
+                if not presets:
+                    yield ListItem(Label("(No saved presets)"))
+                else:
+                    for preset_name in presets:
+                        yield ListItem(Label(preset_name))
+
+            with Horizontal(classes="modal-buttons"):
+                yield Button("Load", variant="primary", id="load_btn")
+                yield Button("Delete", variant="error", id="delete_btn")
+                yield Button("Cancel", id="cancel_btn")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "load_btn":
+            list_view = self.query_one("#preset_list", ListView)
+            if list_view.index is not None and list_view.index >= 0:
+                try:
+                    item = list(list_view.children)[list_view.index]
+                    label = item.query_one(Label)
+                    preset_name = label.renderable
+                    if preset_name != "(No saved presets)":
+                        self.dismiss(preset_name)
+                        return
+                except:
+                    pass
+            self.app.notify("Please select a preset", severity="warning")
+        elif event.button.id == "delete_btn":
+            list_view = self.query_one("#preset_list", ListView)
+            if list_view.index is not None and list_view.index >= 0:
+                try:
+                    item = list(list_view.children)[list_view.index]
+                    label = item.query_one(Label)
+                    preset_name = label.renderable
+                    if preset_name != "(No saved presets)":
+                        if FilterPresetManager.delete_preset(preset_name):
+                            self.app.notify(f"Deleted preset: {preset_name}", severity="information")
+                            # Refresh list
+                            list_view.clear()
+                            presets = FilterPresetManager.list_presets()
+                            if not presets:
+                                list_view.append(ListItem(Label("(No saved presets)")))
+                            else:
+                                for pn in presets:
+                                    list_view.append(ListItem(Label(pn)))
+                        else:
+                            self.app.notify("Failed to delete preset", severity="error")
+                        return
+                except:
+                    pass
+            self.app.notify("Please select a preset", severity="warning")
+        else:  # cancel_btn
+            self.dismiss(None)
+
+
+class SavePresetModal(ModalScreen[Optional[str]]):
+    """Modal for saving current filters as a preset."""
+
+    DEFAULT_CSS = """
+    SavePresetModal > Vertical {
+        width: 50;
+        height: auto;
+        padding: 2;
+        border: thick $primary-lighten-1;
+        background: $panel;
+    }
+    SavePresetModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Save Filter Preset", classes="dialog-title")
+            yield Label("Enter preset name:")
+            yield Input(placeholder="Preset name...", id="preset_name_input")
+            with Horizontal(classes="modal-buttons"):
+                yield Button("Save", variant="primary", id="save_btn")
+                yield Button("Cancel", id="cancel_btn")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "save_btn":
+            name_input = self.query_one("#preset_name_input", Input)
+            name = name_input.value.strip()
+            if name:
+                self.dismiss(name)
+            else:
+                self.app.notify("Please enter a preset name", severity="warning")
+        else:
+            self.dismiss(None)
+
+
+class SettingsModal(ModalScreen[bool]):
+    """Modal for application settings."""
+
+    DEFAULT_CSS = """
+    SettingsModal > VerticalScroll {
+        width: 70;
+        height: auto;
+        max-height: 80%;
+        padding: 2;
+        border: thick $primary-lighten-1;
+        background: $panel;
+    }
+    SettingsModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    SettingsModal Label {
+        margin-bottom: 1;
+    }
+    """
+
+    def __init__(self, config: Dict[str, Any]):
+        super().__init__()
+        self.config = config
+        self.modified = False
+
+    def compose(self) -> ComposeResult:
+        with VerticalScroll():
+            yield Label("Application Settings (Ctrl+,)", classes="dialog-title")
+
+            yield Label("\n=== AI Configuration ===")
+            yield Label("Default AI Provider:")
+            with RadioSet(id="ai_provider_radio"):
+                providers = ['gemini', 'openai', 'claude']
+                current = self.config.get('ai', {}).get('default_provider', 'gemini')
+                for provider in providers:
+                    yield RadioButton(
+                        provider.capitalize(),
+                        value=(provider == current),
+                        id=f"provider_{provider}"
+                    )
+
+            yield Label("\n=== Export Configuration ===")
+            yield Label("Default Export Format:")
+            with RadioSet(id="export_format_radio"):
+                formats = ['csv', 'json']
+                current_format = self.config.get('export', {}).get('default_format', 'csv')
+                for fmt in formats:
+                    yield RadioButton(
+                        fmt.upper(),
+                        value=(fmt == current_format),
+                        id=f"format_{fmt}"
+                    )
+
+            yield Label("Export Output Directory:")
+            yield Input(
+                value=self.config.get('export', {}).get('output_directory', '.'),
+                placeholder="Output directory...",
+                id="output_dir_input"
+            )
+
+            yield Label("\n=== Database Configuration ===")
+            yield Checkbox(
+                "Auto-vacuum database on startup",
+                value=self.config.get('database', {}).get('auto_vacuum', False),
+                id="auto_vacuum_check"
+            )
+            yield Checkbox(
+                "Backup database on exit",
+                value=self.config.get('database', {}).get('backup_on_exit', False),
+                id="backup_check"
+            )
+
+            with Horizontal(classes="modal-buttons"):
+                yield Button("Save", variant="primary", id="save_settings_btn")
+                yield Button("Cancel", id="cancel_settings_btn")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "save_settings_btn":
+            # Update config from UI
+            # AI provider
+            for provider in ['gemini', 'openai', 'claude']:
+                radio = self.query_one(f"#provider_{provider}", RadioButton)
+                if radio.value:
+                    self.config['ai']['default_provider'] = provider
+                    break
+
+            # Export format
+            for fmt in ['csv', 'json']:
+                radio = self.query_one(f"#format_{fmt}", RadioButton)
+                if radio.value:
+                    self.config['export']['default_format'] = fmt
+                    break
+
+            # Output directory
+            output_dir = self.query_one("#output_dir_input", Input).value
+            self.config['export']['output_directory'] = output_dir
+
+            # Database options
+            self.config['database']['auto_vacuum'] = self.query_one("#auto_vacuum_check", Checkbox).value
+            self.config['database']['backup_on_exit'] = self.query_one("#backup_check", Checkbox).value
+
+            # Save config
+            if ConfigManager.save_config(self.config):
+                self.app.notify("Settings saved successfully", severity="information")
+                self.dismiss(True)
+            else:
+                self.app.notify("Failed to save settings", severity="error")
+        else:
+            self.dismiss(False)
+
+
 class HelpModal(ModalScreen):
     DEFAULT_CSS = """
     HelpModal {
@@ -2203,6 +2649,9 @@ class WebScraperApp(App[None]):
         Binding("ctrl+d", "deselect_all", "Deselect All"),
         Binding("ctrl+shift+d", "bulk_delete", "Bulk Delete"),
         Binding("ctrl+p", "select_ai_provider", "AI Provider"),
+        Binding("ctrl+comma", "open_settings", "Settings"),
+        Binding("ctrl+shift+f", "manage_filter_presets", "Filter Presets"),
+        Binding("ctrl+shift+s", "save_filter_preset", "Save Preset"),
         Binding("f1,ctrl+h", "toggle_help", "Help")
     ]
     dark = reactive(True, layout=True)
@@ -2239,6 +2688,7 @@ class WebScraperApp(App[None]):
         self.db_init_ok = init_db()
         self.row_metadata = {}
         self._summarize_context = {}
+        self.config = ConfigManager.load_config()
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True, name="Web Scraper TUI v1.0")
@@ -2867,6 +3317,57 @@ class WebScraperApp(App[None]):
                 else:
                     self.notify("API key not configured in .env", title="Error", severity="error")
         self.push_screen(AIProviderSelectionModal(), handle_provider_selection)
+
+    async def action_open_settings(self) -> None:
+        """Open settings modal (Ctrl+,)."""
+        def handle_settings_result(saved: bool) -> None:
+            if saved:
+                self.config = ConfigManager.load_config()
+                self.notify("Settings reloaded", title="Settings", severity="info")
+        self.push_screen(SettingsModal(self.config), handle_settings_result)
+
+    async def action_manage_filter_presets(self) -> None:
+        """Open filter presets management modal (Ctrl+Shift+F)."""
+        def handle_preset_selection(preset_name: Optional[str]) -> None:
+            if preset_name:
+                preset_data = FilterPresetManager.load_preset(preset_name)
+                if preset_data:
+                    # Apply preset filters
+                    self.title_filter = preset_data['title_filter']
+                    self.url_filter = preset_data['url_filter']
+                    self.date_filter_from = preset_data['date_from']
+                    self.date_filter_to = preset_data['date_to']
+                    self.tags_filter = preset_data['tags_filter']
+                    self.sentiment_filter = preset_data['sentiment_filter']
+                    self.use_regex = preset_data['use_regex']
+                    self.tags_logic = preset_data['tags_logic']
+                    self.notify(f"Loaded preset: {preset_name}", title="Preset Loaded", severity="info")
+                    # Refresh table with new filters
+                    self.run_worker(self.refresh_article_table())
+                else:
+                    self.notify("Failed to load preset", title="Error", severity="error")
+        self.push_screen(FilterPresetModal(), handle_preset_selection)
+
+    async def action_save_filter_preset(self) -> None:
+        """Save current filters as a preset (Ctrl+Shift+S)."""
+        def handle_preset_name(name: Optional[str]) -> None:
+            if name:
+                success = FilterPresetManager.save_preset(
+                    name,
+                    self.title_filter,
+                    self.url_filter,
+                    self.date_filter_from,
+                    self.date_filter_to,
+                    self.tags_filter,
+                    self.sentiment_filter,
+                    self.use_regex,
+                    self.tags_logic
+                )
+                if success:
+                    self.notify(f"Saved preset: {name}", title="Preset Saved", severity="info")
+                else:
+                    self.notify("Failed to save preset", title="Error", severity="error")
+        self.push_screen(SavePresetModal(), handle_preset_name)
 
     async def action_toggle_help(self)->None:await self.app.push_screen(HelpModal())
     async def action_cycle_sort_order(self)->None:self.current_sort_index=(self.current_sort_index+1)%len(self.SORT_OPTIONS);await self.refresh_article_table();self.notify(f"Sorted by: {self.SORT_OPTIONS[self.current_sort_index][1]}",title="Sort Changed",severity="info",timeout=2)

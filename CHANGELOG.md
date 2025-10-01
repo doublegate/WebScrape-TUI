@@ -5,6 +5,98 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2025-10-01
+
+### 🎛️ Major Feature Release: Configuration & Filter Presets
+
+This release adds comprehensive configuration management with YAML/JSON support and a powerful filter preset system for saving and loading common filter combinations.
+
+### Added
+
+- **Filter Presets System**
+  - Save current filters as named presets with `Ctrl+Shift+S`
+  - Load saved presets with `Ctrl+Shift+F`
+  - Delete unwanted presets from management modal
+  - Full support for all filter types (title, URL, date ranges, tags, sentiment, regex, tag logic)
+  - Database-backed persistence with `filter_presets` table enhancements
+  - List view with load and delete functionality
+
+- **Configuration Management**
+  - YAML-based configuration file (`config.yaml`) with automatic creation
+  - JSON export support for configuration portability
+  - Deep merge functionality for partial config updates
+  - Settings modal (`Ctrl+,`) for easy configuration
+  - Configurable options:
+    - Default AI provider (Gemini/OpenAI/Claude)
+    - Default export format (CSV/JSON)
+    - Export output directory
+    - Database auto-vacuum and backup settings
+    - Logging configuration
+
+- **Settings Modal (`Ctrl+,`)**
+  - Interactive configuration editor with radio buttons and checkboxes
+  - AI provider selection with persistence
+  - Export format preferences
+  - Database maintenance options
+  - Real-time validation and save confirmation
+
+- **Enhanced Database Schema**
+  - Updated `filter_presets` table with new columns:
+    - `date_from` and `date_to` for date range filtering
+    - `use_regex` flag for regex mode persistence
+    - `tags_logic` for AND/OR tag filtering mode
+  - Automatic migration for existing databases
+  - Backward compatibility maintained
+
+### Technical Implementation
+
+- **ConfigManager Class**
+  - YAML parsing with PyYAML library
+  - JSON fallback export functionality
+  - Default configuration with sensible defaults
+  - Deep merge algorithm for partial updates
+  - File-based persistence with error handling
+
+- **FilterPresetManager Class**
+  - CRUD operations for filter presets
+  - Database-backed storage with SQLite
+  - Preset listing with chronological ordering
+  - Update existing presets with same name
+  - Comprehensive error handling and logging
+
+- **New Modal Screens**
+  - `FilterPresetModal`: List view with load/delete buttons
+  - `SavePresetModal`: Simple text input for preset naming
+  - `SettingsModal`: Comprehensive configuration editor with scroll support
+
+### Dependencies
+
+- Added `PyYAML>=6.0.0` for YAML configuration support
+
+### Testing
+
+- Added 14 new tests in `test_config_and_presets.py`
+  - 4 tests for ConfigManager (load, save, merge, JSON export)
+  - 7 tests for FilterPresetManager (CRUD operations, updates, empty values)
+  - 2 tests for YAML handling (structure, Unicode support)
+  - 1 test for database schema validation
+- Total test suite: 111 tests (all passing)
+
+### Keyboard Shortcuts
+
+- `Ctrl+,`: Open Settings modal
+- `Ctrl+Shift+F`: Manage Filter Presets (load/delete)
+- `Ctrl+Shift+S`: Save current filters as preset
+
+### Performance & Quality
+
+- Zero breaking changes - full backward compatibility
+- Efficient database queries with proper indexing
+- Lazy configuration loading on application startup
+- YAML format chosen for human-readable configuration files
+
+This release focuses on user workflow optimization and persistent preferences, making WebScrape-TUI more customizable and efficient for power users.
+
 ## [1.3.5] - 2025-10-01
 
 ### 🔧 Bugfix Release: CI/CD Test Fixes

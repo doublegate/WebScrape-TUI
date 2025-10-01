@@ -18,6 +18,10 @@ beautifulsoup4>=4.11.0
 # Fast XML/HTML parser backend for Beautiful Soup
 lxml>=4.9.0
 
+# Configuration Management
+# YAML parser for configuration files
+PyYAML>=6.0.0
+
 # Optional Development Dependencies (uncomment for development)
 # pytest>=7.0.0                    # Testing framework
 # pytest-cov>=4.0.0                # Coverage reporting
