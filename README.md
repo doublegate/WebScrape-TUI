@@ -34,7 +34,8 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 ### 🗄️ Data Management
 
 - **SQLite Database**: Persistent storage with normalized schema design
-- **Advanced Filtering** (v1.3.0): Regex support, date ranges, AND/OR tag logic, filter presets
+- **Filter Presets** (v1.4.0): Save and load common filter combinations with one click
+- **Advanced Filtering** (v1.3.0): Regex support, date ranges, AND/OR tag logic
 - **Bulk Selection** (v1.2.0): Multi-select articles with visual [✓] indicators
 - **Select All/Deselect All** (v1.2.0): Ctrl+A/Ctrl+D for quick bulk operations
 - **Bulk Delete** (v1.2.0): Delete multiple articles at once with confirmation
@@ -59,8 +60,10 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Optimized API Calls**: Efficient request handling and error management
 - **Configurable API Keys**: Easy setup for multiple AI providers
 
-### 🔧 Code Quality & Performance
+### 🔧 Configuration & Performance
 
+- **YAML Configuration** (v1.4.0): Human-readable config files with deep merge support
+- **Settings Modal** (v1.4.0): In-app configuration editor (Ctrl+,)
 - **Optimized Codebase**: Comprehensive formatting and performance improvements
 - **Memory Efficiency**: Removed unused imports and optimized resource usage
 - **Enhanced Error Handling**: Robust exception management and logging
@@ -128,6 +131,7 @@ python scrapetui.py
 - **requests** (>=2.28.0) - HTTP library for web requests
 - **beautifulsoup4** (>=4.11.0) - HTML parsing library
 - **lxml** (>=4.9.0) - Fast XML/HTML parser backend
+- **PyYAML** (>=6.0.0) - YAML configuration file parser (v1.4.0)
 
 ## 🚀 Quick Start
 
@@ -153,6 +157,39 @@ python scrapetui.py
    - Execute scraper or customize for your needs
 
 ## ⚙️ Configuration
+
+### Configuration File (v1.4.0)
+
+WebScrape-TUI now uses a YAML configuration file (`config.yaml`) for managing application settings. The configuration file is created automatically on first run with sensible defaults.
+
+**Configuration Sections:**
+
+```yaml
+ai:
+  default_provider: 'gemini'  # Default AI provider (gemini/openai/claude)
+  default_model: null         # Optional specific model selection
+
+export:
+  default_format: 'csv'       # Default export format (csv/json)
+  output_directory: '.'       # Export file destination
+
+ui:
+  theme: 'default'            # UI theme
+  table_columns: [...]        # Visible table columns
+
+database:
+  auto_vacuum: false          # Automatic database optimization
+  backup_on_exit: false       # Backup database on application exit
+
+logging:
+  level: 'INFO'               # Logging verbosity (DEBUG/INFO/WARNING/ERROR)
+  max_file_size_mb: 10        # Maximum log file size
+```
+
+**In-App Configuration:**
+- Press `Ctrl+,` to open the Settings modal
+- Edit settings through the interactive interface
+- Changes are saved to `config.yaml` automatically
 
 ### API Keys Setup (v1.3.0)
 
@@ -238,12 +275,15 @@ Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 
 ### Managing Your Data
 
-**Filtering Articles (v1.3.0 Enhanced):**
+**Filtering Articles (v1.4.0 Enhanced):**
 - Press `Ctrl+F` to open the advanced filter dialog
 - **Regex Support**: Toggle regex mode for title/URL pattern matching
 - **Date Range**: Filter by from/to dates instead of single date
 - **Tag Logic**: Choose AND (all tags) or OR (any tag) matching
-- **Filter Presets**: Save and load common filter combinations
+- **Filter Presets** (v1.4.0): Save and load common filter combinations
+  - Press `Ctrl+Shift+S` to save current filters as a preset
+  - Press `Ctrl+Shift+F` to load or delete saved presets
+  - Presets store all filter parameters (title, URL, dates, tags, sentiment, regex, logic)
 - Use "Clear All" to reset all filters quickly
 - Filters preserve current values when reopening
 - Apply filters to return to main screen with filtered results
@@ -379,15 +419,18 @@ CREATE TABLE summarization_templates (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Filter presets (v1.3.0)
+-- Filter presets (v1.4.0)
 CREATE TABLE filter_presets (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
     title_filter TEXT,
     url_filter TEXT,
-    date_filter TEXT,
+    date_from TEXT,
+    date_to TEXT,
     tags_filter TEXT,
     sentiment_filter TEXT,
+    use_regex INTEGER DEFAULT 0,
+    tags_logic TEXT DEFAULT 'AND',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
@@ -403,8 +446,11 @@ CREATE TABLE filter_presets (
 | `Ctrl+N` | New scrape dialog |
 | `Ctrl+M` | Saved scrapers / Manage profiles |
 | `Ctrl+P` | **Select AI Provider** (v1.3.0) |
+| `Ctrl+comma` | **Settings** (v1.4.0) |
 | `Ctrl+T` | Manage tags for selected article |
 | `Ctrl+F` | Open advanced filter dialog |
+| `Ctrl+Shift+F` | **Manage Filter Presets** (v1.4.0) |
+| `Ctrl+Shift+S` | **Save Current Filters as Preset** (v1.4.0) |
 | `Ctrl+E` | Export to CSV |
 | `Ctrl+J` | **Export to JSON** (v1.2.0) |
 | `Ctrl+L` | Toggle dark/light theme |
@@ -570,6 +616,7 @@ WebScrape-TUI includes a comprehensive test suite with 100+ tests:
 - **Bulk Operations Tests** (12 tests): Multi-select, bulk delete, SQL queries (v1.2.0)
 - **JSON Export Tests** (14 tests): Format validation, data conversion (v1.2.0)
 - **AI Provider Tests** (15 tests): Provider abstraction, template substitution (v1.3.0)
+- **Config & Presets Tests** (14 tests): YAML handling, filter presets, deep merge (v1.4.0)
 
 **Running Tests:**
 ```bash
@@ -586,11 +633,11 @@ pytest tests/ -v
 pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
-**Test Results (v1.3.0):**
-- 100+ total tests across 6 categories
-- All AI provider, template, and filtering tests passing ✓
-- Comprehensive coverage of v1.3.0 features
-- Database tests require fixture improvements (ongoing work)
+**Test Results (v1.4.0):**
+- 111 total tests across 7 categories
+- All configuration, filter presets, and AI provider tests passing ✓
+- Comprehensive coverage of v1.4.0 features
+- 100% pass rate across all test suites
 
 ### Areas for Contribution
 
@@ -606,7 +653,15 @@ pytest tests/ --cov=scrapetui --cov-report=html
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
-### Recent Updates (v1.3.0)
+### Recent Updates (v1.4.0)
+- **YAML Configuration**: Human-readable config files with automatic creation and deep merge
+- **Settings Modal**: In-app configuration editor with live updates (Ctrl+,)
+- **Filter Presets**: Save and load filter combinations with database persistence
+- **Enhanced Database**: New filter_presets table with full parameter support
+- **Comprehensive Testing**: 111 tests with 14 new tests for v1.4.0 features
+- **Keyboard Shortcuts**: Ctrl+comma (Settings), Ctrl+Shift+F (Presets), Ctrl+Shift+S (Save)
+
+### Previous Updates (v1.3.0)
 - **Multi-Provider AI**: Google Gemini, OpenAI GPT, and Anthropic Claude integration
 - **Custom Templates**: 7 built-in templates with custom template management
 - **Advanced Filtering**: Regex support, date ranges, AND/OR tag logic
@@ -679,18 +734,19 @@ SOFTWARE.
 ## 🎯 Roadmap
 
 ### Completed Features ✅
+- [x] **YAML Configuration**: Human-readable config files (v1.4.0)
+- [x] **Filter Presets**: Save and load filter combinations (v1.4.0)
 - [x] **Multiple AI Providers**: Gemini, OpenAI, Claude (v1.3.0)
 - [x] **Advanced Filtering**: Regex, date ranges, AND/OR tag logic (v1.3.0)
 - [x] **Custom Templates**: Built-in and user-defined summarization templates (v1.3.0)
 - [x] **Bulk Operations**: Multi-select for batch delete operations (v1.2.0)
 - [x] **JSON Export**: Full export with metadata and nested structure (v1.2.0)
 
-### Upcoming Features
+### Upcoming Features (v1.5.0+)
+- [ ] **Scheduled Scraping** (v1.5.0): Automated scraping with cron-like scheduling
 - [ ] **Plugin System**: Extensible architecture for custom processors
-- [ ] **Scheduled Scraping**: Automated scraping with cron-like scheduling
 - [ ] **Data Visualization**: Charts and graphs for scraped data analysis
 - [ ] **Advanced Search**: Full-text search with indexing
-- [ ] **Configuration Files**: YAML/JSON configuration management
 - [ ] **Docker Support**: Containerized deployment options
 - [ ] **Web Interface**: Optional web UI for remote access
 - [ ] **API Server**: REST API for programmatic access
