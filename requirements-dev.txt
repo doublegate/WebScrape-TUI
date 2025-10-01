@@ -1,0 +1,23 @@
+# WebScrape-TUI v1.0 - Development Dependencies
+#
+# This file lists additional Python packages needed for development.
+# Install with: pip install -r requirements-dev.txt
+
+# Testing Framework
+pytest>=7.0.0                    # Testing framework
+pytest-cov>=4.0.0                # Coverage reporting
+pytest-asyncio>=0.21.0           # Async test support
+
+# Code Quality
+black>=22.0.0                    # Code formatting
+flake8>=5.0.0                    # Code linting
+mypy>=0.991                      # Type checking
+isort>=5.10.0                    # Import sorting
+
+# Development Tools
+ipython>=8.0.0                   # Enhanced Python shell
+ipdb>=0.13.0                     # Enhanced debugger
+
+# Documentation
+sphinx>=5.0.0                    # Documentation generator (optional)
+sphinx-rtd-theme>=1.0.0          # Read the Docs theme (optional)

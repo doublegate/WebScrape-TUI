@@ -336,6 +336,168 @@ PREINSTALLED_SCRAPERS = [
             "to fetch its latest version from the Wayback "
             "Machine. Scrapes entire body."
         )
+    },
+    {
+        "name": "Hacker News Front Page",
+        "url": "https://news.ycombinator.com/",
+        "selector": "tr.athing",
+        "default_limit": 30,
+        "default_tags_csv": "hackernews, tech, news",
+        "description": (
+            "Scrapes the latest tech news and discussions from "
+            "Hacker News front page. Extracts titles and links."
+        )
+    },
+    {
+        "name": "Reddit Subreddit Posts",
+        "url": "https://old.reddit.com/r/python/",
+        "selector": "div.thing",
+        "default_limit": 25,
+        "default_tags_csv": "reddit, social, discussion",
+        "description": (
+            "Extracts posts from Reddit using old.reddit.com interface. "
+            "Change /r/python/ to any subreddit of interest."
+        )
+    },
+    {
+        "name": "Medium Articles",
+        "url": "https://medium.com/tag/technology",
+        "selector": "article, div[data-testid='article-preview']",
+        "default_limit": 20,
+        "default_tags_csv": "medium, blog, article",
+        "description": (
+            "Scrapes articles from Medium. Works best with topic tags "
+            "or publication pages. Adjust tag in URL as needed."
+        )
+    },
+    {
+        "name": "Dev.to Articles",
+        "url": "https://dev.to/",
+        "selector": "article.crayons-story",
+        "default_limit": 20,
+        "default_tags_csv": "dev.to, programming, tutorial",
+        "description": (
+            "Extracts developer articles from Dev.to community. "
+            "Great for programming tutorials and tech discussions."
+        )
+    },
+    {
+        "name": "GitHub Trending Repos",
+        "url": "https://github.com/trending",
+        "selector": "article.Box-row",
+        "default_limit": 25,
+        "default_tags_csv": "github, opensource, trending",
+        "description": (
+            "Scrapes trending repositories from GitHub. "
+            "Can filter by language: /trending/python, /trending/rust, etc."
+        )
+    },
+    {
+        "name": "TechCrunch News",
+        "url": "https://techcrunch.com/",
+        "selector": "article.post-block",
+        "default_limit": 20,
+        "default_tags_csv": "techcrunch, startup, news",
+        "description": (
+            "Extracts latest startup and technology news from TechCrunch. "
+            "Covers startups, funding, and tech industry news."
+        )
+    },
+    {
+        "name": "Ars Technica Articles",
+        "url": "https://arstechnica.com/",
+        "selector": "article, header.article-header",
+        "default_limit": 15,
+        "default_tags_csv": "arstechnica, tech, science",
+        "description": (
+            "Scrapes in-depth technology and science articles "
+            "from Ars Technica."
+        )
+    },
+    {
+        "name": "The Verge Articles",
+        "url": "https://www.theverge.com/",
+        "selector": "div.duet--content-cards--content-card",
+        "default_limit": 20,
+        "default_tags_csv": "theverge, tech, consumer",
+        "description": (
+            "Extracts consumer technology news and reviews "
+            "from The Verge."
+        )
+    },
+    {
+        "name": "Product Hunt Products",
+        "url": "https://www.producthunt.com/",
+        "selector": "li[data-test='post-item']",
+        "default_limit": 20,
+        "default_tags_csv": "producthunt, products, startup",
+        "description": (
+            "Scrapes new product launches from Product Hunt. "
+            "Discover the latest tech products and tools."
+        )
+    },
+    {
+        "name": "Lobsters Tech News",
+        "url": "https://lobste.rs/",
+        "selector": "div.story",
+        "default_limit": 25,
+        "default_tags_csv": "lobsters, tech, programming",
+        "description": (
+            "Extracts computing-focused links from Lobsters community. "
+            "High-quality tech discussions and articles."
+        )
+    },
+    {
+        "name": "RSS Feed Parser (Generic)",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": "item, entry",
+        "default_limit": 50,
+        "default_tags_csv": "rss, feed, syndication",
+        "description": (
+            "Attempts to parse RSS/Atom feeds. "
+            "Works with standard XML feed formats. "
+            "Provide feed URL (ending in .xml, .rss, /feed, etc.)"
+        )
+    },
+    {
+        "name": "Documentation Pages",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": (
+            "article.documentation, div.doc-content, "
+            "main.content, div.markdown-body"
+        ),
+        "default_limit": 1,
+        "default_tags_csv": "documentation, reference, guide",
+        "description": (
+            "Extracts content from documentation pages. "
+            "Works with common doc site patterns (ReadTheDocs, "
+            "GitHub Pages, etc.)"
+        )
+    },
+    {
+        "name": "Blog Posts (WordPress)",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": "article.post, div.post-content, article.hentry",
+        "default_limit": 10,
+        "default_tags_csv": "blog, wordpress, article",
+        "description": (
+            "Targets WordPress-based blogs using standard article "
+            "selectors. Works with most WordPress themes."
+        )
+    },
+    {
+        "name": "YouTube Video Descriptions",
+        "url": "[USER_PROVIDES_URL]",
+        "selector": (
+            "ytd-watch-metadata, "
+            "ytd-video-description-transcript-section-renderer"
+        ),
+        "default_limit": 1,
+        "default_tags_csv": "youtube, video, description",
+        "description": (
+            "Attempts to extract video title and description "
+            "from YouTube watch pages. May require specific selectors."
+        )
     }
 ]
 
