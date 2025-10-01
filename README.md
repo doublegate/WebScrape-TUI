@@ -34,12 +34,16 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 
 - **SQLite Database**: Persistent storage with normalized schema design
 - **Advanced Filtering**: Dedicated filter screen (Ctrl+F) with multi-field filtering
-- **Visual Row Selection**: Spacebar and mouse click selection with asterisk indicators and cursor navigation
+- **Bulk Selection** (v1.2.0): Multi-select articles with visual [✓] indicators
+- **Select All/Deselect All** (v1.2.0): Ctrl+A/Ctrl+D for quick bulk operations
+- **Bulk Delete** (v1.2.0): Delete multiple articles at once with confirmation
+- **Visual Row Selection**: Spacebar and mouse click selection with indicators
 - **Scraper Profile Context**: Visual indicators showing current scraper profile in status bar and modals
 - **Sequential Modal Dialogs**: Callback-based workflows preventing worker context errors
 - **Flexible Sorting**: 9 different sorting options with proper SQL table aliases
 - **Tag System**: Comma-separated tagging for article categorization
-- **CSV Export**: Export filtered data for external analysis
+- **CSV Export**: Export filtered data to CSV format
+- **JSON Export** (v1.2.0): Export to structured JSON with metadata and nested tags
 - **Transaction Safety**: Context managers ensure data integrity
 
 ### 🤖 AI Integration
@@ -355,6 +359,7 @@ CREATE TABLE saved_scrapers (
 | `Ctrl+T` | Manage tags |
 | `Ctrl+F` | Open filter dialog |
 | `Ctrl+E` | Export to CSV |
+| `Ctrl+J` | **Export to JSON** (v1.2.0) |
 | `R` | Refresh data |
 
 ### Navigation & Selection
@@ -362,8 +367,10 @@ CREATE TABLE saved_scrapers (
 | Input | Action |
 |:------|:-------|
 | `↑/↓` | Navigate table rows |
-| `Space` | Select/unselect current row (shows *ID indicator) |
+| `Space` | Toggle bulk selection (shows [✓] indicator) |
 | `Mouse Click` | Select/unselect clicked row (same as Space) |
+| `Ctrl+A` | **Select all visible articles** (v1.2.0) |
+| `Ctrl+D` | **Deselect all articles** (v1.2.0) |
 | `Enter` | View article details |
 | `Tab` | Next input field |
 | `Shift+Tab` | Previous input field |
@@ -377,6 +384,7 @@ CREATE TABLE saved_scrapers (
 | `Ctrl+K` | Sentiment analysis for selected |
 | `Ctrl+R` | Read full article content |
 | `d`/`Del` | Remove selected article |
+| `Ctrl+Shift+D` | **Bulk delete selected articles** (v1.2.0) |
 | `Ctrl+T` | Manage tags for selected |
 | `R` | Refresh view |
 
@@ -522,10 +530,12 @@ pytest tests/ -v
 pytest tests/ --cov=scrapetui
 ```
 
-**Test Results:**
-- 47/60 tests passing (78% success rate)
-- All scraping and utility tests passing ✓
-- Database tests require fixture improvements (future work)
+**Test Results (v1.2.0):**
+- 73/86 tests passing (85% success rate)
+- All scraping, utility, bulk operations, and JSON export tests passing ✓
+- 12 new tests for bulk operations
+- 14 new tests for JSON export
+- Database tests require fixture improvements (13 tests, future work)
 
 ### Areas for Contribution
 

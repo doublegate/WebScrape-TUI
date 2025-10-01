@@ -5,6 +5,102 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-10-01
+
+### 🎯 Major Feature Release: Bulk Operations & JSON Export
+
+This release adds powerful bulk selection capabilities and modern JSON export functionality, significantly enhancing data management and workflow efficiency.
+
+### Added
+
+- **Bulk Selection System**
+  - Multi-select articles using Spacebar toggle
+  - Visual [✓] indicators for selected articles in table
+  - Status bar shows count of selected articles
+  - Bulk selection state tracking across filtered views
+
+- **Bulk Operations**
+  - `Ctrl+A`: Select all visible articles in current view
+  - `Ctrl+D`: Deselect all articles
+  - `Ctrl+Shift+D`: Bulk delete selected articles with confirmation
+  - Confirmation dialogs show exact count of affected articles
+  - Transaction-safe bulk deletion with rollback support
+
+- **JSON Export Functionality**
+  - `Ctrl+J`: Export articles to JSON format
+  - Structured JSON with metadata (export date, total articles)
+  - Nested tags as arrays instead of comma-separated strings
+  - Includes applied filters in export metadata
+  - Full article content in export (not just summaries)
+  - Pretty-printed JSON with proper UTF-8 encoding
+  - Automatic `.json` file extension
+
+- **Enhanced Testing Suite** (+26 tests)
+  - 12 new tests for bulk operations
+  - 14 new tests for JSON export functionality
+  - Test coverage increased from 60 to 86 tests
+  - Pass rate improved from 78% to 85% (73/86 passing)
+
+### Enhanced
+
+- **User Experience**
+  - Spacebar now toggles bulk selection instead of single selection
+  - Visual feedback with [✓] checkmarks for bulk-selected items
+  - Status bar displays bulk selection count
+  - Improved keyboard shortcuts organization
+
+- **Export System**
+  - Two export formats: CSV (existing) and JSON (new)
+  - CSV optimized for spreadsheets, JSON for API integration
+  - Export metadata tracks applied filters
+  - Consistent worker pattern for both formats
+
+- **Code Quality**
+  - Added `json` module import for JSON handling
+  - Comprehensive error handling for bulk operations
+  - Type hints for new functions
+  - PEP 8 compliant code structure
+
+### Changed
+
+- **Keyboard Shortcuts**
+  - `Ctrl+E`: Export to CSV (label updated for clarity)
+  - `Ctrl+J`: Export to JSON (new binding)
+  - `Ctrl+A`: Select all articles (new)
+  - `Ctrl+D`: Deselect all (new)
+  - `Ctrl+Shift+D`: Bulk delete (new)
+
+- **Selection Behavior**
+  - Spacebar now adds/removes from bulk selection set
+  - Single selection mode still available via compatibility
+  - Mouse clicks work with bulk selection
+  - Visual indicators differentiate bulk ([✓]) vs single (*) selection
+
+### Fixed
+
+- **Database Test Fixtures**
+  - Improved fixture isolation using pytest monkeypatch
+  - Better teardown and cleanup
+  - More reliable test execution
+
+### Technical Details
+
+- Bulk selection uses reactive `set` data structure for O(1) lookups
+- JSON export includes full schema with nested objects
+- SQL queries use IN clause with parameterized placeholders for bulk operations
+- Export workers follow same async pattern as existing CSV export
+- Status bar reactively updates with bulk selection count
+- All new features fully tested with dedicated test files
+
+### Performance
+
+- Bulk delete operations more efficient than individual deletes
+- JSON export optimized with streaming writes
+- Selection state updates without full table refresh
+- Memory-efficient set-based selection tracking
+
+This release significantly improves user productivity with bulk operations and provides modern JSON export for API integration and data portability.
+
 ## [1.1.0] - 2025-10-01
 
 ### 🚀 Feature Release: Enhanced Testing & Expanded Scraper Library

@@ -20,25 +20,20 @@ def temp_db_path():
 
 
 @pytest.fixture
-def initialized_db(temp_db_path):
+def initialized_db(temp_db_path, monkeypatch):
     """Create and initialize a test database."""
     # Import here to avoid circular dependencies
     import sys
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from scrapetui import init_db, get_db_connection, DATABASE_PATH
-
-    # Temporarily override database path
-    original_db = DATABASE_PATH
     import scrapetui
-    scrapetui.DATABASE_PATH = temp_db_path
 
-    # Initialize database
-    init_db()
+    # Use monkeypatch to override DATABASE_PATH
+    monkeypatch.setattr(scrapetui, 'DATABASE_PATH', temp_db_path)
+
+    # Initialize database with the patched path
+    scrapetui.init_db()
 
     yield temp_db_path
-
-    # Restore original path
-    scrapetui.DATABASE_PATH = original_db
 
 
 class TestDatabaseInitialization:

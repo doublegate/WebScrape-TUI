@@ -104,6 +104,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin, quote_plus
 import logging
 import csv
+import json
 from datetime import datetime
 from pathlib import Path
 from typing import Any, List, Optional, Tuple, Dict
@@ -1578,6 +1579,7 @@ class HelpModal(ModalScreen):
 class StatusBar(Static):
     total_articles = reactive(0)
     selected_id = reactive[Optional[int]](None)
+    bulk_selected_count = reactive(0)
     filter_status = reactive("")
     sort_status = reactive("")
     current_theme = reactive("Dark")
@@ -1591,6 +1593,8 @@ class StatusBar(Static):
         ]
         if self.selected_id is not None:
             parts.append(f"Sel ID: {self.selected_id}")
+        if self.bulk_selected_count > 0:
+            parts.append(f"Bulk: {self.bulk_selected_count} selected")
         if self.filter_status:
             parts.append(f"Filter: {self.filter_status}")
         if self.sort_status:
@@ -1614,14 +1618,19 @@ class WebScraperApp(App[None]):
         Binding("ctrl+s", "cycle_sort_order", "Sort"),
         Binding("ctrl+m", "manage_saved_scrapers", "Profiles"),
         Binding("ctrl+n", "scrape_new", "New Scrape"),
-        Binding("ctrl+e", "export_csv", "Export"),
+        Binding("ctrl+e", "export_csv", "Export CSV"),
+        Binding("ctrl+j", "export_json", "Export JSON"),
         Binding("ctrl+x", "clear_database", "Clear DB"),
         Binding("ctrl+f", "open_filters", "Filters"),
         Binding("ctrl+l", "toggle_dark_mode", "Theme"),
+        Binding("ctrl+a", "select_all", "Select All"),
+        Binding("ctrl+d", "deselect_all", "Deselect All"),
+        Binding("ctrl+shift+d", "bulk_delete", "Bulk Delete"),
         Binding("f1,ctrl+h", "toggle_help", "Help")
     ]
     dark = reactive(True, layout=True)
     selected_row_id: reactive[int | None] = reactive(None)
+    selected_row_ids: reactive[set] = reactive(set)  # Bulk selection
     db_init_ok: bool = False
     last_scrape_url, last_scrape_selector, last_scrape_limit = "", "h2 a", 0
     title_filter = reactive("")
@@ -1732,8 +1741,13 @@ class WebScraperApp(App[None]):
                 timestamp_val = r_d["timestamp"]
                 timestamp_str = timestamp_val.strftime('%Y-%m-%d %H:%M:%S') if isinstance(timestamp_val, datetime) else str(timestamp_val)
                 row_key = str(r_d["id"])
-                # Add asterisk to selected row's ID
-                id_display = f"*{r_d['id']}" if self.selected_row_id == r_d["id"] else str(r_d["id"])
+                # Add visual indicator for bulk selection
+                if r_d["id"] in self.selected_row_ids:
+                    id_display = f"[✓] {r_d['id']}"
+                elif self.selected_row_id == r_d["id"]:
+                    id_display = f"*{r_d['id']}"
+                else:
+                    id_display = str(r_d["id"])
                 tbl.add_row(id_display, s_ind, senti_d, r_d["title"], r_d["url"], tags_d, timestamp_str, key=row_key)
                 self.row_metadata[row_key] = {'link': r_d['link'], 'has_s': bool(r_d['has_s']), 'tags': r_d["tags_c"] or ""}
             self.query_one(StatusBar).total_articles = len(rows)
@@ -1760,17 +1774,23 @@ class WebScraperApp(App[None]):
     async def action_select_row(self) -> None:
         current_id = self._get_current_row_id()
         if current_id is not None:
-            # Toggle selection: if already selected, unselect it
-            if self.selected_row_id == current_id:
-                self.selected_row_id = None
-                self.query_one(StatusBar).selected_id = None
-                logger.debug(f"Row unselected via spacebar, ID: {current_id}")
-                self.notify(f"Unselected article ID {current_id}", title="Selection", severity="info", timeout=2)
+            # Toggle bulk selection
+            if current_id in self.selected_row_ids:
+                self.selected_row_ids.discard(current_id)
+                logger.debug(f"Row removed from bulk selection, ID: {current_id}")
+                self.notify(f"Removed article ID {current_id} from selection", title="Selection", severity="info", timeout=2)
             else:
-                self.selected_row_id = current_id
-                self.query_one(StatusBar).selected_id = self.selected_row_id
-                logger.debug(f"Row selected via spacebar, ID: {self.selected_row_id}")
-                self.notify(f"Selected article ID {current_id}", title="Selection", severity="info", timeout=2)
+                self.selected_row_ids.add(current_id)
+                logger.debug(f"Row added to bulk selection, ID: {current_id}")
+                self.notify(f"Added article ID {current_id} to selection", title="Selection", severity="info", timeout=2)
+
+            # Update status bar
+            self.query_one(StatusBar).bulk_selected_count = len(self.selected_row_ids)
+
+            # Also update single selection for compatibility
+            self.selected_row_id = current_id if len(self.selected_row_ids) == 1 else None
+            self.query_one(StatusBar).selected_id = self.selected_row_id
+
             # Refresh table to show selection indicator
             await self.refresh_article_table()
 
@@ -2042,6 +2062,84 @@ class WebScraperApp(App[None]):
                 self.notify("Cancelled.",title="Info",severity="info")
 
         self.push_screen(ConfirmModal(f"Delete article ID {self.selected_row_id}?"), handle_delete_confirmation)
+
+    async def action_select_all(self) -> None:
+        """Select all visible articles in the current view."""
+        try:
+            with get_db_connection() as conn:
+                # Get all IDs from current filtered view
+                bq = "SELECT sd.id FROM scraped_data sd"
+                conds, params = [], {}
+                if self.title_filter:
+                    conds.append("sd.title LIKE :tf")
+                    params["tf"] = f"%{self.title_filter}%"
+                if self.url_filter:
+                    conds.append("sd.url LIKE :uf")
+                    params["uf"] = f"%{self.url_filter}%"
+                if conds:
+                    bq += " WHERE " + " AND ".join(conds)
+                rows = conn.execute(bq, params).fetchall()
+                self.selected_row_ids = set(row["id"] for row in rows)
+                self.query_one(StatusBar).bulk_selected_count = len(self.selected_row_ids)
+                await self.refresh_article_table()
+                self.notify(f"Selected {len(self.selected_row_ids)} articles", title="Selection", severity="info")
+        except Exception as e:
+            logger.error(f"Error in select_all: {e}", exc_info=True)
+            self.notify(f"Error selecting all: {e}", title="Error", severity="error")
+
+    async def action_deselect_all(self) -> None:
+        """Deselect all articles."""
+        count = len(self.selected_row_ids)
+        self.selected_row_ids.clear()
+        self.selected_row_id = None
+        self.query_one(StatusBar).bulk_selected_count = 0
+        self.query_one(StatusBar).selected_id = None
+        await self.refresh_article_table()
+        self.notify(f"Deselected {count} articles", title="Selection", severity="info")
+
+    async def action_bulk_delete(self) -> None:
+        """Delete all selected articles."""
+        if not self.selected_row_ids:
+            self.notify("No articles selected for bulk delete.", title="Info", severity="warning")
+            return
+
+        count = len(self.selected_row_ids)
+        selected_ids = list(self.selected_row_ids)
+
+        def handle_bulk_delete_confirmation(confirmed):
+            if confirmed:
+                try:
+                    def _bulk_delete_blocking():
+                        with get_db_connection() as conn_blocking:
+                            placeholders = ','.join('?' * len(selected_ids))
+                            cur = conn_blocking.execute(
+                                f"DELETE FROM scraped_data WHERE id IN ({placeholders})",
+                                selected_ids
+                            )
+                            conn_blocking.commit()
+                            return cur.rowcount
+                    rowcount = _bulk_delete_blocking()
+                    self.selected_row_ids.clear()
+                    self.selected_row_id = None
+                    self.query_one(StatusBar).bulk_selected_count = 0
+                    self.query_one(StatusBar).selected_id = None
+                    self.notify(f"Deleted {rowcount} articles.", title="Bulk Delete Success", severity="info")
+                    logger.info(f"Bulk deleted {rowcount} articles")
+                    self.call_later(self.refresh_article_table)
+                except Exception as e:
+                    logger.error(f"Error bulk deleting: {e}", exc_info=True)
+                    self.notify(f"Error bulk deleting: {e}", title="Error", severity="error")
+            else:
+                self.notify("Bulk delete cancelled.", title="Info", severity="info")
+
+        self.push_screen(
+            ConfirmModal(
+                f"Delete {count} selected articles? This cannot be undone!",
+                confirm_text="Yes, Delete All"
+            ),
+            handle_bulk_delete_confirmation
+        )
+
     async def action_clear_database(self)->None:
         def handle_clear_confirmation(confirmed):
             if confirmed:
@@ -2126,6 +2224,126 @@ class WebScraperApp(App[None]):
             if fn:
                 worker_with_args = functools.partial(self._export_csv_worker, fn)
                 self.run_worker(worker_with_args, group="exporting", exclusive=True)
+        self.push_screen(FilenameModal(default_filename=dfn), handle_filename_result)
+
+    async def _export_json_worker(self, filename: str) -> None:
+        """Export articles to JSON format."""
+        self._toggle_loading(True)
+        self.notify(f"Exporting to {filename}...", title="Exporting JSON", severity="info")
+        try:
+            s_col, _ = self.SORT_OPTIONS[self.current_sort_index]
+
+            def _fetch_for_export_blocking():
+                bq_export = (
+                    "SELECT sd.id, sd.title, sd.url, sd.link, sd.timestamp, "
+                    "sd.summary, sd.sentiment, sd.content, "
+                    "GROUP_CONCAT(DISTINCT t.name) as tags_c "
+                    "FROM scraped_data sd "
+                    "LEFT JOIN article_tags at ON sd.id = at.article_id "
+                    "LEFT JOIN tags t ON at.tag_id = t.id"
+                )
+                conds_export, params_export = [], {}
+                if self.title_filter:
+                    conds_export.append("sd.title LIKE :tf")
+                    params_export["tf"] = f"%{self.title_filter}%"
+                if self.url_filter:
+                    conds_export.append("sd.url LIKE :uf")
+                    params_export["uf"] = f"%{self.url_filter}%"
+                if self.date_filter:
+                    conds_export.append("date(sd.timestamp) = :df")
+                    params_export["df"] = self.date_filter
+                if self.tags_filter:
+                    tfs_export = [t.strip().lower() for t in self.tags_filter.split(',') if t.strip()]
+                    for i, tn_export in enumerate(tfs_export):
+                        pn_export = f"tgf_{i}"
+                        conds_export.append(
+                            f"sd.id IN (SELECT at_s.article_id FROM article_tags at_s "
+                            f"JOIN tags t_s ON at_s.tag_id = t_s.id WHERE t_s.name = :{pn_export})"
+                        )
+                        params_export[pn_export] = tn_export
+                if self.sentiment_filter:
+                    sval_export = self.sentiment_filter.strip().capitalize()
+                    conds_export.append("sd.sentiment LIKE :sf")
+                    params_export["sf"] = f"%{sval_export}%"
+                if conds_export:
+                    bq_export += " WHERE " + " AND ".join(conds_export)
+                bq_export += " GROUP BY sd.id ORDER BY " + s_col
+                with get_db_connection() as conn_blocking:
+                    return conn_blocking.execute(bq_export, params_export).fetchall()
+
+            rows_to_export = _fetch_for_export_blocking()
+            if not rows_to_export:
+                self.notify("No data to export.", title="Export Info", severity="info")
+                self._toggle_loading(False)
+                return
+
+            def _write_json_blocking():
+                fp = Path(filename)
+                articles = []
+                for r_data in rows_to_export:
+                    timestamp_val = r_data['timestamp']
+                    timestamp_str = (
+                        timestamp_val.strftime('%Y-%m-%d %H:%M:%S')
+                        if isinstance(timestamp_val, datetime)
+                        else str(timestamp_val)
+                    )
+                    tags_list = (
+                        [t.strip() for t in r_data['tags_c'].split(',') if t.strip()]
+                        if r_data['tags_c']
+                        else []
+                    )
+                    article_data = {
+                        'id': r_data['id'],
+                        'title': r_data['title'],
+                        'source_url': r_data['url'],
+                        'article_link': r_data['link'],
+                        'timestamp': timestamp_str,
+                        'summary': r_data['summary'],
+                        'sentiment': r_data['sentiment'],
+                        'content': r_data['content'],
+                        'tags': tags_list
+                    }
+                    articles.append(article_data)
+
+                export_data = {
+                    'export_date': datetime.now().isoformat(),
+                    'total_articles': len(articles),
+                    'filters_applied': {
+                        'title': self.title_filter if self.title_filter else None,
+                        'url': self.url_filter if self.url_filter else None,
+                        'date': self.date_filter if self.date_filter else None,
+                        'tags': self.tags_filter if self.tags_filter else None,
+                        'sentiment': self.sentiment_filter if self.sentiment_filter else None
+                    },
+                    'articles': articles
+                }
+
+                with open(fp, 'w', encoding='utf-8') as jsonf:
+                    json.dump(export_data, jsonf, indent=2, ensure_ascii=False)
+                return fp.resolve(), len(articles)
+
+            resolved_path, num_rows = _write_json_blocking()
+            self.notify(
+                f"Data exported to {resolved_path}",
+                title="JSON Exported",
+                severity="info"
+            )
+            logger.info(f"Exported {num_rows} rows to {resolved_path}")
+        except Exception as e:
+            logger.error(f"Error exporting JSON '{filename}': {e}", exc_info=True)
+            self.notify(f"Error exporting JSON: {e}", title="Export Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def action_export_json(self) -> None:
+        """Export articles to JSON format."""
+        dfn = f"scraped_articles_{datetime.now():%Y%m%d_%H%M%S}.json"
+
+        def handle_filename_result(fn):
+            if fn:
+                worker_with_args = functools.partial(self._export_json_worker, fn)
+                self.run_worker(worker_with_args, group="exporting", exclusive=True)
+
         self.push_screen(FilenameModal(default_filename=dfn), handle_filename_result)
 
     async def _read_article_worker(self,eid:int,link:str,title:str)->None:
