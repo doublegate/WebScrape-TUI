@@ -105,16 +105,18 @@ from urllib.parse import urljoin, quote_plus
 import logging
 import csv
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, List, Optional, Tuple, Dict
+from abc import ABC, abstractmethod
 import functools
 
 # Textual imports
 from textual.app import App, ComposeResult
 from textual.widgets import (
     Header, Footer, DataTable, Static, Button, Input, Label, Markdown,
-    LoadingIndicator, RadioSet, RadioButton, ListView, ListItem
+    LoadingIndicator, RadioSet, RadioButton, ListView, ListItem, Checkbox
 )
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from textual.screen import ModalScreen
@@ -177,6 +179,8 @@ GEMINI_API_URL_TEMPLATE = (
     "gemini-2.0-flash:generateContent?key={api_key}"
 )
 GEMINI_API_KEY = env_vars.get("GEMINI_API_KEY", "")
+OPENAI_API_KEY = env_vars.get("OPENAI_API_KEY", "")
+CLAUDE_API_KEY = env_vars.get("CLAUDE_API_KEY", "")
 
 logging.basicConfig(
     level=env_vars.get("LOG_LEVEL", "DEBUG"),
@@ -563,6 +567,33 @@ def init_db():
                 )
             except sqlite3.OperationalError:
                 pass
+
+            # Add summarization templates table
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS summarization_templates (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    template TEXT NOT NULL,
+                    description TEXT,
+                    is_builtin INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            # Add filter presets table
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS filter_presets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    title_filter TEXT,
+                    url_filter TEXT,
+                    date_filter TEXT,
+                    tags_filter TEXT,
+                    sentiment_filter TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
             index_statements = [
                 "CREATE UNIQUE INDEX IF NOT EXISTS idx_link_unique "
                 "ON scraped_data (link);",
@@ -592,6 +623,23 @@ def init_db():
                 """, (ps["name"], ps["url"], ps["selector"],
                       ps["default_limit"], ps["default_tags_csv"],
                       ps["description"]))
+
+            # Insert built-in summarization templates
+            builtin_templates = [
+                ("Overview", "Provide a concise overview (100-150 words) of the following content:\n\n{content}\n\nOverview:", "Standard overview summary (100-150 words)"),
+                ("Bullet Points", "Summarize the following content into key bullet points:\n\n{content}\n\nKey Points:", "Bullet-point summary of main ideas"),
+                ("ELI5", "Explain the following content like I'm 5 years old:\n\n{content}\n\nSimple Explanation:", "Simplified explanation for general audience"),
+                ("Academic", "Provide an academic-style summary with key findings, methodology, and conclusions:\n\n{content}\n\nAcademic Summary:", "Formal academic summary with structured analysis"),
+                ("Executive Summary", "Create an executive summary highlighting key business insights, recommendations, and action items:\n\n{content}\n\nExecutive Summary:", "Business-focused summary with actionable insights"),
+                ("Technical Brief", "Summarize the technical aspects, implementation details, and specifications:\n\n{content}\n\nTechnical Summary:", "Technical summary for engineering audience"),
+                ("News Brief", "Write a news-style summary with who, what, when, where, why, and how:\n\n{content}\n\nNews Summary:", "Journalistic 5W1H summary format")
+            ]
+            for name, template, description in builtin_templates:
+                conn.execute("""
+                    INSERT OR IGNORE INTO summarization_templates (name, template, description, is_builtin)
+                    VALUES (?, ?, ?, 1)
+                """, (name, template, description))
+
             conn.commit()
         logger.info("Database initialized/updated successfully for v1.0.")
         return True
@@ -660,70 +708,448 @@ def fetch_article_content(article_url: str, for_reading: bool = False) -> str | 
         return None
 
 
-def get_summary_from_llm(text_content: str, summary_style: str = "overview", max_length: int = 15000) -> str | None:
-    if not text_content:
-        return None
-    if len(text_content) > max_length:
-        text_content = text_content[:max_length]
-    prompts = {
-        "overview": f"Provide a concise overview (100-150 words) of:\n\n{text_content}\n\nOverview:",
-        "bullets": f"Summarize into key bullet points:\n\n{text_content}\n\nBullets:",
-        "eli5": f"Explain like I'm 5:\n\n{text_content}\n\nELI5:"
-    }
-    prompt = prompts.get(summary_style, prompts["overview"])
-    payload = {
-        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.6, "maxOutputTokens": 600}
-    }
-    api_url = GEMINI_API_URL_TEMPLATE.format(api_key=GEMINI_API_KEY)
-    logger.info(f"Requesting '{summary_style}' summary from Gemini API.")
-    try:
-        response = requests.post(api_url, json=payload, timeout=90)
-        response.raise_for_status()
-        result = response.json()
-        if result.get("candidates") and result["candidates"][0]["content"]["parts"][0].get("text"):
-            summary = result["candidates"][0]["content"]["parts"][0]["text"]
-            logger.info(f"Summary received (length: {len(summary)}).")
-            return summary.strip()
+# --- AI Provider Abstraction Layer ---
+
+class AIProvider(ABC):
+    """Abstract base class for AI providers."""
+
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+
+    @abstractmethod
+    def get_summary(self, text: str, style: str = "overview", template: Optional[str] = None) -> Optional[str]:
+        """Generate a summary of the text."""
+        pass
+
+    @abstractmethod
+    def get_sentiment(self, text: str) -> Optional[str]:
+        """Analyze sentiment of the text. Returns: Positive, Negative, or Neutral."""
+        pass
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """Provider name for display."""
+        pass
+
+    @property
+    @abstractmethod
+    def available_models(self) -> List[str]:
+        """List of available models for this provider."""
+        pass
+
+
+class GeminiProvider(AIProvider):
+    """Google Gemini AI provider."""
+
+    def __init__(self, api_key: str, model: str = "gemini-2.0-flash"):
+        super().__init__(api_key)
+        self.model = model
+        self.api_url_template = (
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+            "{model}:generateContent?key={api_key}"
+        )
+
+    @property
+    def name(self) -> str:
+        return "Google Gemini"
+
+    @property
+    def available_models(self) -> List[str]:
+        return ["gemini-2.0-flash", "gemini-1.5-pro", "gemini-1.5-flash"]
+
+    def get_summary(self, text: str, style: str = "overview", template: Optional[str] = None, max_length: int = 15000) -> Optional[str]:
+        if not text:
+            return None
+        if len(text) > max_length:
+            text = text[:max_length]
+
+        # Use custom template if provided, otherwise use default prompts
+        if template:
+            prompt = template.replace("{content}", text)
         else:
-            logger.error(f"Unexpected Gemini summary response: {result}")
-    except Exception as e:
-        logger.error(f"Err calling Gemini for summary: {e}", exc_info=True)
-    return None
+            prompts = {
+                "overview": f"Provide a concise overview (100-150 words) of:\n\n{text}\n\nOverview:",
+                "bullets": f"Summarize into key bullet points:\n\n{text}\n\nBullets:",
+                "eli5": f"Explain like I'm 5:\n\n{text}\n\nELI5:"
+            }
+            prompt = prompts.get(style, prompts["overview"])
+
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.6, "maxOutputTokens": 600}
+        }
+        api_url = self.api_url_template.format(model=self.model, api_key=self.api_key)
+        logger.info(f"Requesting '{style}' summary from {self.name}.")
+
+        try:
+            response = requests.post(api_url, json=payload, timeout=90)
+            response.raise_for_status()
+            result = response.json()
+            if result.get("candidates") and result["candidates"][0]["content"]["parts"][0].get("text"):
+                summary = result["candidates"][0]["content"]["parts"][0]["text"]
+                logger.info(f"Summary received (length: {len(summary)}).")
+                return summary.strip()
+            else:
+                logger.error(f"Unexpected {self.name} summary response: {result}")
+        except Exception as e:
+            logger.error(f"Error calling {self.name} for summary: {e}", exc_info=True)
+        return None
+
+    def get_sentiment(self, text: str, max_length: int = 10000) -> Optional[str]:
+        if not text:
+            return None
+        if len(text) > max_length:
+            text = text[:max_length]
+
+        prompt = (f"Analyze sentiment. Respond: Positive, Negative, or Neutral.\n\n"
+                  f"Text:\n\"\"\"\n{text}\n\"\"\"\n\nSentiment:")
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {"temperature": 0.2, "maxOutputTokens": 10}
+        }
+        api_url = self.api_url_template.format(model=self.model, api_key=self.api_key)
+        logger.info(f"Requesting sentiment from {self.name}.")
+
+        try:
+            response = requests.post(api_url, json=payload, timeout=45)
+            response.raise_for_status()
+            result = response.json()
+            if (result.get("candidates") and
+                    result["candidates"][0]["content"]["parts"][0].get("text")):
+                s_text = result["candidates"][0]["content"]["parts"][0]["text"].strip().capitalize()
+                if s_text in ["Positive", "Negative", "Neutral"]:
+                    logger.info(f"Sentiment: {s_text}.")
+                    return s_text
+                else:
+                    logger.warning(f"LLM non-standard sentiment: '{s_text}'. Defaulting Neutral.")
+                    return "Neutral"
+            else:
+                logger.error(f"Unexpected {self.name} sentiment response: {result}")
+        except Exception as e:
+            logger.error(f"Error calling {self.name} for sentiment: {e}", exc_info=True)
+        return None
+
+
+class OpenAIProvider(AIProvider):
+    """OpenAI GPT provider."""
+
+    def __init__(self, api_key: str, model: str = "gpt-4o-mini"):
+        super().__init__(api_key)
+        self.model = model
+        self.api_url = "https://api.openai.com/v1/chat/completions"
+
+    @property
+    def name(self) -> str:
+        return "OpenAI"
+
+    @property
+    def available_models(self) -> List[str]:
+        return ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"]
+
+    def get_summary(self, text: str, style: str = "overview", template: Optional[str] = None, max_length: int = 15000) -> Optional[str]:
+        if not text:
+            return None
+        if len(text) > max_length:
+            text = text[:max_length]
+
+        # Use custom template if provided, otherwise use default prompts
+        if template:
+            prompt = template.replace("{content}", text)
+        else:
+            prompts = {
+                "overview": f"Provide a concise overview (100-150 words) of:\n\n{text}\n\nOverview:",
+                "bullets": f"Summarize into key bullet points:\n\n{text}\n\nBullets:",
+                "eli5": f"Explain like I'm 5:\n\n{text}\n\nELI5:"
+            }
+            prompt = prompts.get(style, prompts["overview"])
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.6,
+            "max_tokens": 600
+        }
+        logger.info(f"Requesting '{style}' summary from {self.name}.")
+
+        try:
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=90)
+            response.raise_for_status()
+            result = response.json()
+            if result.get("choices") and len(result["choices"]) > 0:
+                summary = result["choices"][0]["message"]["content"]
+                logger.info(f"Summary received (length: {len(summary)}).")
+                return summary.strip()
+            else:
+                logger.error(f"Unexpected {self.name} summary response: {result}")
+        except Exception as e:
+            logger.error(f"Error calling {self.name} for summary: {e}", exc_info=True)
+        return None
+
+    def get_sentiment(self, text: str, max_length: int = 10000) -> Optional[str]:
+        if not text:
+            return None
+        if len(text) > max_length:
+            text = text[:max_length]
+
+        prompt = (f"Analyze sentiment. Respond with ONLY one word: Positive, Negative, or Neutral.\n\n"
+                  f"Text:\n\"\"\"\n{text}\n\"\"\"\n\nSentiment:")
+
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "temperature": 0.2,
+            "max_tokens": 10
+        }
+        logger.info(f"Requesting sentiment from {self.name}.")
+
+        try:
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=45)
+            response.raise_for_status()
+            result = response.json()
+            if result.get("choices") and len(result["choices"]) > 0:
+                s_text = result["choices"][0]["message"]["content"].strip().capitalize()
+                if s_text in ["Positive", "Negative", "Neutral"]:
+                    logger.info(f"Sentiment: {s_text}.")
+                    return s_text
+                else:
+                    logger.warning(f"LLM non-standard sentiment: '{s_text}'. Defaulting Neutral.")
+                    return "Neutral"
+            else:
+                logger.error(f"Unexpected {self.name} sentiment response: {result}")
+        except Exception as e:
+            logger.error(f"Error calling {self.name} for sentiment: {e}", exc_info=True)
+        return None
+
+
+class ClaudeProvider(AIProvider):
+    """Anthropic Claude provider."""
+
+    def __init__(self, api_key: str, model: str = "claude-3-5-haiku-20241022"):
+        super().__init__(api_key)
+        self.model = model
+        self.api_url = "https://api.anthropic.com/v1/messages"
+
+    @property
+    def name(self) -> str:
+        return "Anthropic Claude"
+
+    @property
+    def available_models(self) -> List[str]:
+        return ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022", "claude-3-opus-20240229"]
+
+    def get_summary(self, text: str, style: str = "overview", template: Optional[str] = None, max_length: int = 15000) -> Optional[str]:
+        if not text:
+            return None
+        if len(text) > max_length:
+            text = text[:max_length]
+
+        # Use custom template if provided, otherwise use default prompts
+        if template:
+            prompt = template.replace("{content}", text)
+        else:
+            prompts = {
+                "overview": f"Provide a concise overview (100-150 words) of:\n\n{text}\n\nOverview:",
+                "bullets": f"Summarize into key bullet points:\n\n{text}\n\nBullets:",
+                "eli5": f"Explain like I'm 5:\n\n{text}\n\nELI5:"
+            }
+            prompt = prompts.get(style, prompts["overview"])
+
+        headers = {
+            "x-api-key": self.api_key,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 600,
+            "temperature": 0.6
+        }
+        logger.info(f"Requesting '{style}' summary from {self.name}.")
+
+        try:
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=90)
+            response.raise_for_status()
+            result = response.json()
+            if result.get("content") and len(result["content"]) > 0:
+                summary = result["content"][0]["text"]
+                logger.info(f"Summary received (length: {len(summary)}).")
+                return summary.strip()
+            else:
+                logger.error(f"Unexpected {self.name} summary response: {result}")
+        except Exception as e:
+            logger.error(f"Error calling {self.name} for summary: {e}", exc_info=True)
+        return None
+
+    def get_sentiment(self, text: str, max_length: int = 10000) -> Optional[str]:
+        if not text:
+            return None
+        if len(text) > max_length:
+            text = text[:max_length]
+
+        prompt = (f"Analyze sentiment. Respond with ONLY one word: Positive, Negative, or Neutral.\n\n"
+                  f"Text:\n\"\"\"\n{text}\n\"\"\"\n\nSentiment:")
+
+        headers = {
+            "x-api-key": self.api_key,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 10,
+            "temperature": 0.2
+        }
+        logger.info(f"Requesting sentiment from {self.name}.")
+
+        try:
+            response = requests.post(self.api_url, headers=headers, json=payload, timeout=45)
+            response.raise_for_status()
+            result = response.json()
+            if result.get("content") and len(result["content"]) > 0:
+                s_text = result["content"][0]["text"].strip().capitalize()
+                if s_text in ["Positive", "Negative", "Neutral"]:
+                    logger.info(f"Sentiment: {s_text}.")
+                    return s_text
+                else:
+                    logger.warning(f"LLM non-standard sentiment: '{s_text}'. Defaulting Neutral.")
+                    return "Neutral"
+            else:
+                logger.error(f"Unexpected {self.name} sentiment response: {result}")
+        except Exception as e:
+            logger.error(f"Error calling {self.name} for sentiment: {e}", exc_info=True)
+        return None
+
+
+# Global AI provider instance
+_current_ai_provider: Optional[AIProvider] = None
+
+
+def get_ai_provider() -> Optional[AIProvider]:
+    """Get the currently configured AI provider."""
+    global _current_ai_provider
+    if _current_ai_provider is None:
+        # Initialize default provider (Gemini)
+        if GEMINI_API_KEY:
+            _current_ai_provider = GeminiProvider(GEMINI_API_KEY)
+    return _current_ai_provider
+
+
+def set_ai_provider(provider: AIProvider) -> None:
+    """Set the current AI provider."""
+    global _current_ai_provider
+    _current_ai_provider = provider
+
+
+# --- Template Manager ---
+
+class TemplateManager:
+    """Manages custom summarization templates."""
+
+    @staticmethod
+    def get_all_templates() -> List[Dict[str, Any]]:
+        """Get all templates from database."""
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.execute("""
+                    SELECT id, name, template, description, is_builtin
+                    FROM summarization_templates
+                    ORDER BY is_builtin DESC, name ASC
+                """)
+                return [dict(row) for row in cursor.fetchall()]
+        except Exception as e:
+            logger.error(f"Error loading templates: {e}")
+            return []
+
+    @staticmethod
+    def get_template_by_name(name: str) -> Optional[str]:
+        """Get template text by name."""
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.execute(
+                    "SELECT template FROM summarization_templates WHERE name = ?",
+                    (name,)
+                )
+                row = cursor.fetchone()
+                return row['template'] if row else None
+        except Exception as e:
+            logger.error(f"Error loading template '{name}': {e}")
+            return None
+
+    @staticmethod
+    def save_template(name: str, template: str, description: str = "") -> bool:
+        """Save or update a custom template."""
+        try:
+            with get_db_connection() as conn:
+                conn.execute("""
+                    INSERT OR REPLACE INTO summarization_templates (name, template, description, is_builtin)
+                    VALUES (?, ?, ?, 0)
+                """, (name, template, description))
+                conn.commit()
+                logger.info(f"Template '{name}' saved successfully.")
+                return True
+        except Exception as e:
+            logger.error(f"Error saving template '{name}': {e}")
+            return False
+
+    @staticmethod
+    def delete_template(name: str) -> bool:
+        """Delete a custom template (cannot delete built-in)."""
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.execute(
+                    "DELETE FROM summarization_templates WHERE name = ? AND is_builtin = 0",
+                    (name,)
+                )
+                conn.commit()
+                if cursor.rowcount > 0:
+                    logger.info(f"Template '{name}' deleted successfully.")
+                    return True
+                else:
+                    logger.warning(f"Cannot delete built-in template '{name}'.")
+                    return False
+        except Exception as e:
+            logger.error(f"Error deleting template '{name}': {e}")
+            return False
+
+    @staticmethod
+    def apply_template(template: str, content: str, title: str = "", url: str = "", date: str = "") -> str:
+        """Apply template variables to content."""
+        # Replace variable placeholders
+        result = template.replace("{content}", content)
+        result = result.replace("{title}", title)
+        result = result.replace("{url}", url)
+        result = result.replace("{date}", date)
+        return result
+
+
+# Legacy function wrappers for backward compatibility
+def get_summary_from_llm(text_content: str, summary_style: str = "overview", max_length: int = 15000, template: Optional[str] = None) -> str | None:
+    """Legacy wrapper that uses the current AI provider."""
+    provider = get_ai_provider()
+    if provider is None:
+        logger.error("No AI provider configured. Set API keys in .env file.")
+        return None
+    return provider.get_summary(text_content, summary_style, template, max_length)
 
 
 def get_sentiment_from_llm(text_content: str, max_length: int = 10000) -> Optional[str]:
-    if not text_content:
+    """Legacy wrapper that uses the current AI provider."""
+    provider = get_ai_provider()
+    if provider is None:
+        logger.error("No AI provider configured. Set API keys in .env file.")
         return None
-    if len(text_content) > max_length:
-        text_content = text_content[:max_length]
-    prompt = (f"Analyze sentiment. Respond: Positive, Negative, or Neutral.\n\n"
-              f"Text:\n\"\"\"\n{text_content}\n\"\"\"\n\nSentiment:")
-    payload = {
-        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.2, "maxOutputTokens": 10}
-    }
-    api_url = GEMINI_API_URL_TEMPLATE.format(api_key=GEMINI_API_KEY)
-    logger.info("Requesting sentiment from Gemini API.")
-    try:
-        response = requests.post(api_url, json=payload, timeout=45)
-        response.raise_for_status()
-        result = response.json()
-        if (result.get("candidates") and
-                result["candidates"][0]["content"]["parts"][0].get("text")):
-            s_text = result["candidates"][0]["content"]["parts"][0]["text"].strip().capitalize()
-            if s_text in ["Positive", "Negative", "Neutral"]:
-                logger.info(f"Sentiment: {s_text}.")
-                return s_text
-            else:
-                logger.warning(f"LLM non-standard sentiment: '{s_text}'. "
-                               "Defaulting Neutral.")
-                return "Neutral"
-        else:
-            logger.error(f"Unexpected Gemini sentiment response: {result}")
-    except Exception as e:
-        logger.error(f"Err calling Gemini for sentiment: {e}", exc_info=True)
-    return None
+    return provider.get_sentiment(text_content, max_length)
 
 
 def scrape_url_action(
@@ -943,39 +1369,66 @@ class SelectSummaryStyleModal(ModalScreen[Optional[str]]):
         background: $surface-darken-1;
     }
     SelectSummaryStyleModal > Vertical {
-        width: 60;
+        width: 70;
         height: auto;
+        max-height: 80%;
         border: thick $primary-lighten-1;
         padding: 1 2;
         background: $surface;
     }
-    SelectSummaryStyleModal RadioSet {
+    SelectSummaryStyleModal VerticalScroll {
+        height: auto;
+        max-height: 20;
         margin: 1 0;
+    }
+    SelectSummaryStyleModal RadioSet {
+        height: auto;
     }
     SelectSummaryStyleModal RadioButton {
         padding: 1 0;
     }
     """
-    STYLES = [
-        ("overview", "Concise Overview (Default)"),
-        ("bullets", "Key Bullet Points"),
-        ("eli5", "ELI5 (Simple Explanation)")
-    ]
+
+    def __init__(self):
+        super().__init__()
+        self.templates = TemplateManager.get_all_templates()
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Label("Select Summary Style", classes="dialog-title")
-            yield RadioSet(*[RadioButton(n, id=i, value=(i == "overview")) for i, n in self.STYLES])
-            yield Horizontal(
-                Button("Summarize", variant="primary", id="cs_b"),
-                Button("Cancel", id="ccs_b"),
-                classes="modal-buttons"
-            )
+            yield Label("Select Summarization Template", classes="dialog-title")
+            with VerticalScroll():
+                # Create radio buttons from database templates
+                radio_buttons = []
+                for i, template in enumerate(self.templates):
+                    label = f"{template['name']}"
+                    if template['description']:
+                        label += f" - {template['description']}"
+                    radio_buttons.append(
+                        RadioButton(label, id=f"template_{template['id']}", value=(i == 0))
+                    )
+                yield RadioSet(*radio_buttons)
+            with Horizontal(classes="modal-buttons"):
+                yield Button("Summarize", variant="primary", id="cs_b")
+                yield Button("Manage Templates", id="manage_templates_b")
+                yield Button("Cancel", id="ccs_b")
 
     def on_button_pressed(self, e: Button.Pressed) -> None:
         if e.button.id == "cs_b":
             rs = self.query_one(RadioSet)
-            self.dismiss(rs.pressed_button.id if rs.pressed_button else "overview")
+            if rs.pressed_button:
+                # Extract template ID from button id (format: "template_{id}")
+                template_id = int(rs.pressed_button.id.split("_")[1])
+                # Find the template name
+                template = next((t for t in self.templates if t['id'] == template_id), None)
+                if template:
+                    self.dismiss(f"template:{template['name']}")
+                else:
+                    self.dismiss(None)
+            else:
+                self.dismiss(None)
+        elif e.button.id == "manage_templates_b":
+            # TODO: Open template management modal
+            self.dismiss(None)
         else:
             self.dismiss(None)
 
@@ -1069,6 +1522,79 @@ class ReadArticleModal(ModalScreen):
 
     def on_button_pressed(self, e: Button.Pressed) -> None:
         self.dismiss()
+
+
+class AIProviderSelectionModal(ModalScreen[Optional[str]]):
+    """Modal for selecting AI provider."""
+    DEFAULT_CSS = """
+    AIProviderSelectionModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    AIProviderSelectionModal > Vertical {
+        width: 60;
+        height: auto;
+        border: thick $primary-lighten-1;
+        background: $surface;
+        padding: 2;
+    }
+    AIProviderSelectionModal Label {
+        text-align: center;
+        text-style: bold;
+        margin-bottom: 1;
+    }
+    AIProviderSelectionModal RadioSet {
+        height: auto;
+        margin-bottom: 1;
+    }
+    AIProviderSelectionModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.current_provider = get_ai_provider()
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Select AI Provider")
+            with RadioSet(id="provider_radioset"):
+                yield RadioButton("Google Gemini", value=GEMINI_API_KEY != "", id="gemini_radio")
+                yield RadioButton("OpenAI GPT", value=OPENAI_API_KEY != "", id="openai_radio")
+                yield RadioButton("Anthropic Claude", value=CLAUDE_API_KEY != "", id="claude_radio")
+            with Horizontal():
+                yield Button("Select", variant="primary", id="select_btn")
+                yield Button("Cancel", id="cancel_btn")
+
+    def on_mount(self) -> None:
+        # Pre-select current provider
+        if self.current_provider:
+            name = self.current_provider.name
+            if "Gemini" in name:
+                self.query_one("#gemini_radio", RadioButton).value = True
+            elif "OpenAI" in name:
+                self.query_one("#openai_radio", RadioButton).value = True
+            elif "Claude" in name:
+                self.query_one("#claude_radio", RadioButton).value = True
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "select_btn":
+            radioset = self.query_one("#provider_radioset", RadioSet)
+            pressed_idx = radioset.pressed_index
+            if pressed_idx == 0 and GEMINI_API_KEY:
+                self.dismiss("gemini")
+            elif pressed_idx == 1 and OPENAI_API_KEY:
+                self.dismiss("openai")
+            elif pressed_idx == 2 and CLAUDE_API_KEY:
+                self.dismiss("claude")
+            else:
+                self.dismiss(None)
+        else:
+            self.dismiss(None)
 
 
 class ScrapeURLModal(ModalScreen[tuple[str, str, int] | None]):
@@ -1457,12 +1983,21 @@ class FilterScreen(ModalScreen[bool]):
         background: $surface-darken-1;
     }
     FilterScreen > Vertical {
-        width: 80%;
-        max-width: 80;
+        width: 85%;
+        max-width: 90;
         height: auto;
+        max-height: 85%;
         border: thick $primary-lighten-1;
         padding: 1 2;
         background: $surface;
+    }
+    FilterScreen VerticalScroll {
+        height: auto;
+        max-height: 30;
+    }
+    FilterScreen Horizontal {
+        width: 100%;
+        height: auto;
     }
     """
     BINDINGS = [Binding("escape", "dismiss", "Close"), Binding("enter", "apply_filters", "Apply")]
@@ -1472,19 +2007,38 @@ class FilterScreen(ModalScreen[bool]):
         self.app_ref = app_ref
 
     def compose(self) -> ComposeResult:
+        from textual.widgets import Checkbox
         with Vertical():
-            yield Label("Article Filters", classes="dialog-title")
-            yield Label("Title Filter:")
-            yield Input(placeholder="Title...", id="title_filter_input", value=self.app_ref.title_filter)
-            yield Label("URL Filter:")
-            yield Input(placeholder="Source URL...", id="url_filter_input", value=self.app_ref.url_filter)
-            yield Label("Date Filter:")
-            yield Input(placeholder="Date (YYYY-MM-DD)...", id="date_filter_input", value=self.app_ref.date_filter)
-            yield Label("Tags Filter:")
-            yield Input(placeholder="Tags (comma-sep)...", id="tags_filter_input", value=self.app_ref.tags_filter)
-            yield Label("Sentiment Filter:")
-            yield Input(placeholder="Sentiment (Pos/Neg/Neu)...", id="sentiment_filter_input", value=self.app_ref.sentiment_filter)
+            yield Label("Advanced Article Filters (v1.3.0)", classes="dialog-title")
+            with VerticalScroll():
+                yield Label("Title Filter:")
+                yield Input(placeholder="Title (supports regex)...", id="title_filter_input", value=self.app_ref.title_filter)
+
+                yield Label("URL Filter:")
+                yield Input(placeholder="Source URL (supports regex)...", id="url_filter_input", value=self.app_ref.url_filter)
+
+                yield Checkbox("Use Regex for Title/URL filters", id="use_regex_checkbox", value=self.app_ref.use_regex)
+
+                yield Label("Date Range:")
+                with Horizontal():
+                    yield Input(placeholder="From (YYYY-MM-DD)...", id="date_from_input", value=self.app_ref.date_filter_from)
+                    yield Input(placeholder="To (YYYY-MM-DD)...", id="date_to_input", value=self.app_ref.date_filter_to)
+
+                yield Label("Tags Filter (comma-separated):")
+                yield Input(placeholder="Tags...", id="tags_filter_input", value=self.app_ref.tags_filter)
+
+                with Horizontal():
+                    yield Label("Tags Logic:")
+                    with RadioSet(id="tags_logic_radioset"):
+                        yield RadioButton("AND (all tags)", id="tags_and", value=(self.app_ref.tags_logic == "AND"))
+                        yield RadioButton("OR (any tag)", id="tags_or", value=(self.app_ref.tags_logic == "OR"))
+
+                yield Label("Sentiment Filter:")
+                yield Input(placeholder="Sentiment (Pos/Neg/Neu)...", id="sentiment_filter_input", value=self.app_ref.sentiment_filter)
+
             with Horizontal(classes="modal-buttons"):
+                yield Button("Save Preset", id="save_preset_btn")
+                yield Button("Load Preset", id="load_preset_btn")
                 yield Button("Clear All", id="clear_btn")
                 yield Button("Apply", id="apply_btn", variant="primary")
                 yield Button("Cancel", id="cancel_btn")
@@ -1495,15 +2049,37 @@ class FilterScreen(ModalScreen[bool]):
         elif event.button.id == "clear_btn":
             for input_widget in self.query(Input):
                 input_widget.value = ""
+            self.query_one("#use_regex_checkbox", Checkbox).value = False
+            self.query_one("#tags_and", RadioButton).value = True
+        elif event.button.id == "save_preset_btn":
+            # TODO: Implement save preset modal
+            self.app_ref.notify("Save preset: Coming soon", severity="info")
+        elif event.button.id == "load_preset_btn":
+            # TODO: Implement load preset modal
+            self.app_ref.notify("Load preset: Coming soon", severity="info")
         elif event.button.id == "cancel_btn":
             self.dismiss(False)
 
     def action_apply_filters(self) -> None:
+        from textual.widgets import Checkbox
         self.app_ref.title_filter = self.query_one("#title_filter_input", Input).value
         self.app_ref.url_filter = self.query_one("#url_filter_input", Input).value
-        self.app_ref.date_filter = self.query_one("#date_filter_input", Input).value
+        self.app_ref.use_regex = self.query_one("#use_regex_checkbox", Checkbox).value
+        self.app_ref.date_filter_from = self.query_one("#date_from_input", Input).value
+        self.app_ref.date_filter_to = self.query_one("#date_to_input", Input).value
         self.app_ref.tags_filter = self.query_one("#tags_filter_input", Input).value
+
+        # Get tags logic from radio buttons
+        radioset = self.query_one("#tags_logic_radioset", RadioSet)
+        if radioset.pressed_button:
+            self.app_ref.tags_logic = "AND" if radioset.pressed_button.id == "tags_and" else "OR"
+
         self.app_ref.sentiment_filter = self.query_one("#sentiment_filter_input", Input).value
+
+        # Keep legacy date_filter for backwards compatibility
+        if self.app_ref.date_filter_from:
+            self.app_ref.date_filter = self.app_ref.date_filter_from
+
         self.dismiss(True)
 
     def action_dismiss(self) -> None:
@@ -1626,6 +2202,7 @@ class WebScraperApp(App[None]):
         Binding("ctrl+a", "select_all", "Select All"),
         Binding("ctrl+d", "deselect_all", "Deselect All"),
         Binding("ctrl+shift+d", "bulk_delete", "Bulk Delete"),
+        Binding("ctrl+p", "select_ai_provider", "AI Provider"),
         Binding("f1,ctrl+h", "toggle_help", "Help")
     ]
     dark = reactive(True, layout=True)
@@ -1638,6 +2215,11 @@ class WebScraperApp(App[None]):
     date_filter = reactive("")
     tags_filter = reactive("")
     sentiment_filter = reactive("")
+    # Advanced filtering options (v1.3.0)
+    use_regex = reactive(False)
+    date_filter_from = reactive("")
+    date_filter_to = reactive("")
+    tags_logic = reactive("AND")  # AND or OR
     current_scraper_profile: reactive[str] = reactive("Manual Entry")
     SORT_OPTIONS: List[Tuple[str, str]] = [
         ("sd.timestamp DESC", "Date Newest"),
@@ -1692,15 +2274,47 @@ class WebScraperApp(App[None]):
               "LEFT JOIN article_tags at ON sd.id = at.article_id "
               "LEFT JOIN tags t ON at.tag_id = t.id")
         conds, params, fdesc = [], {}, []
+
+        # Title filter with optional regex support
         if self.title_filter:
-            conds.append("sd.title LIKE :tf")
-            params["tf"] = f"%{self.title_filter}%"
-            fdesc.append(f"Title~'{self.title_filter}'")
+            if self.use_regex:
+                # For regex, we'll need to filter in Python after fetching
+                fdesc.append(f"Title~regex'{self.title_filter}'")
+            else:
+                conds.append("sd.title LIKE :tf")
+                params["tf"] = f"%{self.title_filter}%"
+                fdesc.append(f"Title~'{self.title_filter}'")
+
+        # URL filter with optional regex support
         if self.url_filter:
-            conds.append("sd.url LIKE :uf")
-            params["uf"] = f"%{self.url_filter}%"
-            fdesc.append(f"URL~'{self.url_filter}'")
-        if self.date_filter:
+            if self.use_regex:
+                # For regex, we'll need to filter in Python after fetching
+                fdesc.append(f"URL~regex'{self.url_filter}'")
+            else:
+                conds.append("sd.url LIKE :uf")
+                params["uf"] = f"%{self.url_filter}%"
+                fdesc.append(f"URL~'{self.url_filter}'")
+
+        # Date range filtering
+        if self.date_filter_from or self.date_filter_to:
+            if self.date_filter_from:
+                try:
+                    datetime.strptime(self.date_filter_from, "%Y-%m-%d")
+                    conds.append("date(sd.timestamp) >= :df_from")
+                    params["df_from"] = self.date_filter_from
+                    fdesc.append(f"Date>={self.date_filter_from}")
+                except ValueError:
+                    self.notify("Invalid 'from' date format.", title="Filter Error", severity="warning")
+            if self.date_filter_to:
+                try:
+                    datetime.strptime(self.date_filter_to, "%Y-%m-%d")
+                    conds.append("date(sd.timestamp) <= :df_to")
+                    params["df_to"] = self.date_filter_to
+                    fdesc.append(f"Date<={self.date_filter_to}")
+                except ValueError:
+                    self.notify("Invalid 'to' date format.", title="Filter Error", severity="warning")
+        elif self.date_filter:
+            # Legacy single date filter
             try:
                 datetime.strptime(self.date_filter, "%Y-%m-%d")
                 conds.append("date(sd.timestamp) = :df")
@@ -1709,14 +2323,27 @@ class WebScraperApp(App[None]):
             except ValueError:
                 if self.date_filter:
                     self.notify("Invalid date format.", title="Filter Error", severity="warning")
+
+        # Tags filter with AND/OR logic
         if self.tags_filter:
             tfs = [t.strip().lower() for t in self.tags_filter.split(',') if t.strip()]
             if tfs:
-                for i, tn in enumerate(tfs):
-                    pn = f"tgf_{i}"
-                    conds.append(f"sd.id IN (SELECT at_s.article_id FROM article_tags at_s JOIN tags t_s ON at_s.tag_id = t_s.id WHERE t_s.name = :{pn})")
-                    params[pn] = tn
-                fdesc.append(f"Tags='{', '.join(tfs)}'")
+                if self.tags_logic == "OR":
+                    # OR logic: article must have at least one of the tags
+                    tag_placeholders = ", ".join([f":tgf_{i}" for i in range(len(tfs))])
+                    conds.append(f"sd.id IN (SELECT at_s.article_id FROM article_tags at_s JOIN tags t_s ON at_s.tag_id = t_s.id WHERE t_s.name IN ({tag_placeholders}))")
+                    for i, tn in enumerate(tfs):
+                        params[f"tgf_{i}"] = tn
+                    fdesc.append(f"Tags(OR)='{', '.join(tfs)}'")
+                else:
+                    # AND logic: article must have all tags (original behavior)
+                    for i, tn in enumerate(tfs):
+                        pn = f"tgf_{i}"
+                        conds.append(f"sd.id IN (SELECT at_s.article_id FROM article_tags at_s JOIN tags t_s ON at_s.tag_id = t_s.id WHERE t_s.name = :{pn})")
+                        params[pn] = tn
+                    fdesc.append(f"Tags(AND)='{', '.join(tfs)}'")
+
+        # Sentiment filter
         if self.sentiment_filter:
             sval = self.sentiment_filter.strip().capitalize()
             if sval in ["Positive", "Negative", "Neutral"]:
@@ -1733,6 +2360,27 @@ class WebScraperApp(App[None]):
             with get_db_connection() as conn:
                 rows = conn.execute(bq, params).fetchall()
             logger.debug(f"Query returned {len(rows)} rows")
+
+            # Apply regex filtering if enabled (post-SQL filter)
+            if self.use_regex and (self.title_filter or self.url_filter):
+                filtered_rows = []
+                for r_d in rows:
+                    try:
+                        matches = True
+                        if self.title_filter:
+                            if not re.search(self.title_filter, r_d["title"], re.IGNORECASE):
+                                matches = False
+                        if matches and self.url_filter:
+                            if not re.search(self.url_filter, r_d["url"], re.IGNORECASE):
+                                matches = False
+                        if matches:
+                            filtered_rows.append(r_d)
+                    except re.error as e:
+                        self.notify(f"Invalid regex: {e}", title="Regex Error", severity="error")
+                        break
+                rows = filtered_rows
+                logger.debug(f"After regex filtering: {len(rows)} rows")
+
             self.row_metadata.clear()
             for r_d in rows:
                 s_ind = "✓" if r_d["has_s"] else " "
@@ -1894,16 +2542,35 @@ class WebScraperApp(App[None]):
             logger.error(f"Err details ID {self.selected_row_id}: {e}", exc_info=True)
             self.notify(f"Err details: {e}", title="Error", severity="error")
 
-    async def _summarize_worker(self, eid: int, link: str, style: str) -> None:
+    async def _summarize_worker(self, eid: int, link: str, style: str, title: str = "", url: str = "") -> None:
         self._toggle_loading(True)
-        self.notify(f"Starting '{style}' summary ID {eid}...", title="Summarizing", severity="info", timeout=3)
+        # Check if style is a template reference
+        is_template = style.startswith("template:")
+        display_name = style.split(":", 1)[1] if is_template else style
+        self.notify(f"Starting '{display_name}' summary ID {eid}...", title="Summarizing", severity="info", timeout=3)
         try:
             txt = fetch_article_content(link, False)
             if not txt:
                 self.notify(f"No content for ID {eid}.", title="Summ Error", severity="error")
                 self._toggle_loading(False)
                 return
-            summ = get_summary_from_llm(txt, style)
+
+            # Handle template-based summarization
+            if is_template:
+                template_name = style.split(":", 1)[1]
+                template_text = TemplateManager.get_template_by_name(template_name)
+                if template_text:
+                    # Apply template variables
+                    prompt = TemplateManager.apply_template(template_text, txt, title, url)
+                    summ = get_summary_from_llm(txt, "overview", template=prompt)
+                else:
+                    self.notify(f"Template '{template_name}' not found.", title="Error", severity="error")
+                    self._toggle_loading(False)
+                    return
+            else:
+                # Legacy style-based summarization
+                summ = get_summary_from_llm(txt, style)
+
             if summ:
                 def _update_summary_blocking():
                     with get_db_connection() as conn_blocking:
@@ -1932,8 +2599,22 @@ class WebScraperApp(App[None]):
             self.notify(f"No link for ID {self.selected_row_id}.", title="Error", severity="error")
             return
 
+        # Get article details for template variables
+        def _get_article_info():
+            with get_db_connection() as conn:
+                cursor = conn.execute("SELECT title, url FROM scraped_data WHERE id = ?", (self.selected_row_id,))
+                row = cursor.fetchone()
+                return (row['title'], row['url']) if row else ("", "")
+
+        title, url = _get_article_info()
+
         # Store summarization context for callbacks
-        self._summarize_context = {'row_id': self.selected_row_id, 'link': meta['link']}
+        self._summarize_context = {
+            'row_id': self.selected_row_id,
+            'link': meta['link'],
+            'title': title,
+            'url': url
+        }
 
         if meta.get('has_s'):
             def handle_confirm_result(confirmed):
@@ -1949,7 +2630,14 @@ class WebScraperApp(App[None]):
         def handle_style_result(style):
             if style is not None:
                 context = self._summarize_context
-                worker_with_args = functools.partial(self._summarize_worker, context['row_id'], context['link'], style)
+                worker_with_args = functools.partial(
+                    self._summarize_worker,
+                    context['row_id'],
+                    context['link'],
+                    style,
+                    context.get('title', ''),
+                    context.get('url', '')
+                )
                 self.run_worker(worker_with_args, group="llm", exclusive=True)
             else:
                 self.notify("Cancelled (no style).", title="Info", severity="info")
@@ -2162,6 +2850,24 @@ class WebScraperApp(App[None]):
                 self.notify("Clear DB cancelled.",title="Info",severity="info")
 
         self.push_screen(ConfirmModal("Delete ALL articles from DB? Irreversible!",confirm_text="Yes, Delete All"), handle_clear_confirmation)
+
+    async def action_select_ai_provider(self) -> None:
+        """Open AI provider selection modal."""
+        def handle_provider_selection(provider_key: Optional[str]) -> None:
+            if provider_key:
+                if provider_key == "gemini" and GEMINI_API_KEY:
+                    set_ai_provider(GeminiProvider(GEMINI_API_KEY))
+                    self.notify("AI Provider: Google Gemini", title="Provider Changed", severity="info")
+                elif provider_key == "openai" and OPENAI_API_KEY:
+                    set_ai_provider(OpenAIProvider(OPENAI_API_KEY))
+                    self.notify("AI Provider: OpenAI GPT", title="Provider Changed", severity="info")
+                elif provider_key == "claude" and CLAUDE_API_KEY:
+                    set_ai_provider(ClaudeProvider(CLAUDE_API_KEY))
+                    self.notify("AI Provider: Anthropic Claude", title="Provider Changed", severity="info")
+                else:
+                    self.notify("API key not configured in .env", title="Error", severity="error")
+        self.push_screen(AIProviderSelectionModal(), handle_provider_selection)
+
     async def action_toggle_help(self)->None:await self.app.push_screen(HelpModal())
     async def action_cycle_sort_order(self)->None:self.current_sort_index=(self.current_sort_index+1)%len(self.SORT_OPTIONS);await self.refresh_article_table();self.notify(f"Sorted by: {self.SORT_OPTIONS[self.current_sort_index][1]}",title="Sort Changed",severity="info",timeout=2)
     async def _handle_manage_tags_result(self,aid:int,nts:Optional[str])->None:

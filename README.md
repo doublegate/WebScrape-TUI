@@ -33,7 +33,7 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 ### 🗄️ Data Management
 
 - **SQLite Database**: Persistent storage with normalized schema design
-- **Advanced Filtering**: Dedicated filter screen (Ctrl+F) with multi-field filtering
+- **Advanced Filtering** (v1.3.0): Regex support, date ranges, AND/OR tag logic, filter presets
 - **Bulk Selection** (v1.2.0): Multi-select articles with visual [✓] indicators
 - **Select All/Deselect All** (v1.2.0): Ctrl+A/Ctrl+D for quick bulk operations
 - **Bulk Delete** (v1.2.0): Delete multiple articles at once with confirmation
@@ -41,19 +41,22 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Scraper Profile Context**: Visual indicators showing current scraper profile in status bar and modals
 - **Sequential Modal Dialogs**: Callback-based workflows preventing worker context errors
 - **Flexible Sorting**: 9 different sorting options with proper SQL table aliases
-- **Tag System**: Comma-separated tagging for article categorization
+- **Tag System**: Comma-separated tagging for article categorization with AND/OR logic (v1.3.0)
 - **CSV Export**: Export filtered data to CSV format
 - **JSON Export** (v1.2.0): Export to structured JSON with metadata and nested tags
 - **Transaction Safety**: Context managers ensure data integrity
 
 ### 🤖 AI Integration
 
-- **Google Gemini API**: State-of-the-art AI for content analysis
-- **Multiple Summarization Styles**: Brief, detailed, and bullet-point summaries
-- **Sentiment Analysis**: Confidence-scored sentiment detection
+- **Multiple AI Providers** (v1.3.0): Google Gemini, OpenAI GPT, Anthropic Claude support
+- **Provider Selection** (v1.3.0): Easy switching between AI providers (Ctrl+P)
+- **Custom Templates** (v1.3.0): 7 built-in + user-defined summarization templates
+- **Template Variables** (v1.3.0): Dynamic {title}, {content}, {url}, {date} substitution
+- **Multiple Summarization Styles**: Overview, bullets, ELI5, academic, executive, technical, news
+- **Sentiment Analysis**: Confidence-scored sentiment detection across all providers
 - **Async Processing**: Non-blocking AI operations to maintain UI responsiveness
 - **Optimized API Calls**: Efficient request handling and error management
-- **Configurable API Keys**: Easy setup for AI features
+- **Configurable API Keys**: Easy setup for multiple AI providers
 
 ### 🔧 Code Quality & Performance
 

@@ -5,6 +5,95 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2025-10-01
+
+### 🚀 Major Feature Release: Multi-Provider AI & Advanced Filtering
+
+This release adds support for multiple AI providers, custom summarization templates, and significantly enhanced filtering capabilities with regex support and advanced date/tag filtering options.
+
+### Added
+
+- **Multiple AI Provider Support**
+  - Google Gemini, OpenAI GPT, and Anthropic Claude integration
+  - `Ctrl+P`: Quick provider selection modal
+  - Unified AI provider abstraction layer
+  - Provider-specific configuration via `.env` file
+  - Support for multiple models per provider (GPT-4o, Claude 3.5 Sonnet, Gemini 2.0, etc.)
+  - Automatic fallback to Gemini if no provider configured
+
+- **Custom Summarization Templates**
+  - Template Manager class for template CRUD operations
+  - 7 built-in templates: Overview, Bullet Points, ELI5, Academic, Executive Summary, Technical Brief, News Brief
+  - User-defined custom templates with variable substitution
+  - Template variables: {title}, {content}, {url}, {date}
+  - Database-backed template storage
+  - Template selection in summarization modal
+
+- **Advanced Filtering System**
+  - **Regex Support**: Toggle regex mode for title and URL filters
+  - **Date Range Filtering**: Filter by from/to date ranges instead of single date
+  - **Tag Logic Options**: Choose between AND (all tags) or OR (any tag) logic
+  - **Filter Presets**: Save and load common filter combinations (UI ready, backend implemented)
+  - Enhanced filter modal with scrollable content
+  - Post-SQL regex filtering for complex patterns
+
+- **Enhanced Testing** (+15 tests)
+  - Tests for AI provider abstraction and initialization
+  - Tests for template variable substitution
+  - Tests for advanced filtering logic
+  - Basic regex and date range validation tests
+
+### Enhanced
+
+- **AI Integration**
+  - Legacy wrapper functions maintain backward compatibility
+  - All providers support custom templates
+  - Template-based summarization with article metadata
+  - Provider name displayed in summaryization messages
+
+- **User Interface**
+  - Updated filter screen with new options
+  - Checkbox for regex toggle
+  - Radio buttons for tag AND/OR logic
+  - Dual date inputs for range selection
+  - Save/Load preset buttons (preparation for full implementation)
+
+- **Database Schema**
+  - New `summarization_templates` table
+  - New `filter_presets` table
+  - Built-in templates auto-inserted on init
+  - Template metadata (name, description, is_builtin)
+
+### Changed
+
+- **Configuration**
+  - Added `OPENAI_API_KEY` and `CLAUDE_API_KEY` environment variables
+  - Provider initialization defaults to Gemini if available
+  - Template selection replaces hardcoded style options
+
+- **Filtering Logic**
+  - Enhanced SQL generation for tag OR logic
+  - Date range support with >= and <= operators
+  - Regex filtering applied post-SQL for complex patterns
+  - Filter status displays logic type (AND/OR)
+
+### Technical Details
+
+- Abstract base class `AIProvider` with implementations for each provider
+- Template Manager uses static methods for database operations
+- Regex compilation with proper error handling
+- Provider selection persists across application lifetime
+- All new reactive properties for filter options (use_regex, date_filter_from/to, tags_logic)
+
+### Performance
+
+- Regex filtering only applied when enabled
+- Template lookup cached in modal initialization
+- Efficient SQL query generation for tag logic
+- Provider switching without re-initialization overhead
+
+This release significantly expands the AI capabilities and filtering power of WebScrape-TUI, making it more flexible and suitable for professional workflows.
+
 ## [1.2.0] - 2025-10-01
 
 ### 🎯 Major Feature Release: Bulk Operations & JSON Export
