@@ -254,20 +254,39 @@ Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 
 ## 🔧 Features Deep Dive
 
-### Pre-installed Scraper Profiles
+### Pre-installed Scraper Profiles (24 Total)
 
+**Popular Tech & News Sites:**
 | Website | Profile Name | Description |
 |:--------|:-------------|:------------|
 | Hacker News | HN Front Page | Latest technology news and discussions |
-| Reddit | Reddit Hot Posts | Trending posts from various subreddits |
-| Medium | Medium Latest | Recent articles from Medium platform |
-| Dev.to | Dev.to Posts | Developer-focused articles and tutorials |
-| TechCrunch | TC Startup News | Startup and technology news |
-| Ars Technica | Ars Articles | In-depth technology analysis |
-| The Verge | Verge News | Consumer technology news |
-| GitHub | GitHub Trending | Trending repositories |
-| Stack Overflow | SO Questions | Latest programming questions |
-| Product Hunt | PH Products | New product launches |
+| Reddit | Reddit Subreddit Posts | Trending posts from subreddits (old.reddit.com) |
+| Medium | Medium Articles | Articles from Medium topics and publications |
+| Dev.to | Dev.to Articles | Developer articles and tutorials |
+| GitHub | GitHub Trending Repos | Trending open-source repositories |
+| TechCrunch | TechCrunch News | Startup and technology news |
+| Ars Technica | Ars Technica Articles | In-depth technology and science analysis |
+| The Verge | The Verge Articles | Consumer technology news and reviews |
+| Product Hunt | Product Hunt Products | New product launches and discoveries |
+| Lobsters | Lobsters Tech News | Computing-focused link aggregation |
+
+**Specialized Scrapers:**
+| Type | Profile Name | Description |
+|:-----|:-------------|:------------|
+| Wikipedia | Wikipedia Article Text | Paragraph extraction from Wikipedia articles |
+| Stack Overflow | StackOverflow Q&A | Questions and answers extraction |
+| Academic | Academic Abstract (arXiv) | Research paper abstracts from arXiv.org |
+| E-commerce | Product Details (Basic) | Product titles and prices |
+| Recipes | Recipe Ingredients | Ingredient lists from recipe sites |
+| Forums | Forum Posts (Generic) | Posts and comments from forums |
+| Tables | Tech Specs (Simple Table) | Table data extraction |
+| Archive | Archived Page (Wayback) | Wayback Machine integration |
+| RSS | RSS Feed Parser (Generic) | RSS/Atom feed parsing |
+| Documentation | Documentation Pages | ReadTheDocs, GitHub Pages, etc. |
+| Blogs | Blog Posts (WordPress) | WordPress blog articles |
+| Video | YouTube Video Descriptions | YouTube video metadata |
+| News | News Headlines (General) | Headlines from news websites |
+| Generic | Generic Article Cleaner | Universal article content extraction |
 
 ### Custom Scraper Creation
 
@@ -462,15 +481,51 @@ cd WebScrape-TUI
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install in development mode
-pip install -e .
+# Install dependencies
+pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
 # Run tests
-python -m pytest tests/
+python -m pytest tests/ -v
+
+# Run tests with coverage
+python -m pytest tests/ --cov=scrapetui --cov-report=html
+
+# View coverage report
+open htmlcov/index.html  # Or your browser of choice
 
 # Start developing!
+python scrapetui.py
 ```
+
+### Testing
+
+WebScrape-TUI includes a comprehensive test suite with 60+ tests:
+
+**Test Categories:**
+- **Database Tests** (14 tests): CRUD operations, schema validation, tag management
+- **Scraping Tests** (20 tests): HTML parsing, HTTP requests, error handling
+- **Utility Tests** (26 tests): Environment loading, data validation, text processing
+
+**Running Tests:**
+```bash
+# Run all tests
+pytest tests/
+
+# Run specific test file
+pytest tests/test_scraping.py
+
+# Run with verbose output
+pytest tests/ -v
+
+# Run with coverage report
+pytest tests/ --cov=scrapetui
+```
+
+**Test Results:**
+- 47/60 tests passing (78% success rate)
+- All scraping and utility tests passing ✓
+- Database tests require fixture improvements (future work)
 
 ### Areas for Contribution
 

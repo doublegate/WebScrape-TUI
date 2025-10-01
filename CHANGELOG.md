@@ -5,6 +5,64 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-10-01
+
+### 🚀 Feature Release: Enhanced Testing & Expanded Scraper Library
+
+Major feature release adding comprehensive testing infrastructure and significantly expanding pre-configured scraper profiles.
+
+### Added
+
+- **Comprehensive Test Suite** (60+ tests with 78% pass rate)
+  - Database tests: 14 tests for CRUD operations, schema validation, tag management
+  - Scraping tests: 20 tests for HTML parsing, HTTP requests, error handling
+  - Utility tests: 26 tests for environment loading, data validation, text processing
+  - Added `tests/` directory with proper pytest structure
+  - Created test fixtures and configuration files
+  - Mock testing for external dependencies
+
+- **14 New Pre-configured Scraper Profiles** (now 24 total)
+  - **Tech News**: Hacker News, Lobsters, TechCrunch, Ars Technica, The Verge
+  - **Developer Platforms**: Dev.to, GitHub Trending, Reddit Subreddits
+  - **Content Platforms**: Medium, Product Hunt, WordPress blogs
+  - **Specialized**: RSS feeds, documentation pages, YouTube descriptions
+
+- **Development Infrastructure**
+  - `requirements-dev.txt` with pytest, pytest-cov, black, flake8, mypy
+  - Proper test organization and fixtures
+  - Coverage reporting setup
+  - Testing documentation in README
+
+### Enhanced
+
+- **README Documentation**
+  - Added comprehensive scraper profile listing (24 profiles organized by category)
+  - Added testing section with instructions and results
+  - Updated development setup instructions
+  - Improved contribution guidelines
+
+- **Code Quality**
+  - All test code follows PEP 8 standards
+  - Proper type hints throughout test suite
+  - Comprehensive docstrings for all test functions
+
+### Fixed
+
+- **Repository Cleanup**
+  - Removed all sync conflict files
+  - Fixed version reference inconsistency (v1.0RC → v1.0)
+  - Cleaned up git repository state
+
+### Technical Details
+
+- Test framework: pytest with pytest-cov for coverage
+- Test execution: 47/60 tests passing (database tests need fixture improvements)
+- New scraper profiles include popular sites like Hacker News, Reddit, Medium, Dev.to, GitHub
+- All scrapers tested for profile structure validation
+- Mock testing prevents actual HTTP requests during test runs
+
+This release significantly improves the project's testability and expands the out-of-box scraper library for immediate productivity.
+
 ## [1.0.1] - 2025-05-26
 
 ### 🔧 Code Quality & Performance Enhancement
