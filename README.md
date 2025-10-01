@@ -1,8 +1,9 @@
-# WebScrape-TUI v1.0
+# WebScrape-TUI v1.3.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
+[![Version](https://img.shields.io/badge/version-1.3.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
@@ -153,25 +154,38 @@ python scrapetui.py
 
 ## ⚙️ Configuration
 
-### API Keys Setup
+### API Keys Setup (v1.3.0)
 
-For AI features, configure your Google Gemini API key using environment variables:
+For AI features, configure your API keys for supported providers using environment variables:
 
 1. **Copy the environment template:**
    ```bash
    cp .env.example .env
    ```
 
-2. **Edit the .env file:**
+2. **Edit the .env file with your API keys:**
    ```bash
-   # Open .env file and set your API key
-   GEMINI_API_KEY=your_actual_api_key_here
+   # Choose one or more AI providers (at least one required for AI features)
+
+   # Google Gemini (default provider)
+   GEMINI_API_KEY=your_gemini_api_key_here
+
+   # OpenAI GPT (optional)
+   OPENAI_API_KEY=your_openai_api_key_here
+
+   # Anthropic Claude (optional)
+   CLAUDE_API_KEY=your_claude_api_key_here
    ```
 
-3. **Get your API key:**
-   - Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Create a new API key
-   - Copy the key to your `.env` file
+3. **Get your API keys:**
+   - **Google Gemini**: Visit [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - **OpenAI**: Visit [OpenAI API Keys](https://platform.openai.com/api-keys)
+   - **Anthropic Claude**: Visit [Anthropic Console](https://console.anthropic.com/)
+
+4. **Select provider in-app:**
+   - Press `Ctrl+P` to open provider selection modal
+   - Choose from configured providers
+   - Provider selection persists across sessions
 
 **Important:** The `.env` file is automatically ignored by Git to keep your API keys secure.
 
@@ -182,6 +196,8 @@ All configuration is managed through the `.env` file:
 | Variable | Description | Default |
 |:---------|:------------|:--------|
 | `GEMINI_API_KEY` | Google Gemini API key for AI features | *(empty)* |
+| `OPENAI_API_KEY` | OpenAI GPT API key for AI features (v1.3.0) | *(empty)* |
+| `CLAUDE_API_KEY` | Anthropic Claude API key for AI features (v1.3.0) | *(empty)* |
 | `DATABASE_PATH` | Custom database file location | `scraped_data_tui_v1.0.db` |
 | `LOG_FILE_PATH` | Custom log file location | `scraper_tui_v1.0.log` |
 | `LOG_LEVEL` | Logging verbosity level | `DEBUG` |
@@ -222,9 +238,12 @@ Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 
 ### Managing Your Data
 
-**Filtering Articles:**
-- Press `Ctrl+F` to open the dedicated filter dialog
-- Set filters for title, URL, date range, tags, or sentiment
+**Filtering Articles (v1.3.0 Enhanced):**
+- Press `Ctrl+F` to open the advanced filter dialog
+- **Regex Support**: Toggle regex mode for title/URL pattern matching
+- **Date Range**: Filter by from/to dates instead of single date
+- **Tag Logic**: Choose AND (all tags) or OR (any tag) matching
+- **Filter Presets**: Save and load common filter combinations
 - Use "Clear All" to reset all filters quickly
 - Filters preserve current values when reopening
 - Apply filters to return to main screen with filtered results
@@ -236,9 +255,11 @@ Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 - Sentiment (positive/negative first)
 
 **Exporting Data:**
-- Press `E` to export current view to CSV
-- Includes all applied filters
-- Preserves column structure
+- Press `Ctrl+E` to export current view to CSV
+- Press `Ctrl+J` to export to JSON format (v1.2.0)
+- Includes all applied filters in both formats
+- JSON export includes metadata and nested tags
+- Preserves column structure and filter information
 
 ### Advanced Features
 
@@ -253,10 +274,13 @@ Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 - Markdown formatting for better readability
 - Navigate with arrow keys and scroll
 
-**AI Analysis:**
-- Configure Gemini API key in `.env` file
-- Automatic summarization in multiple styles
-- Sentiment analysis with confidence scores
+**AI Analysis (v1.3.0 Enhanced):**
+- Configure one or more AI provider API keys in `.env` file
+- **Multiple Providers**: Choose between Gemini, OpenAI GPT, or Claude (Ctrl+P)
+- **Custom Templates**: Select from 7 built-in or create your own summarization templates
+- **Template Variables**: Use {title}, {content}, {url}, {date} in custom templates
+- **Summarization Styles**: Overview, Bullets, ELI5, Academic, Executive, Technical, News
+- Sentiment analysis with confidence scores across all providers
 - Async processing for performance
 
 ## 🔧 Features Deep Dive
@@ -305,21 +329,18 @@ Create powerful custom scrapers with:
 - **Tag Templates**: Pre-populate tags for scraped content
 - **Descriptions**: Document scraper purpose and usage
 
-### Database Schema
+### Database Schema (Updated v1.3.0)
 
 ```sql
 -- Articles table
 CREATE TABLE scraped_data (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    url TEXT NOT NULL UNIQUE,
-    title TEXT,
-    content TEXT,
+    url TEXT NOT NULL,
+    title TEXT NOT NULL,
+    link TEXT NOT NULL,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    summary_brief TEXT,
-    summary_detailed TEXT,
-    summary_bullets TEXT,
-    sentiment_label TEXT,
-    sentiment_confidence REAL
+    summary TEXT,
+    sentiment TEXT
 );
 
 -- Tags system
@@ -329,10 +350,10 @@ CREATE TABLE tags (
 );
 
 CREATE TABLE article_tags (
-    article_id INTEGER,
-    tag_id INTEGER,
-    FOREIGN KEY (article_id) REFERENCES scraped_data(id),
-    FOREIGN KEY (tag_id) REFERENCES tags(id),
+    article_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    FOREIGN KEY (article_id) REFERENCES scraped_data(id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
     PRIMARY KEY (article_id, tag_id)
 );
 
@@ -342,10 +363,32 @@ CREATE TABLE saved_scrapers (
     name TEXT NOT NULL UNIQUE,
     url TEXT NOT NULL,
     selector TEXT NOT NULL,
-    default_limit INTEGER DEFAULT 10,
-    default_tags_csv TEXT DEFAULT '',
-    description TEXT DEFAULT '',
-    is_preinstalled BOOLEAN DEFAULT 0
+    default_limit INTEGER DEFAULT 0,
+    default_tags_csv TEXT,
+    description TEXT,
+    is_preinstalled INTEGER DEFAULT 0
+);
+
+-- Summarization templates (v1.3.0)
+CREATE TABLE summarization_templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    template TEXT NOT NULL,
+    description TEXT,
+    is_builtin INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Filter presets (v1.3.0)
+CREATE TABLE filter_presets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    title_filter TEXT,
+    url_filter TEXT,
+    date_filter TEXT,
+    tags_filter TEXT,
+    sentiment_filter TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
@@ -355,15 +398,18 @@ CREATE TABLE saved_scrapers (
 
 | Key | Action |
 |:----|:-------|
-| `q` | Quit application |
-| `h` | Show help dialog |
+| `q` / `Ctrl+C` | Quit application |
+| `F1` / `Ctrl+H` | Show help dialog |
 | `Ctrl+N` | New scrape dialog |
-| `Ctrl+P` | Saved scrapers |
-| `Ctrl+T` | Manage tags |
-| `Ctrl+F` | Open filter dialog |
+| `Ctrl+M` | Saved scrapers / Manage profiles |
+| `Ctrl+P` | **Select AI Provider** (v1.3.0) |
+| `Ctrl+T` | Manage tags for selected article |
+| `Ctrl+F` | Open advanced filter dialog |
 | `Ctrl+E` | Export to CSV |
 | `Ctrl+J` | **Export to JSON** (v1.2.0) |
-| `R` | Refresh data |
+| `Ctrl+L` | Toggle dark/light theme |
+| `Ctrl+S` | Cycle sort order |
+| `r` | Refresh data |
 
 ### Navigation & Selection
 
@@ -415,13 +461,17 @@ echo $TERM  # Should support Unicode
 - Review website's robots.txt
 - Ensure stable internet connection
 
-**3. AI features not working**
+**3. AI features not working (v1.3.0)**
 
-- Verify Gemini API key is set in `.env` file
+- Verify at least one AI provider API key is set in `.env` file
 - Ensure `.env` file exists (copy from `.env.example`)
-- Check API quota and billing in Google AI Studio
+- Press `Ctrl+P` to check which providers are configured
+- Check API quota and billing:
+  - Gemini: [Google AI Studio](https://makersuite.google.com/)
+  - OpenAI: [OpenAI Usage](https://platform.openai.com/usage)
+  - Claude: [Anthropic Console](https://console.anthropic.com/)
 - Review network connectivity
-- Validate API key permissions
+- Validate API key permissions and format
 
 **4. Database errors**
 
@@ -511,12 +561,15 @@ python scrapetui.py
 
 ### Testing
 
-WebScrape-TUI includes a comprehensive test suite with 60+ tests:
+WebScrape-TUI includes a comprehensive test suite with 100+ tests:
 
 **Test Categories:**
 - **Database Tests** (14 tests): CRUD operations, schema validation, tag management
 - **Scraping Tests** (20 tests): HTML parsing, HTTP requests, error handling
 - **Utility Tests** (26 tests): Environment loading, data validation, text processing
+- **Bulk Operations Tests** (12 tests): Multi-select, bulk delete, SQL queries (v1.2.0)
+- **JSON Export Tests** (14 tests): Format validation, data conversion (v1.2.0)
+- **AI Provider Tests** (15 tests): Provider abstraction, template substitution (v1.3.0)
 
 **Running Tests:**
 ```bash
@@ -524,29 +577,27 @@ WebScrape-TUI includes a comprehensive test suite with 60+ tests:
 pytest tests/
 
 # Run specific test file
-pytest tests/test_scraping.py
+pytest tests/test_ai_providers.py
 
 # Run with verbose output
 pytest tests/ -v
 
 # Run with coverage report
-pytest tests/ --cov=scrapetui
+pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
-**Test Results (v1.2.0):**
-- 73/86 tests passing (85% success rate)
-- All scraping, utility, bulk operations, and JSON export tests passing ✓
-- 12 new tests for bulk operations
-- 14 new tests for JSON export
-- Database tests require fixture improvements (13 tests, future work)
+**Test Results (v1.3.0):**
+- 100+ total tests across 6 categories
+- All AI provider, template, and filtering tests passing ✓
+- Comprehensive coverage of v1.3.0 features
+- Database tests require fixture improvements (ongoing work)
 
 ### Areas for Contribution
 
 - **New scraper profiles** for popular websites
 - **UI/UX improvements** and accessibility features
 - **Performance optimizations** for large datasets
-- **Additional AI integrations** (OpenAI, Claude, etc.)
-- **Export formats** (JSON, XML, PDF)
+- **Additional export formats** (XML, PDF, Markdown)
 - **Documentation** and tutorials
 - **Testing** and quality assurance
 - **Bug fixes** and stability improvements
@@ -555,7 +606,15 @@ pytest tests/ --cov=scrapetui
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
-### Recent Updates (v1.0.1)
+### Recent Updates (v1.3.0)
+- **Multi-Provider AI**: Google Gemini, OpenAI GPT, and Anthropic Claude integration
+- **Custom Templates**: 7 built-in templates with custom template management
+- **Advanced Filtering**: Regex support, date ranges, AND/OR tag logic
+- **Enhanced Testing**: 100+ tests across 6 categories
+- **Improved UX**: Quick provider selection (Ctrl+P) and enhanced filter UI
+- **Database Updates**: New tables for templates and filter presets
+
+### Previous Updates (v1.0.1)
 - **Code Quality & Performance**: Comprehensive code optimization and formatting improvements
 - **Import Optimization**: Removed unused imports reducing memory footprint (math, json, os, etc.)
 - **Database Performance**: Enhanced SQL query formatting and connection management
@@ -619,12 +678,18 @@ SOFTWARE.
 
 ## 🎯 Roadmap
 
+### Completed Features ✅
+- [x] **Multiple AI Providers**: Gemini, OpenAI, Claude (v1.3.0)
+- [x] **Advanced Filtering**: Regex, date ranges, AND/OR tag logic (v1.3.0)
+- [x] **Custom Templates**: Built-in and user-defined summarization templates (v1.3.0)
+- [x] **Bulk Operations**: Multi-select for batch delete operations (v1.2.0)
+- [x] **JSON Export**: Full export with metadata and nested structure (v1.2.0)
+
 ### Upcoming Features
 - [ ] **Plugin System**: Extensible architecture for custom processors
 - [ ] **Scheduled Scraping**: Automated scraping with cron-like scheduling
 - [ ] **Data Visualization**: Charts and graphs for scraped data analysis
 - [ ] **Advanced Search**: Full-text search with indexing
-- [ ] **Bulk Operations**: Multi-select for batch operations
 - [ ] **Configuration Files**: YAML/JSON configuration management
 - [ ] **Docker Support**: Containerized deployment options
 - [ ] **Web Interface**: Optional web UI for remote access
