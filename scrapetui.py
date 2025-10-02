@@ -3066,7 +3066,7 @@ class SettingsModal(ModalScreen[bool]):
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
-            yield Label("Application Settings (Ctrl+,)", classes="dialog-title")
+            yield Label("Application Settings (Ctrl+G)", classes="dialog-title")
 
             yield Label("\n=== AI Configuration ===")
             yield Label("Default AI Provider:")
@@ -3616,7 +3616,7 @@ class WebScraperApp(App[None]):
         Binding("ctrl+d", "deselect_all", "Deselect All"),
         Binding("ctrl+shift+d", "bulk_delete", "Bulk Delete"),
         Binding("ctrl+p", "select_ai_provider", "AI Provider"),
-        Binding("ctrl+period", "open_settings", "Settings"),
+        Binding("ctrl+g", "open_settings", "Settings"),
         Binding("ctrl+shift+f", "manage_filter_presets", "Filter Presets"),
         Binding("ctrl+shift+s", "save_filter_preset", "Save Preset"),
         Binding("ctrl+shift+a", "manage_schedules", "Schedules"),
@@ -4403,7 +4403,7 @@ class WebScraperApp(App[None]):
         self.push_screen(AIProviderSelectionModal(), handle_provider_selection)
 
     async def action_open_settings(self) -> None:
-        """Open settings modal (Ctrl+,)."""
+        """Open settings modal (Ctrl+G)."""
         def handle_settings_result(saved: bool) -> None:
             if saved:
                 self.config = ConfigManager.load_config()

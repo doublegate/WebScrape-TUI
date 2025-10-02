@@ -86,7 +86,7 @@ WebScrape-TUI is a mature, feature-complete Python-based terminal user interface
 | Feature | Status | Quality | Notes |
 |---------|--------|---------|-------|
 | YAML Configuration | ✅ Complete | 🟢 Excellent | Human-readable |
-| Settings Modal | ✅ Complete | 🟢 Excellent | Ctrl+, interface |
+| Settings Modal | ✅ Complete | 🟢 Excellent | Ctrl+G interface |
 | Deep Merge Config | ✅ Complete | 🟢 Excellent | Defaults + user |
 | Filter Presets | ✅ Complete | 🟢 Excellent | Save/load combos |
 | Preset Management | ✅ Complete | 🟢 Excellent | CRUD operations |

@@ -297,8 +297,8 @@ The application includes a User-Agent header, but some sites block anyway.
 
 **Solution:**
 ```bash
-# Option 1: Via Settings Modal (Ctrl+,)
-# 1. Press Ctrl+,
+# Option 1: Via Settings Modal (Ctrl+G)
+# 1. Press Ctrl+G
 # 2. Navigate to AI section
 # 3. Enter API key
 # 4. Save
@@ -366,7 +366,7 @@ CLAUDE_API_KEY=your_key_here
 
 3. **Create custom template:**
    ```bash
-   # In Settings (Ctrl+,)
+   # In Settings (Ctrl+G)
    # Add custom template with specific instructions
    ```
 

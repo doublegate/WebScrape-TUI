@@ -63,7 +63,7 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 ### 🔧 Configuration & Performance
 
 - **YAML Configuration** (v1.4.0): Human-readable config files with deep merge support
-- **Settings Modal** (v1.4.0): In-app configuration editor (Ctrl+,)
+- **Settings Modal** (v1.4.0): In-app configuration editor (Ctrl+G)
 - **Optimized Codebase**: Comprehensive formatting and performance improvements
 - **Memory Efficiency**: Removed unused imports and optimized resource usage
 - **Enhanced Error Handling**: Robust exception management and logging
@@ -212,7 +212,7 @@ logging:
 ```
 
 **In-App Configuration:**
-- Press `Ctrl+,` to open the Settings modal
+- Press `Ctrl+G` to open the Settings modal
 - Edit settings through the interactive interface
 - Changes are saved to `config.yaml` automatically
 
@@ -471,7 +471,7 @@ CREATE TABLE filter_presets (
 | `Ctrl+N` | New scrape dialog |
 | `Ctrl+M` | Saved scrapers / Manage profiles |
 | `Ctrl+P` | **Select AI Provider** (v1.3.0) |
-| `Ctrl+period` | **Settings** (v1.4.0) |
+| `Ctrl+G` | **Settings** (v1.4.0) |
 | `Ctrl+Shift+A` | **Manage Schedules** (v1.5.0) |
 | `Ctrl+Shift+V` | **View Analytics** (v1.6.0) |
 | `Ctrl+T` | Manage tags for selected article |
@@ -725,7 +725,7 @@ See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
 ### Previous Updates (v1.4.0)
 - **YAML Configuration**: Human-readable config files with automatic creation and deep merge
-- **Settings Modal**: In-app configuration editor with live updates (Ctrl+,)
+- **Settings Modal**: In-app configuration editor with live updates (Ctrl+G)
 - **Filter Presets**: Save and load filter combinations with database persistence
 - **Enhanced Database**: New filter_presets table with full parameter support
 - **Comprehensive Testing**: 111 tests with 14 new tests for v1.4.0 features

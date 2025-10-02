@@ -39,7 +39,7 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
 
 #### Configuration & Presets (v1.4.0)
 - ✅ YAML configuration system
-- ✅ In-app settings editor (Ctrl+,)
+- ✅ In-app settings editor (Ctrl+G)
 - ✅ Filter preset management
 - ✅ Deep merge configuration
 - ✅ Database persistence for presets

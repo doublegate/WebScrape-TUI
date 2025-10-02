@@ -216,7 +216,7 @@ This release introduces a comprehensive scheduled scraping system with backgroun
 ### Keyboard Shortcuts
 
 - `Ctrl+Shift+A`: Open Schedule Management modal
-- `Ctrl+.`: Open Settings modal (changed from `Ctrl+,` for better ergonomics)
+- `Ctrl+G`: Open Settings modal (changed for better compatibility)
 
 ### Performance & Quality
 
@@ -258,7 +258,7 @@ This release adds comprehensive configuration management with YAML/JSON support 
   - YAML-based configuration file (`config.yaml`) with automatic creation
   - JSON export support for configuration portability
   - Deep merge functionality for partial config updates
-  - Settings modal (`Ctrl+,`) for easy configuration
+  - Settings modal (`Ctrl+G`) for easy configuration
   - Configurable options:
     - Default AI provider (Gemini/OpenAI/Claude)
     - Default export format (CSV/JSON)
@@ -266,7 +266,7 @@ This release adds comprehensive configuration management with YAML/JSON support 
     - Database auto-vacuum and backup settings
     - Logging configuration
 
-- **Settings Modal (`Ctrl+,`)**
+- **Settings Modal (`Ctrl+G`)**
   - Interactive configuration editor with radio buttons and checkboxes
   - AI provider selection with persistence
   - Export format preferences
@@ -317,7 +317,7 @@ This release adds comprehensive configuration management with YAML/JSON support 
 
 ### Keyboard Shortcuts
 
-- `Ctrl+,`: Open Settings modal
+- `Ctrl+G`: Open Settings modal
 - `Ctrl+Shift+F`: Manage Filter Presets (load/delete)
 - `Ctrl+Shift+S`: Save current filters as preset
 
