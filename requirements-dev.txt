@@ -7,6 +7,7 @@
 pytest>=7.0.0                    # Testing framework
 pytest-cov>=4.0.0                # Coverage reporting
 pytest-asyncio>=0.21.0           # Async test support
+pytest-mock>=3.10.0              # Mocking support for tests
 
 # Code Quality
 black>=22.0.0                    # Code formatting
