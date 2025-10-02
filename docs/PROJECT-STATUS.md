@@ -1,7 +1,7 @@
 # Project Status Report
 
 **Project:** WebScrape-TUI
-**Current Version:** v1.9.0
+**Current Version:** v1.9.5
 **Report Date:** October 1, 2025
 **Status:** ✅ Production Ready
 

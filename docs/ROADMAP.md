@@ -4,7 +4,7 @@
 
 Transform WebScrape-TUI into the premier open-source terminal-based web scraping and data analysis platform, combining powerful scraping capabilities with advanced AI analysis, data visualization, and automation features.
 
-## Current Status: v1.9.0 (Q1 2026)
+## Current Status: v1.9.5 (Q1 2026)
 
 ### ✅ Completed Features
 

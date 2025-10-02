@@ -3626,7 +3626,7 @@ class DuplicateDetectionManager:
     """
 
     @staticmethod
-    def find_duplicate_articles(
+    def find_duplicates(
         articles: List[Dict[str, Any]],
         similarity_threshold: int = 85
     ) -> List[Dict[str, Any]]:
