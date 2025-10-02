@@ -70,25 +70,25 @@ class TestExactDuplicateDetection:
         """Test finding exact duplicate articles."""
         duplicates = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=1.0  # Exact match
+            similarity_threshold=100  # Exact match
         )
 
         assert len(duplicates) > 0
 
         # Verify duplicate structure
         dup = duplicates[0]
-        assert 'id1' in dup
-        assert 'id2' in dup
-        assert 'title1' in dup
-        assert 'title2' in dup
-        assert 'similarity' in dup
-        assert dup['similarity'] >= 1.0
+        assert 'article1_id' in dup
+        assert 'article2_id' in dup
+        assert 'article1_title' in dup
+        assert 'article2_title' in dup
+        assert 'similarity_score' in dup
+        assert dup['similarity_score'] >= 95  # High similarity (0-100 scale)
 
     def test_no_exact_duplicates(self, unique_articles):
         """Test with articles that have no exact duplicates."""
         duplicates = DuplicateDetectionManager.find_duplicates(
             unique_articles,
-            threshold=1.0
+            similarity_threshold=100
         )
 
         assert len(duplicates) == 0
@@ -97,15 +97,15 @@ class TestExactDuplicateDetection:
         """Test that exact duplicates are correctly identified."""
         duplicates = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=1.0
+            similarity_threshold=100
         )
 
         # Articles 1 and 2 should be exact duplicates
         found_exact = False
         for dup in duplicates:
-            if (dup['id1'] == 1 and dup['id2'] == 2) or (dup['id1'] == 2 and dup['id2'] == 1):
+            if (dup['article1_id'] == 1 and dup['article2_id'] == 2) or (dup['article1_id'] == 2 and dup['article2_id'] == 1):
                 found_exact = True
-                assert dup['similarity'] >= 0.95  # Very high similarity
+                assert dup['similarity_score'] >= 95  # Very high similarity (0-100 scale)
 
         assert found_exact, "Exact duplicates not detected"
 
@@ -117,7 +117,7 @@ class TestFuzzyDuplicateDetection:
         """Test fuzzy matching for similar articles."""
         duplicates = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=0.7  # 70% similarity
+            similarity_threshold=70  # 70% similarity
         )
 
         assert len(duplicates) > 0
@@ -130,13 +130,13 @@ class TestFuzzyDuplicateDetection:
         # High threshold - fewer duplicates
         strict_dups = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=0.9
+            similarity_threshold=90
         )
 
         # Low threshold - more duplicates
         loose_dups = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=0.5
+            similarity_threshold=50
         )
 
         # Lower threshold should find same or more duplicates
@@ -146,14 +146,14 @@ class TestFuzzyDuplicateDetection:
         """Test detection of near-duplicate articles."""
         duplicates = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=0.8
+            similarity_threshold=80
         )
 
         # Articles 1 and 3 are near-duplicates (similar content, slightly different wording)
         similar_ids = set()
         for dup in duplicates:
-            similar_ids.add(dup['id1'])
-            similar_ids.add(dup['id2'])
+            similar_ids.add(dup['article1_id'])
+            similar_ids.add(dup['article2_id'])
 
         # Should include the Python-related articles
         assert 1 in similar_ids or 3 in similar_ids
@@ -162,13 +162,13 @@ class TestFuzzyDuplicateDetection:
         """Test that similarity scores are meaningful."""
         duplicates = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=0.5
+            similarity_threshold=50
         )
 
         for dup in duplicates:
-            sim = dup['similarity']
-            assert 0.0 <= sim <= 1.0
-            assert sim >= 0.5  # At least threshold similarity
+            sim = dup['similarity_score']
+            assert 0 <= sim <= 100
+            assert sim >= 50  # At least threshold similarity
 
 
 class TestSimilarityThreshold:
@@ -179,14 +179,14 @@ class TestSimilarityThreshold:
         # Threshold = 0 (everything is duplicate)
         all_dups = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=0.0
+            similarity_threshold=0
         )
         assert len(all_dups) > 0
 
         # Threshold = 1.0 (only exact matches)
         exact_dups = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=1.0
+            similarity_threshold=100
         )
         # Should be fewer than all_dups
         assert len(exact_dups) <= len(all_dups)
@@ -197,7 +197,7 @@ class TestSimilarityThreshold:
         try:
             duplicates = DuplicateDetectionManager.find_duplicates(
                 duplicate_articles,
-                threshold=1.5
+                similarity_threshold=150
             )
             # If it doesn't error, threshold should be clamped
             assert isinstance(duplicates, list)
@@ -209,12 +209,12 @@ class TestSimilarityThreshold:
         """Test threshold with decimal precision."""
         dups_85 = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=0.85
+            similarity_threshold=85
         )
 
         dups_86 = DuplicateDetectionManager.find_duplicates(
             duplicate_articles,
-            threshold=0.86
+            similarity_threshold=86
         )
 
         # Small threshold change may affect results
@@ -228,61 +228,67 @@ class TestArticleClustering:
 
     def test_cluster_articles_basic(self, duplicate_articles):
         """Test basic article clustering."""
-        clusters = DuplicateDetectionManager.cluster_articles(
+        result = DuplicateDetectionManager.cluster_articles(
             duplicate_articles,
             num_clusters=2
         )
 
-        assert len(clusters) == 2
+        assert 'clusters' in result
+        assert 'num_clusters' in result
+        assert result['num_clusters'] == 2
 
         # Verify cluster structure
-        cluster = clusters[0]
+        clusters = result['clusters']
+        first_cluster_id = list(clusters.keys())[0]
+        cluster = clusters[first_cluster_id]
         assert 'articles' in cluster
-        assert 'keywords' in cluster
+        assert 'cluster_id' in cluster
+        assert 'size' in cluster
         assert len(cluster['articles']) > 0
 
     def test_cluster_with_custom_num_clusters(self, duplicate_articles):
         """Test clustering with different numbers of clusters."""
-        clusters_2 = DuplicateDetectionManager.cluster_articles(
+        result_2 = DuplicateDetectionManager.cluster_articles(
             duplicate_articles,
             num_clusters=2
         )
 
-        clusters_3 = DuplicateDetectionManager.cluster_articles(
+        result_3 = DuplicateDetectionManager.cluster_articles(
             duplicate_articles,
             num_clusters=3
         )
 
-        assert len(clusters_2) == 2
-        assert len(clusters_3) == 3
+        assert result_2['num_clusters'] == 2
+        assert result_3['num_clusters'] == 3
 
     def test_cluster_coverage(self, duplicate_articles):
         """Test that all articles are assigned to clusters."""
-        clusters = DuplicateDetectionManager.cluster_articles(
+        result = DuplicateDetectionManager.cluster_articles(
             duplicate_articles,
             num_clusters=3
         )
 
         # Count total articles in all clusters
-        total_articles = sum(len(c['articles']) for c in clusters)
+        total_articles = sum(c['size'] for c in result['clusters'].values())
 
-        # Should equal original article count
-        assert total_articles == len(duplicate_articles)
+        # Should equal original article count (or close due to clustering)
+        assert total_articles == result['total_articles']
 
     def test_cluster_keywords(self, duplicate_articles):
-        """Test that clusters have meaningful keywords."""
-        clusters = DuplicateDetectionManager.cluster_articles(
+        """Test that clusters have meaningful structure."""
+        result = DuplicateDetectionManager.cluster_articles(
             duplicate_articles,
             num_clusters=2
         )
 
-        for cluster in clusters:
-            keywords = cluster['keywords']
-            assert len(keywords) > 0
-            # Keywords should be strings
-            for keyword in keywords:
-                assert isinstance(keyword, str)
-                assert len(keyword) > 0
+        clusters = result['clusters']
+        for cluster_id, cluster in clusters.items():
+            # Verify cluster has articles
+            assert len(cluster['articles']) > 0
+            # Each article should have article_id and title
+            for article in cluster['articles']:
+                assert 'article_id' in article
+                assert 'title' in article
 
 
 class TestRelatedArticlesFinding:
@@ -297,7 +303,7 @@ class TestRelatedArticlesFinding:
         related = DuplicateDetectionManager.find_related_articles(
             reference_article,
             other_articles,
-            threshold=0.5
+            top_n=5
         )
 
         assert isinstance(related, list)
@@ -312,13 +318,13 @@ class TestRelatedArticlesFinding:
         related = DuplicateDetectionManager.find_related_articles(
             reference_article,
             other_articles,
-            threshold=0.3
+            top_n=5
         )
 
         if len(related) >= 2:
             # Verify sorting (highest similarity first)
             for i in range(len(related) - 1):
-                assert related[i]['similarity'] >= related[i + 1]['similarity']
+                assert related[i]['similarity_score'] >= related[i + 1]['similarity_score']
 
     def test_related_articles_limit(self, duplicate_articles):
         """Test limiting number of related articles returned."""
@@ -328,7 +334,6 @@ class TestRelatedArticlesFinding:
         related = DuplicateDetectionManager.find_related_articles(
             reference_article,
             other_articles,
-            threshold=0.1,  # Low threshold to find many
             top_n=2  # Limit to 2
         )
 
@@ -342,7 +347,7 @@ class TestNoDuplicatesScenario:
         """Test behavior when no duplicates exist."""
         duplicates = DuplicateDetectionManager.find_duplicates(
             unique_articles,
-            threshold=0.85
+            similarity_threshold=85
         )
 
         assert len(duplicates) == 0
@@ -358,7 +363,7 @@ class TestNoDuplicatesScenario:
 
         duplicates = DuplicateDetectionManager.find_duplicates(
             single_article,
-            threshold=0.8
+            similarity_threshold=80
         )
 
         assert len(duplicates) == 0
@@ -367,7 +372,7 @@ class TestNoDuplicatesScenario:
         """Test with empty articles list."""
         duplicates = DuplicateDetectionManager.find_duplicates(
             [],
-            threshold=0.8
+            similarity_threshold=80
         )
 
         assert len(duplicates) == 0

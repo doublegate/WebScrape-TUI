@@ -1203,6 +1203,21 @@ def init_db():
                 )
             """)
 
+            # Add summary quality table (v1.9.0)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS summary_quality (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    article_id INTEGER NOT NULL UNIQUE,
+                    rouge1 REAL,
+                    rouge2 REAL,
+                    rougeL REAL,
+                    coherence_score REAL,
+                    user_rating INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (article_id) REFERENCES scraped_data(id) ON DELETE CASCADE
+                )
+            """)
+
             # Add article clusters table (v1.9.0)
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS article_clusters (
