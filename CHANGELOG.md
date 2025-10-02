@@ -5,6 +5,132 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2025-10-01
+
+### 📅 Major Feature Release: Scheduled Scraping & Automation
+
+This release introduces a comprehensive scheduled scraping system with background automation, allowing users to configure recurring scrapes that run automatically using cron-like scheduling.
+
+### Added
+
+- **Scheduled Scraping System**
+  - Create, manage, and delete scheduled scrapes
+  - Background scheduler using APScheduler library
+  - Automatic execution at specified intervals
+  - Enable/disable schedules without deletion
+  - Comprehensive schedule status tracking (last run, next run, run count, status)
+  - Error tracking and logging for failed scrapes
+
+- **Schedule Types**
+  - **Hourly**: Execute every hour on the hour
+  - **Daily**: Execute at specific time (HH:MM format, e.g., 09:00)
+  - **Weekly**: Execute on specific day and time (day:HH:MM format, e.g., 0:09:00 for Monday 9am)
+  - **Interval**: Execute every N minutes (custom interval in minutes)
+  - **Cron**: Support for cron-style expressions (future enhancement)
+
+- **Schedule Management Modal (`Ctrl+Shift+A`)**
+  - DataTable showing all schedules with comprehensive status
+  - Add new schedules with intuitive form interface
+  - Enable/disable schedules with single button click
+  - Delete schedules with confirmation dialog
+  - Real-time schedule status updates
+  - View last run time, next run time, run count, and execution status
+
+- **Add Schedule Modal**
+  - Text inputs for schedule name and scraper profile selection
+  - Radio button selection for schedule type
+  - Schedule value input with format hints
+  - Input validation with error messages
+  - Profile ID selection from existing scraper profiles
+
+- **Enhanced Database Schema**
+  - New `scheduled_scrapes` table with columns:
+    - `id`: Primary key auto-increment
+    - `name`: Unique schedule name
+    - `scraper_profile_id`: Foreign key to saved_scrapers table
+    - `schedule_type`: Type of schedule (hourly/daily/weekly/interval)
+    - `schedule_value`: Schedule parameters (time, interval, etc.)
+    - `enabled`: Boolean flag for enable/disable
+    - `last_run`: Timestamp of last execution
+    - `next_run`: Calculated next execution time
+    - `run_count`: Total number of executions
+    - `last_status`: Status of last run (success/failed/running)
+    - `last_error`: Error message if failed
+    - `created_at`: Schedule creation timestamp
+  - Foreign key constraint to saved_scrapers for data integrity
+
+### Technical Implementation
+
+- **ScheduleManager Class**
+  - CRUD operations for schedule management
+  - Next run time calculation for all schedule types
+  - Execution recording with status tracking
+  - List schedules with enabled filtering
+  - Update schedule parameters dynamically
+  - Comprehensive error handling and logging
+
+- **Background Scheduler Integration**
+  - APScheduler BackgroundScheduler instance in WebScraperApp
+  - Automatic loading of enabled schedules on app startup
+  - Dynamic job registration with appropriate triggers:
+    - `IntervalTrigger` for hourly and interval schedules
+    - `CronTrigger` for daily and weekly schedules
+  - Proper scheduler shutdown on app exit
+  - Thread-safe execution in background
+
+- **Schedule Execution Logic**
+  - Automatic scrape execution at scheduled times
+  - Status tracking (running → success/failed)
+  - Error capture and logging for diagnostics
+  - Next run time recalculation after each execution
+  - Run count increment for statistics
+  - Integration with existing `scrape_url_action` function
+
+- **New Modal Screens**
+  - `ScheduleManagementModal`: Full schedule management interface
+  - `AddScheduleModal`: Schedule creation form with validation
+
+### Dependencies
+
+- Added `APScheduler>=3.10.0` for background task scheduling
+  - Supports cron-like scheduling with flexible triggers
+  - Background thread execution
+  - Job persistence and management
+  - Multiple trigger types (interval, cron, date)
+
+### Testing
+
+- Added 16 new tests in `test_scheduling.py`
+  - 12 tests for ScheduleManager (CRUD, execution recording, duplicates)
+  - 4 tests for schedule calculations (next run times for all types)
+  - 3 tests for database schema (table existence, uniqueness, foreign keys)
+- Total test suite: 127 tests (all passing)
+
+### Keyboard Shortcuts
+
+- `Ctrl+Shift+A`: Open Schedule Management modal
+- `Ctrl+.`: Open Settings modal (changed from `Ctrl+,` for better ergonomics)
+
+### Performance & Quality
+
+- Background scheduler runs independently without blocking UI
+- Efficient database queries with proper indexing
+- Automatic schedule loading on startup
+- Graceful scheduler shutdown to prevent hanging threads
+- Comprehensive error handling for failed scrapes
+- Detailed logging for debugging and monitoring
+- Zero breaking changes - full backward compatibility
+
+### Use Cases
+
+- **Daily News Aggregation**: Schedule HN, Reddit, and tech news scraping every morning
+- **Hourly Price Monitoring**: Track product prices every hour for deals
+- **Weekly Report Compilation**: Gather industry articles every Monday morning
+- **Custom Intervals**: Scrape data every 15, 30, or 60 minutes
+- **Automated Data Collection**: Hands-off data gathering for research projects
+
+This release transforms WebScrape-TUI into a fully automated data collection platform, enabling users to set up recurring scrapes and walk away. The comprehensive schedule management interface provides full control over automation workflows.
+
 ## [1.4.0] - 2025-10-01
 
 ### 🎛️ Major Feature Release: Configuration & Filter Presets

@@ -107,11 +107,17 @@ import csv
 import json
 import yaml
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, List, Optional, Tuple, Dict
 from abc import ABC, abstractmethod
 import functools
+
+# APScheduler imports for scheduling functionality
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.triggers.date import DateTrigger
 
 # Textual imports
 from textual.app import App, ComposeResult
@@ -615,6 +621,25 @@ def init_db():
                 conn.execute("ALTER TABLE filter_presets ADD COLUMN tags_logic TEXT DEFAULT 'AND'")
             except sqlite3.OperationalError:
                 pass
+
+            # Add scheduled scrapes table (v1.5.0)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS scheduled_scrapes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL UNIQUE,
+                    scraper_profile_id INTEGER,
+                    schedule_type TEXT NOT NULL,
+                    schedule_value TEXT NOT NULL,
+                    enabled INTEGER DEFAULT 1,
+                    last_run TIMESTAMP,
+                    next_run TIMESTAMP,
+                    run_count INTEGER DEFAULT 0,
+                    last_status TEXT,
+                    last_error TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (scraper_profile_id) REFERENCES saved_scrapers(id) ON DELETE CASCADE
+                )
+            """)
 
             index_statements = [
                 "CREATE UNIQUE INDEX IF NOT EXISTS idx_link_unique "
@@ -1337,6 +1362,294 @@ class FilterPresetManager:
         except Exception as e:
             logger.error(f"Error deleting filter preset: {e}")
             return False
+
+
+class ScheduleManager:
+    """Manages scheduled scraping with APScheduler integration (v1.5.0)."""
+
+    @staticmethod
+    def create_schedule(name: str, scraper_profile_id: int, schedule_type: str,
+                       schedule_value: str, enabled: bool = True) -> bool:
+        """
+        Create a new scheduled scrape.
+
+        Args:
+            name: Unique schedule name
+            scraper_profile_id: ID of scraper profile to execute
+            schedule_type: Type of schedule ('interval', 'cron', 'daily', 'weekly')
+            schedule_value: Schedule parameters (e.g., '60' for 60 minutes, '0 9 * * *' for cron)
+            enabled: Whether schedule is active
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            with get_db_connection() as conn:
+                # Calculate next run time based on schedule
+                next_run = ScheduleManager._calculate_next_run(schedule_type, schedule_value)
+
+                conn.execute("""
+                    INSERT INTO scheduled_scrapes
+                    (name, scraper_profile_id, schedule_type, schedule_value, enabled, next_run)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (name, scraper_profile_id, schedule_type, schedule_value, int(enabled), next_run))
+                conn.commit()
+                logger.info(f"Schedule '{name}' created successfully")
+                return True
+        except sqlite3.IntegrityError as e:
+            logger.error(f"Schedule name '{name}' already exists: {e}")
+            return False
+        except Exception as e:
+            logger.error(f"Error creating schedule: {e}")
+            return False
+
+    @staticmethod
+    def update_schedule(schedule_id: int, name: Optional[str] = None,
+                       scraper_profile_id: Optional[int] = None,
+                       schedule_type: Optional[str] = None,
+                       schedule_value: Optional[str] = None,
+                       enabled: Optional[bool] = None) -> bool:
+        """Update an existing schedule."""
+        try:
+            with get_db_connection() as conn:
+                # Build dynamic update query
+                updates = []
+                params = []
+
+                if name is not None:
+                    updates.append("name = ?")
+                    params.append(name)
+                if scraper_profile_id is not None:
+                    updates.append("scraper_profile_id = ?")
+                    params.append(scraper_profile_id)
+                if schedule_type is not None and schedule_value is not None:
+                    updates.append("schedule_type = ?")
+                    updates.append("schedule_value = ?")
+                    params.append(schedule_type)
+                    params.append(schedule_value)
+                    # Recalculate next run
+                    next_run = ScheduleManager._calculate_next_run(schedule_type, schedule_value)
+                    updates.append("next_run = ?")
+                    params.append(next_run)
+                if enabled is not None:
+                    updates.append("enabled = ?")
+                    params.append(int(enabled))
+
+                if not updates:
+                    return True  # Nothing to update
+
+                params.append(schedule_id)
+                query = f"UPDATE scheduled_scrapes SET {', '.join(updates)} WHERE id = ?"
+                conn.execute(query, params)
+                conn.commit()
+                logger.info(f"Schedule ID {schedule_id} updated successfully")
+                return True
+        except Exception as e:
+            logger.error(f"Error updating schedule: {e}")
+            return False
+
+    @staticmethod
+    def delete_schedule(schedule_id: int) -> bool:
+        """Delete a scheduled scrape."""
+        try:
+            with get_db_connection() as conn:
+                conn.execute("DELETE FROM scheduled_scrapes WHERE id = ?", (schedule_id,))
+                conn.commit()
+                logger.info(f"Schedule ID {schedule_id} deleted successfully")
+                return True
+        except Exception as e:
+            logger.error(f"Error deleting schedule: {e}")
+            return False
+
+    @staticmethod
+    def list_schedules(enabled_only: bool = False) -> List[Dict[str, Any]]:
+        """
+        List all scheduled scrapes.
+
+        Args:
+            enabled_only: If True, only return enabled schedules
+
+        Returns:
+            List of schedule dictionaries
+        """
+        try:
+            with get_db_connection() as conn:
+                query = """
+                    SELECT
+                        ss.id, ss.name, ss.scraper_profile_id, ss.schedule_type,
+                        ss.schedule_value, ss.enabled, ss.last_run, ss.next_run,
+                        ss.run_count, ss.last_status, ss.last_error, ss.created_at,
+                        sp.name as profile_name
+                    FROM scheduled_scrapes ss
+                    LEFT JOIN saved_scrapers sp ON ss.scraper_profile_id = sp.id
+                """
+                if enabled_only:
+                    query += " WHERE ss.enabled = 1"
+                query += " ORDER BY ss.created_at DESC"
+
+                cursor = conn.execute(query)
+                schedules = []
+                for row in cursor.fetchall():
+                    schedules.append({
+                        'id': row['id'],
+                        'name': row['name'],
+                        'scraper_profile_id': row['scraper_profile_id'],
+                        'profile_name': row['profile_name'],
+                        'schedule_type': row['schedule_type'],
+                        'schedule_value': row['schedule_value'],
+                        'enabled': bool(row['enabled']),
+                        'last_run': row['last_run'],
+                        'next_run': row['next_run'],
+                        'run_count': row['run_count'],
+                        'last_status': row['last_status'],
+                        'last_error': row['last_error'],
+                        'created_at': row['created_at']
+                    })
+                return schedules
+        except Exception as e:
+            logger.error(f"Error listing schedules: {e}")
+            return []
+
+    @staticmethod
+    def get_schedule(schedule_id: int) -> Optional[Dict[str, Any]]:
+        """Get a specific schedule by ID."""
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.execute("""
+                    SELECT
+                        ss.id, ss.name, ss.scraper_profile_id, ss.schedule_type,
+                        ss.schedule_value, ss.enabled, ss.last_run, ss.next_run,
+                        ss.run_count, ss.last_status, ss.last_error, ss.created_at,
+                        sp.name as profile_name, sp.url, sp.selector
+                    FROM scheduled_scrapes ss
+                    LEFT JOIN saved_scrapers sp ON ss.scraper_profile_id = sp.id
+                    WHERE ss.id = ?
+                """, (schedule_id,))
+                row = cursor.fetchone()
+                if row:
+                    return {
+                        'id': row['id'],
+                        'name': row['name'],
+                        'scraper_profile_id': row['scraper_profile_id'],
+                        'profile_name': row['profile_name'],
+                        'profile_url': row['url'],
+                        'profile_selector': row['selector'],
+                        'schedule_type': row['schedule_type'],
+                        'schedule_value': row['schedule_value'],
+                        'enabled': bool(row['enabled']),
+                        'last_run': row['last_run'],
+                        'next_run': row['next_run'],
+                        'run_count': row['run_count'],
+                        'last_status': row['last_status'],
+                        'last_error': row['last_error'],
+                        'created_at': row['created_at']
+                    }
+                return None
+        except Exception as e:
+            logger.error(f"Error getting schedule: {e}")
+            return None
+
+    @staticmethod
+    def record_execution(schedule_id: int, status: str, error: Optional[str] = None) -> bool:
+        """
+        Record a schedule execution result.
+
+        Args:
+            schedule_id: Schedule ID
+            status: Execution status ('success', 'failed', 'running')
+            error: Error message if failed
+
+        Returns:
+            True if successful
+        """
+        try:
+            with get_db_connection() as conn:
+                now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+                # Get current schedule to calculate next run
+                cursor = conn.execute(
+                    "SELECT schedule_type, schedule_value FROM scheduled_scrapes WHERE id = ?",
+                    (schedule_id,)
+                )
+                row = cursor.fetchone()
+                if not row:
+                    return False
+
+                next_run = ScheduleManager._calculate_next_run(
+                    row['schedule_type'],
+                    row['schedule_value']
+                )
+
+                conn.execute("""
+                    UPDATE scheduled_scrapes
+                    SET last_run = ?, last_status = ?, last_error = ?,
+                        run_count = run_count + 1, next_run = ?
+                    WHERE id = ?
+                """, (now, status, error, next_run, schedule_id))
+                conn.commit()
+                return True
+        except Exception as e:
+            logger.error(f"Error recording execution: {e}")
+            return False
+
+    @staticmethod
+    def _calculate_next_run(schedule_type: str, schedule_value: str) -> str:
+        """
+        Calculate next run time based on schedule type.
+
+        Args:
+            schedule_type: Type of schedule ('interval', 'cron', 'daily', 'weekly', 'hourly')
+            schedule_value: Schedule parameters
+
+        Returns:
+            ISO formatted datetime string for next run
+        """
+        now = datetime.now()
+
+        try:
+            if schedule_type == 'hourly':
+                next_run = now + timedelta(hours=1)
+            elif schedule_type == 'daily':
+                # Parse HH:MM format from schedule_value
+                try:
+                    hour, minute = map(int, schedule_value.split(':'))
+                    next_run = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                    if next_run <= now:
+                        next_run += timedelta(days=1)
+                except:
+                    next_run = now + timedelta(days=1)
+            elif schedule_type == 'weekly':
+                # Parse day_of_week:HH:MM format (0=Monday, 6=Sunday)
+                try:
+                    parts = schedule_value.split(':')
+                    day_of_week = int(parts[0])
+                    hour, minute = int(parts[1]), int(parts[2])
+
+                    days_ahead = day_of_week - now.weekday()
+                    if days_ahead <= 0:  # Target day already happened this week
+                        days_ahead += 7
+                    next_run = now + timedelta(days=days_ahead)
+                    next_run = next_run.replace(hour=hour, minute=minute, second=0, microsecond=0)
+                except:
+                    next_run = now + timedelta(weeks=1)
+            elif schedule_type == 'interval':
+                # Minutes interval
+                try:
+                    minutes = int(schedule_value)
+                    next_run = now + timedelta(minutes=minutes)
+                except:
+                    next_run = now + timedelta(hours=1)
+            elif schedule_type == 'cron':
+                # For cron, we'll use a simplified next-hour approach
+                # Full cron parsing would require croniter library
+                next_run = now + timedelta(hours=1)
+            else:
+                next_run = now + timedelta(hours=1)
+
+            return next_run.strftime('%Y-%m-%d %H:%M:%S')
+        except Exception as e:
+            logger.error(f"Error calculating next run: {e}")
+            return (now + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
 
 
 # Legacy function wrappers for backward compatibility
@@ -2532,6 +2845,226 @@ class SettingsModal(ModalScreen[bool]):
             self.dismiss(False)
 
 
+class ScheduleManagementModal(ModalScreen[Optional[int]]):
+    """Modal for managing scheduled scrapes (v1.5.0)."""
+
+    DEFAULT_CSS = """
+    ScheduleManagementModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    ScheduleManagementModal > Vertical {
+        width: 90%;
+        max-width: 100;
+        height: 85%;
+        max-height: 35;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    ScheduleManagementModal DataTable {
+        height: 20;
+    }
+    """
+
+    BINDINGS = [Binding("escape", "dismiss_screen", "Close")]
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("📅 Scheduled Scrapes", id="schedule-title")
+            yield DataTable(id="schedule_table", cursor_type="row", zebra_stripes=True)
+            with Horizontal(classes="modal-buttons"):
+                yield Button("Add Schedule", id="add_schedule", variant="primary")
+                yield Button("Enable/Disable", id="toggle_schedule")
+                yield Button("Delete", id="delete_schedule", variant="error")
+                yield Button("Close", id="close_btn")
+
+    async def on_mount(self) -> None:
+        """Initialize the schedule table."""
+        table = self.query_one("#schedule_table", DataTable)
+        table.add_columns("ID", "Name", "Profile", "Type", "Schedule", "Enabled", "Next Run", "Last Run", "Run Count", "Status")
+        await self._refresh_schedules()
+
+    async def _refresh_schedules(self) -> None:
+        """Refresh the schedules table."""
+        table = self.query_one("#schedule_table", DataTable)
+        table.clear()
+
+        schedules = ScheduleManager.list_schedules()
+        for schedule in schedules:
+            enabled_str = "✓" if schedule['enabled'] else "✗"
+            next_run = schedule['next_run'] or "Not set"
+            last_run = schedule['last_run'] or "Never"
+            status = schedule['last_status'] or "-"
+
+            table.add_row(
+                str(schedule['id']),
+                schedule['name'],
+                schedule['profile_name'] or f"ID:{schedule['scraper_profile_id']}",
+                schedule['schedule_type'],
+                schedule['schedule_value'],
+                enabled_str,
+                next_run,
+                last_run,
+                str(schedule['run_count']),
+                status,
+                key=str(schedule['id'])
+            )
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button presses."""
+        if event.button.id == "close_btn":
+            self.dismiss(None)
+        elif event.button.id == "add_schedule":
+            def handle_new_schedule(result):
+                if result:
+                    self.run_worker(self._refresh_schedules())
+                    self.app.notify("Schedule created successfully", severity="information")
+            self.app.push_screen(AddScheduleModal(), handle_new_schedule)
+        elif event.button.id == "toggle_schedule":
+            table = self.query_one("#schedule_table", DataTable)
+            if table.row_count > 0:
+                try:
+                    row_key = table.get_row_key_from_coordinate(table.cursor_coordinate)
+                    schedule_id = int(row_key.value)
+                    schedule = ScheduleManager.get_schedule(schedule_id)
+                    if schedule:
+                        new_enabled = not schedule['enabled']
+                        if ScheduleManager.update_schedule(schedule_id, enabled=new_enabled):
+                            await self._refresh_schedules()
+                            status = "enabled" if new_enabled else "disabled"
+                            self.app.notify(f"Schedule {status}", severity="information")
+                except Exception as e:
+                    self.app.notify(f"Error toggling schedule: {e}", severity="error")
+        elif event.button.id == "delete_schedule":
+            table = self.query_one("#schedule_table", DataTable)
+            if table.row_count > 0:
+                try:
+                    row_key = table.get_row_key_from_coordinate(table.cursor_coordinate)
+                    schedule_id = int(row_key.value)
+
+                    def handle_delete_confirm(confirmed):
+                        if confirmed:
+                            if ScheduleManager.delete_schedule(schedule_id):
+                                self.run_worker(self._refresh_schedules())
+                                self.app.notify("Schedule deleted", severity="information")
+                            else:
+                                self.app.notify("Failed to delete schedule", severity="error")
+
+                    self.app.push_screen(
+                        ConfirmModal("Delete this schedule?", "Delete", "Cancel"),
+                        handle_delete_confirm
+                    )
+                except Exception as e:
+                    self.app.notify(f"Error deleting schedule: {e}", severity="error")
+
+    def action_dismiss_screen(self) -> None:
+        self.dismiss(None)
+
+
+class AddScheduleModal(ModalScreen[bool]):
+    """Modal for creating a new scheduled scrape (v1.5.0)."""
+
+    DEFAULT_CSS = """
+    AddScheduleModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    AddScheduleModal > Vertical {
+        width: 80%;
+        max-width: 80;
+        height: auto;
+        border: thick $primary-lighten-1;
+        padding: 2;
+        background: $surface;
+    }
+    AddScheduleModal Input {
+        margin: 1 0;
+    }
+    AddScheduleModal RadioSet {
+        height: auto;
+        margin: 1 0;
+    }
+    """
+
+    BINDINGS = [Binding("escape", "cancel", "Cancel")]
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("➕ Add Scheduled Scrape")
+            yield Label("Schedule Name:")
+            yield Input(placeholder="e.g., Daily News Scrape", id="schedule_name")
+
+            yield Label("Scraper Profile:")
+            yield Input(placeholder="Profile ID (from Profiles list)", id="profile_id")
+
+            yield Label("Schedule Type:")
+            with RadioSet(id="schedule_type"):
+                yield RadioButton("Hourly (every hour)", id="type_hourly")
+                yield RadioButton("Daily (HH:MM format, e.g., 09:00)", id="type_daily", value=True)
+                yield RadioButton("Weekly (day:HH:MM, e.g., 0:09:00 for Monday 9am)", id="type_weekly")
+                yield RadioButton("Interval (minutes, e.g., 30)", id="type_interval")
+
+            yield Label("Schedule Value:")
+            yield Input(placeholder="e.g., 09:00 for daily at 9am", id="schedule_value")
+
+            with Horizontal(classes="modal-buttons"):
+                yield Button("Create", id="create_btn", variant="primary")
+                yield Button("Cancel", id="cancel_btn")
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button presses."""
+        if event.button.id == "cancel_btn":
+            self.dismiss(False)
+        elif event.button.id == "create_btn":
+            name_input = self.query_one("#schedule_name", Input)
+            profile_input = self.query_one("#profile_id", Input)
+            value_input = self.query_one("#schedule_value", Input)
+            type_radio = self.query_one("#schedule_type", RadioSet)
+
+            name = name_input.value.strip()
+            profile_id_str = profile_input.value.strip()
+            value = value_input.value.strip()
+
+            # Determine schedule type
+            if self.query_one("#type_hourly", RadioButton).value:
+                schedule_type = "hourly"
+            elif self.query_one("#type_daily", RadioButton).value:
+                schedule_type = "daily"
+            elif self.query_one("#type_weekly", RadioButton).value:
+                schedule_type = "weekly"
+            elif self.query_one("#type_interval", RadioButton).value:
+                schedule_type = "interval"
+            else:
+                schedule_type = "daily"
+
+            # Validate inputs
+            if not name:
+                self.app.notify("Schedule name is required", severity="error")
+                return
+            if not profile_id_str:
+                self.app.notify("Profile ID is required", severity="error")
+                return
+            if not value:
+                self.app.notify("Schedule value is required", severity="error")
+                return
+
+            try:
+                profile_id = int(profile_id_str)
+            except ValueError:
+                self.app.notify("Profile ID must be a number", severity="error")
+                return
+
+            # Create the schedule
+            if ScheduleManager.create_schedule(name, profile_id, schedule_type, value, enabled=True):
+                self.dismiss(True)
+            else:
+                self.app.notify("Failed to create schedule (name may already exist)", severity="error")
+
+    def action_cancel(self) -> None:
+        self.dismiss(False)
+
+
 class HelpModal(ModalScreen):
     DEFAULT_CSS = """
     HelpModal {
@@ -2649,9 +3182,10 @@ class WebScraperApp(App[None]):
         Binding("ctrl+d", "deselect_all", "Deselect All"),
         Binding("ctrl+shift+d", "bulk_delete", "Bulk Delete"),
         Binding("ctrl+p", "select_ai_provider", "AI Provider"),
-        Binding("ctrl+comma", "open_settings", "Settings"),
+        Binding("ctrl+period", "open_settings", "Settings"),
         Binding("ctrl+shift+f", "manage_filter_presets", "Filter Presets"),
         Binding("ctrl+shift+s", "save_filter_preset", "Save Preset"),
+        Binding("ctrl+shift+a", "manage_schedules", "Schedules"),
         Binding("f1,ctrl+h", "toggle_help", "Help")
     ]
     dark = reactive(True, layout=True)
@@ -2689,6 +3223,10 @@ class WebScraperApp(App[None]):
         self.row_metadata = {}
         self._summarize_context = {}
         self.config = ConfigManager.load_config()
+        # Initialize background scheduler (v1.5.0)
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
+        logger.info("Background scheduler started")
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True, name="Web Scraper TUI v1.0")
@@ -2710,6 +3248,117 @@ class WebScraperApp(App[None]):
         sbar.sort_status = self.SORT_OPTIONS[self.current_sort_index][1]
         await self.refresh_article_table()
         tbl.focus()
+        # Load and schedule enabled scrapes (v1.5.0)
+        self._load_scheduled_scrapes()
+
+    def _load_scheduled_scrapes(self) -> None:
+        """Load enabled schedules from database and add them to APScheduler."""
+        try:
+            schedules = ScheduleManager.list_schedules(enabled_only=True)
+            for schedule in schedules:
+                self._add_schedule_to_scheduler(schedule)
+            logger.info(f"Loaded {len(schedules)} enabled schedules")
+        except Exception as e:
+            logger.error(f"Error loading schedules: {e}")
+
+    def _add_schedule_to_scheduler(self, schedule: Dict[str, Any]) -> None:
+        """Add a schedule to APScheduler."""
+        try:
+            schedule_id = schedule['id']
+            schedule_type = schedule['schedule_type']
+            schedule_value = schedule['schedule_value']
+
+            # Create appropriate trigger
+            if schedule_type == 'hourly':
+                trigger = IntervalTrigger(hours=1)
+            elif schedule_type == 'daily':
+                # Parse HH:MM
+                hour, minute = map(int, schedule_value.split(':'))
+                trigger = CronTrigger(hour=hour, minute=minute)
+            elif schedule_type == 'weekly':
+                # Parse day:HH:MM (0=Monday, 6=Sunday)
+                parts = schedule_value.split(':')
+                day_of_week = int(parts[0])
+                hour, minute = int(parts[1]), int(parts[2])
+                trigger = CronTrigger(day_of_week=day_of_week, hour=hour, minute=minute)
+            elif schedule_type == 'interval':
+                # Minutes interval
+                minutes = int(schedule_value)
+                trigger = IntervalTrigger(minutes=minutes)
+            else:
+                logger.warning(f"Unknown schedule type: {schedule_type}")
+                return
+
+            # Add job to scheduler
+            self.scheduler.add_job(
+                func=self._execute_scheduled_scrape,
+                trigger=trigger,
+                args=[schedule_id],
+                id=f"schedule_{schedule_id}",
+                replace_existing=True,
+                name=schedule['name']
+            )
+            logger.info(f"Added schedule '{schedule['name']}' (ID: {schedule_id}) to scheduler")
+        except Exception as e:
+            logger.error(f"Error adding schedule to scheduler: {e}")
+
+    def _execute_scheduled_scrape(self, schedule_id: int) -> None:
+        """
+        Execute a scheduled scrape (runs in background thread).
+
+        Args:
+            schedule_id: ID of the schedule to execute
+        """
+        try:
+            logger.info(f"Executing scheduled scrape ID {schedule_id}")
+            ScheduleManager.record_execution(schedule_id, 'running')
+
+            # Get schedule details
+            schedule = ScheduleManager.get_schedule(schedule_id)
+            if not schedule:
+                logger.error(f"Schedule ID {schedule_id} not found")
+                ScheduleManager.record_execution(schedule_id, 'failed', 'Schedule not found')
+                return
+
+            if not schedule['enabled']:
+                logger.warning(f"Schedule ID {schedule_id} is disabled, skipping")
+                return
+
+            # Get scraper profile details
+            profile_url = schedule['profile_url']
+            profile_selector = schedule['profile_selector']
+
+            if not profile_url or not profile_selector:
+                error_msg = "Invalid scraper profile (missing URL or selector)"
+                logger.error(f"Schedule ID {schedule_id}: {error_msg}")
+                ScheduleManager.record_execution(schedule_id, 'failed', error_msg)
+                return
+
+            # Execute the scrape
+            inserted, skipped, url, ids = scrape_url_action(
+                profile_url,
+                profile_selector,
+                limit=0  # No limit for scheduled scrapes
+            )
+
+            # Record success
+            success_msg = f"Scraped {inserted} new articles, skipped {skipped} duplicates"
+            logger.info(f"Schedule ID {schedule_id} completed: {success_msg}")
+            ScheduleManager.record_execution(schedule_id, 'success')
+
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Error executing schedule ID {schedule_id}: {e}", exc_info=True)
+            ScheduleManager.record_execution(schedule_id, 'failed', error_msg)
+
+    async def on_unmount(self) -> None:
+        """Cleanup when app is shutting down."""
+        try:
+            if hasattr(self, 'scheduler') and self.scheduler:
+                self.scheduler.shutdown(wait=False)
+                logger.info("Background scheduler stopped")
+        except Exception as e:
+            logger.error(f"Error stopping scheduler: {e}")
 
     async def refresh_article_table(self) -> None:
         tbl = self.query_one(DataTable)
@@ -3368,6 +4017,13 @@ class WebScraperApp(App[None]):
                 else:
                     self.notify("Failed to save preset", title="Error", severity="error")
         self.push_screen(SavePresetModal(), handle_preset_name)
+
+    async def action_manage_schedules(self) -> None:
+        """Open schedule management modal (Ctrl+Shift+A)."""
+        def handle_schedule_result(result: Optional[int]) -> None:
+            if result:
+                self.notify("Schedule management complete", severity="info")
+        self.push_screen(ScheduleManagementModal(), handle_schedule_result)
 
     async def action_toggle_help(self)->None:await self.app.push_screen(HelpModal())
     async def action_cycle_sort_order(self)->None:self.current_sort_index=(self.current_sort_index+1)%len(self.SORT_OPTIONS);await self.refresh_article_table();self.notify(f"Sorted by: {self.SORT_OPTIONS[self.current_sort_index][1]}",title="Sort Changed",severity="info",timeout=2)

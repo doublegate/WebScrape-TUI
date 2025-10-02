@@ -22,6 +22,10 @@ lxml>=4.9.0
 # YAML parser for configuration files
 PyYAML>=6.0.0
 
+# Scheduling and Automation
+# Advanced Python Scheduler for background tasks and cron-like scheduling
+APScheduler>=3.10.0
+
 # Optional Development Dependencies (uncomment for development)
 # pytest>=7.0.0                    # Testing framework
 # pytest-cov>=4.0.0                # Coverage reporting

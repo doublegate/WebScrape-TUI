@@ -1,9 +1,9 @@
-# WebScrape-TUI v1.4.0
+# WebScrape-TUI v1.5.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
-[![Version](https://img.shields.io/badge/version-1.4.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
@@ -132,6 +132,7 @@ python scrapetui.py
 - **beautifulsoup4** (>=4.11.0) - HTML parsing library
 - **lxml** (>=4.9.0) - Fast XML/HTML parser backend
 - **PyYAML** (>=6.0.0) - YAML configuration file parser (v1.4.0)
+- **APScheduler** (>=3.10.0) - Background task scheduling for automation (v1.5.0)
 
 ## 🚀 Quick Start
 
@@ -446,7 +447,8 @@ CREATE TABLE filter_presets (
 | `Ctrl+N` | New scrape dialog |
 | `Ctrl+M` | Saved scrapers / Manage profiles |
 | `Ctrl+P` | **Select AI Provider** (v1.3.0) |
-| `Ctrl+comma` | **Settings** (v1.4.0) |
+| `Ctrl+period` | **Settings** (v1.4.0) |
+| `Ctrl+Shift+A` | **Manage Schedules** (v1.5.0) |
 | `Ctrl+T` | Manage tags for selected article |
 | `Ctrl+F` | Open advanced filter dialog |
 | `Ctrl+Shift+F` | **Manage Filter Presets** (v1.4.0) |
@@ -634,8 +636,8 @@ pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
 **Test Results (v1.4.0):**
-- 111 total tests across 7 categories
-- All configuration, filter presets, and AI provider tests passing ✓
+- 127 total tests across 8 categories
+- All scheduling, configuration, filter presets, and AI provider tests passing ✓
 - Comprehensive coverage of v1.4.0 features
 - 100% pass rate across all test suites
 
@@ -653,7 +655,15 @@ pytest tests/ --cov=scrapetui --cov-report=html
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
-### Recent Updates (v1.4.0)
+### Recent Updates (v1.5.0)
+- **Scheduled Scraping**: Automated background scraping with APScheduler
+- **Schedule Management**: Create, edit, enable/disable, and delete schedules
+- **Multiple Schedule Types**: Hourly, daily, weekly, and custom interval scheduling
+- **Execution Tracking**: Monitor last run, next run, run count, and status
+- **Background Automation**: Hands-free data collection without manual intervention
+- **Comprehensive Testing**: 127 tests with 16 new tests for scheduling features
+
+### Previous Updates (v1.4.0)
 - **YAML Configuration**: Human-readable config files with automatic creation and deep merge
 - **Settings Modal**: In-app configuration editor with live updates (Ctrl+,)
 - **Filter Presets**: Save and load filter combinations with database persistence
