@@ -1,9 +1,9 @@
-# WebScrape-TUI v1.8.0
+# WebScrape-TUI v1.9.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
-[![Version](https://img.shields.io/badge/version-1.8.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
+[![Version](https://img.shields.io/badge/version-1.9.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
@@ -61,6 +61,12 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Keyword Extraction** (v1.8.0): TF-IDF-based keyword extraction with title boosting (Ctrl+Shift+K)
 - **Content Similarity** (v1.8.0): Find similar articles using semantic embeddings (Ctrl+Shift+R)
 - **Multi-Level Summarization** (v1.8.0): Brief, detailed, and comprehensive summary levels
+- **Topic Modeling** (v1.9.0): LDA and NMF algorithms for discovering content themes
+- **Question Answering** (v1.9.0): Interactive Q&A system with multi-article synthesis
+- **Entity Relationships** (v1.9.0): Knowledge graph construction from extracted entities
+- **Duplicate Detection** (v1.9.0): Fuzzy matching to find similar/duplicate articles
+- **Summary Quality Metrics** (v1.9.0): ROUGE scores and coherence evaluation
+- **Article Clustering** (v1.9.0): Group similar articles by content similarity
 - **Async Processing**: Non-blocking AI operations to maintain UI responsiveness
 - **Optimized API Calls**: Efficient request handling and error management
 - **Configurable API Keys**: Easy setup for multiple AI providers
@@ -171,10 +177,22 @@ python scrapetui.py
 ### Method 2: Manual Dependencies
 
 ```bash
-# Install required packages individually
-pip install textual requests beautifulsoup4 lxml
+# Core dependencies (required)
+pip install textual requests beautifulsoup4 lxml PyYAML APScheduler
 
-# Download and run
+# Data visualization and export (v1.6.0+)
+pip install matplotlib pandas openpyxl reportlab wordcloud
+
+# Advanced AI features (v1.8.0+)
+pip install spacy sentence-transformers nltk scikit-learn scipy
+
+# Topic modeling and analysis (v1.9.0+)
+pip install gensim networkx rouge-score fuzzywuzzy python-Levenshtein
+
+# Download spaCy language model (required for entity recognition)
+python -m spacy download en_core_web_sm
+
+# Run the application
 python scrapetui.py
 ```
 
@@ -197,6 +215,11 @@ python scrapetui.py
 - **nltk** (>=3.8.0) - Natural language toolkit for keyword extraction (v1.8.0)
 - **scikit-learn** (>=1.3.0) - TF-IDF vectorization for keywords (v1.8.0)
 - **scipy** (>=1.11.0) - Scientific computing for cosine distance (v1.8.0)
+- **gensim** (>=4.3.0) - LDA and NMF topic modeling algorithms (v1.9.0)
+- **networkx** (>=3.0) - Knowledge graph construction and entity relationships (v1.9.0)
+- **rouge-score** (>=0.1.2) - ROUGE metrics for summary quality evaluation (v1.9.0)
+- **fuzzywuzzy** (>=0.18.0) - Fuzzy string matching for duplicate detection (v1.9.0)
+- **python-Levenshtein** (>=0.20.0) - Fast string distance calculations (v1.9.0)
 
 ## 🚀 Quick Start
 
@@ -523,6 +546,13 @@ CREATE TABLE filter_presets (
 | `Ctrl+Shift+E` | **Extract Entities** (v1.8.0) |
 | `Ctrl+Shift+K` | **Extract Keywords** (v1.8.0) |
 | `Ctrl+Shift+R` | **Find Similar Articles** (v1.8.0) |
+| `Ctrl+Alt+T` | **Topic Modeling** (v1.9.0) |
+| `Ctrl+Alt+Q` | **Ask Question** (v1.9.0) |
+| `Ctrl+Alt+D` | **Find Duplicates** (v1.9.0) |
+| `Ctrl+Alt+L` | **Related Articles** (v1.9.0) |
+| `Ctrl+Alt+C` | **Cluster Articles** (v1.9.0) |
+| `Ctrl+Alt+H` | **Q&A History** (v1.9.0) |
+| `Ctrl+Alt+M` | **Summary Quality** (v1.9.0) |
 | `Ctrl+T` | Manage tags for selected article |
 | `Ctrl+F` | Open advanced filter dialog |
 | `Ctrl+Shift+F` | **Manage Filter Presets** (v1.4.0) |

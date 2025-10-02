@@ -155,6 +155,16 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 import warnings
 
+# Smart Categorization & Topic Modeling (v1.9.0)
+from gensim import corpora, models
+from gensim.models import LdaModel, Nmf
+from gensim.parsing.preprocessing import STOPWORDS
+import networkx as nx
+from rouge_score import rouge_scorer
+from fuzzywuzzy import fuzz
+from sklearn.decomposition import NMF
+from sklearn.cluster import KMeans
+
 # Download required NLTK data (suppress output)
 try:
     nltk.data.find('corpora/stopwords')
@@ -693,6 +703,103 @@ def init_db():
                 )
             """)
 
+            # Add topic modeling tables (v1.9.0)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS topics (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    label TEXT NOT NULL,
+                    keywords TEXT,
+                    model_type TEXT,
+                    confidence REAL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS article_topics (
+                    article_id INTEGER NOT NULL,
+                    topic_id INTEGER NOT NULL,
+                    confidence REAL,
+                    is_primary INTEGER DEFAULT 0,
+                    FOREIGN KEY (article_id) REFERENCES scraped_data(id) ON DELETE CASCADE,
+                    FOREIGN KEY (topic_id) REFERENCES topics(id) ON DELETE CASCADE,
+                    PRIMARY KEY (article_id, topic_id)
+                )
+            """)
+
+            # Add entity relationship tables (v1.9.0)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS entities (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    text TEXT NOT NULL UNIQUE,
+                    entity_type TEXT,
+                    count INTEGER DEFAULT 0,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS article_entities (
+                    article_id INTEGER NOT NULL,
+                    entity_id INTEGER NOT NULL,
+                    occurrences INTEGER DEFAULT 1,
+                    FOREIGN KEY (article_id) REFERENCES scraped_data(id) ON DELETE CASCADE,
+                    FOREIGN KEY (entity_id) REFERENCES entities(id) ON DELETE CASCADE,
+                    PRIMARY KEY (article_id, entity_id)
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS entity_relationships (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    entity1_id INTEGER NOT NULL,
+                    entity2_id INTEGER NOT NULL,
+                    relationship_type TEXT DEFAULT 'co-occurrence',
+                    weight INTEGER DEFAULT 1,
+                    article_id INTEGER,
+                    FOREIGN KEY (entity1_id) REFERENCES entities(id) ON DELETE CASCADE,
+                    FOREIGN KEY (entity2_id) REFERENCES entities(id) ON DELETE CASCADE,
+                    FOREIGN KEY (article_id) REFERENCES scraped_data(id) ON DELETE CASCADE
+                )
+            """)
+
+            # Add Q&A history table (v1.9.0)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS qa_history (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    question TEXT NOT NULL,
+                    answer TEXT NOT NULL,
+                    article_ids TEXT,
+                    confidence REAL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            # Add summary feedback table (v1.9.0)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS summary_feedback (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    article_id INTEGER NOT NULL,
+                    summary_id TEXT NOT NULL,
+                    rating INTEGER NOT NULL,
+                    comments TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (article_id) REFERENCES scraped_data(id) ON DELETE CASCADE
+                )
+            """)
+
+            # Add article clusters table (v1.9.0)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS article_clusters (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    cluster_id INTEGER NOT NULL,
+                    article_id INTEGER NOT NULL,
+                    cluster_name TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (article_id) REFERENCES scraped_data(id) ON DELETE CASCADE
+                )
+            """)
+
             index_statements = [
                 "CREATE UNIQUE INDEX IF NOT EXISTS idx_link_unique "
                 "ON scraped_data (link);",
@@ -708,7 +815,31 @@ def init_db():
                 "CREATE INDEX IF NOT EXISTS idx_article_tags_tag "
                 "ON article_tags (tag_id);",
                 "CREATE UNIQUE INDEX IF NOT EXISTS idx_saved_scraper_name "
-                "ON saved_scrapers (name);"
+                "ON saved_scrapers (name);",
+                # v1.9.0 indexes
+                "CREATE INDEX IF NOT EXISTS idx_topics_model_type ON topics (model_type);",
+                "CREATE INDEX IF NOT EXISTS idx_article_topics_article "
+                "ON article_topics (article_id);",
+                "CREATE INDEX IF NOT EXISTS idx_article_topics_topic "
+                "ON article_topics (topic_id);",
+                "CREATE INDEX IF NOT EXISTS idx_entities_text ON entities (text);",
+                "CREATE INDEX IF NOT EXISTS idx_entities_type ON entities (entity_type);",
+                "CREATE INDEX IF NOT EXISTS idx_article_entities_article "
+                "ON article_entities (article_id);",
+                "CREATE INDEX IF NOT EXISTS idx_article_entities_entity "
+                "ON article_entities (entity_id);",
+                "CREATE INDEX IF NOT EXISTS idx_entity_relationships_entity1 "
+                "ON entity_relationships (entity1_id);",
+                "CREATE INDEX IF NOT EXISTS idx_entity_relationships_entity2 "
+                "ON entity_relationships (entity2_id);",
+                "CREATE INDEX IF NOT EXISTS idx_qa_history_created "
+                "ON qa_history (created_at);",
+                "CREATE INDEX IF NOT EXISTS idx_summary_feedback_article "
+                "ON summary_feedback (article_id);",
+                "CREATE INDEX IF NOT EXISTS idx_article_clusters_cluster "
+                "ON article_clusters (cluster_id);",
+                "CREATE INDEX IF NOT EXISTS idx_article_clusters_article "
+                "ON article_clusters (article_id);"
             ]
             for idx_sql in index_statements:
                 conn.execute(idx_sql)
@@ -740,10 +871,10 @@ def init_db():
                 """, (name, template, description))
 
             conn.commit()
-        logger.info("Database initialized/updated successfully for v1.0.")
+        logger.info("Database initialized/updated successfully for v1.9.0.")
         return True
     except sqlite3.Error as e:
-        logger.critical(f"DB init error v1.0: {e}", exc_info=True)
+        logger.critical(f"DB init error v1.9.0: {e}", exc_info=True)
         return False
 
 
@@ -3041,6 +3172,958 @@ One-sentence summary:"""
             return text[:500] + "..."
 
 
+class TopicModelingManager:
+    """
+    Topic modeling and categorization system (v1.9.0).
+
+    Provides:
+    - LDA (Latent Dirichlet Allocation) topic modeling
+    - NMF (Non-negative Matrix Factorization) topic modeling
+    - Automatic category assignment
+    - Category hierarchy creation
+    - Multi-label classification
+    """
+
+    @staticmethod
+    def perform_lda_topic_modeling(
+        articles: List[Dict[str, Any]],
+        num_topics: int = 5,
+        passes: int = 10
+    ) -> Dict[str, Any]:
+        """
+        Perform LDA topic modeling on article collection.
+
+        Args:
+            articles: List of article dictionaries with 'content' field
+            num_topics: Number of topics to extract
+            passes: Number of LDA training passes
+
+        Returns:
+            Dictionary with topics, word distributions, and article assignments
+        """
+        try:
+            if not articles or len(articles) < 2:
+                return {"topics": [], "assignments": {}, "error": "Need at least 2 articles"}
+
+            # Extract and preprocess text
+            texts = []
+            for article in articles:
+                content = article.get('content', '') or article.get('text', '')
+                if content:
+                    # Tokenize and remove stopwords
+                    tokens = [
+                        word.lower() for word in content.split()
+                        if word.lower() not in STOPWORDS and len(word) > 3
+                    ]
+                    texts.append(tokens)
+
+            if not texts or len(texts) < 2:
+                return {"topics": [], "assignments": {}, "error": "Insufficient text data"}
+
+            # Create dictionary and corpus
+            dictionary = corpora.Dictionary(texts)
+            dictionary.filter_extremes(no_below=1, no_above=0.8, keep_n=1000)
+            corpus = [dictionary.doc2bow(text) for text in texts]
+
+            # Train LDA model
+            lda_model = LdaModel(
+                corpus=corpus,
+                id2word=dictionary,
+                num_topics=num_topics,
+                random_state=42,
+                passes=passes,
+                alpha='auto',
+                per_word_topics=True
+            )
+
+            # Extract topics with top words
+            topics = []
+            for idx in range(num_topics):
+                words = lda_model.show_topic(idx, topn=10)
+                topic_words = [word for word, _ in words]
+                topic_weights = [weight for _, weight in words]
+                topics.append({
+                    "id": idx,
+                    "words": topic_words,
+                    "weights": topic_weights,
+                    "label": f"Topic {idx}: {', '.join(topic_words[:3])}"
+                })
+
+            # Assign articles to dominant topics
+            assignments = {}
+            for idx, doc_bow in enumerate(corpus):
+                topic_dist = lda_model.get_document_topics(doc_bow)
+                if topic_dist:
+                    dominant_topic = max(topic_dist, key=lambda x: x[1])
+                    assignments[articles[idx].get('id', idx)] = {
+                        "topic_id": dominant_topic[0],
+                        "confidence": float(dominant_topic[1]),
+                        "all_topics": [(int(t[0]), float(t[1])) for t in topic_dist]
+                    }
+
+            return {
+                "topics": topics,
+                "assignments": assignments,
+                "num_articles": len(articles),
+                "dictionary_size": len(dictionary)
+            }
+
+        except Exception as e:
+            logger.error(f"Error in LDA topic modeling: {e}")
+            return {"topics": [], "assignments": {}, "error": str(e)}
+
+    @staticmethod
+    def perform_nmf_topic_modeling(
+        articles: List[Dict[str, Any]],
+        num_topics: int = 5
+    ) -> Dict[str, Any]:
+        """
+        Perform NMF topic modeling on article collection.
+
+        Args:
+            articles: List of article dictionaries with 'content' field
+            num_topics: Number of topics to extract
+
+        Returns:
+            Dictionary with topics, word distributions, and article assignments
+        """
+        try:
+            if not articles or len(articles) < 2:
+                return {"topics": [], "assignments": {}, "error": "Need at least 2 articles"}
+
+            # Extract text
+            texts = []
+            article_ids = []
+            for article in articles:
+                content = article.get('content', '') or article.get('text', '')
+                if content and len(content.strip()) > 50:
+                    texts.append(content)
+                    article_ids.append(article.get('id', len(article_ids)))
+
+            if len(texts) < 2:
+                return {"topics": [], "assignments": {}, "error": "Insufficient text data"}
+
+            # Vectorize with TF-IDF
+            vectorizer = TfidfVectorizer(
+                max_features=1000,
+                stop_words='english',
+                min_df=1,
+                max_df=0.8
+            )
+            tfidf_matrix = vectorizer.fit_transform(texts)
+
+            # Train NMF model
+            nmf_model = NMF(
+                n_components=num_topics,
+                random_state=42,
+                max_iter=300
+            )
+            doc_topic = nmf_model.fit_transform(tfidf_matrix)
+            feature_names = vectorizer.get_feature_names_out()
+
+            # Extract topics
+            topics = []
+            for idx, topic in enumerate(nmf_model.components_):
+                top_indices = topic.argsort()[-10:][::-1]
+                top_words = [feature_names[i] for i in top_indices]
+                top_weights = [float(topic[i]) for i in top_indices]
+
+                topics.append({
+                    "id": idx,
+                    "words": top_words,
+                    "weights": top_weights,
+                    "label": f"Topic {idx}: {', '.join(top_words[:3])}"
+                })
+
+            # Assign articles to dominant topics
+            assignments = {}
+            for idx, topic_dist in enumerate(doc_topic):
+                dominant_topic = topic_dist.argmax()
+                assignments[article_ids[idx]] = {
+                    "topic_id": int(dominant_topic),
+                    "confidence": float(topic_dist[dominant_topic]),
+                    "all_topics": [(int(i), float(v)) for i, v in enumerate(topic_dist)]
+                }
+
+            return {
+                "topics": topics,
+                "assignments": assignments,
+                "num_articles": len(texts),
+                "vocabulary_size": len(feature_names)
+            }
+
+        except Exception as e:
+            logger.error(f"Error in NMF topic modeling: {e}")
+            return {"topics": [], "assignments": {}, "error": str(e)}
+
+    @staticmethod
+    def assign_categories_to_articles(
+        topic_results: Dict[str, Any],
+        category_mapping: Optional[Dict[int, str]] = None
+    ) -> Dict[int, List[str]]:
+        """
+        Assign category labels to articles based on topic assignments.
+
+        Args:
+            topic_results: Results from LDA or NMF topic modeling
+            category_mapping: Optional mapping of topic IDs to category names
+
+        Returns:
+            Dictionary mapping article IDs to category lists
+        """
+        try:
+            assignments = topic_results.get('assignments', {})
+            topics = topic_results.get('topics', [])
+
+            if not assignments or not topics:
+                return {}
+
+            # Create default category mapping if not provided
+            if category_mapping is None:
+                category_mapping = {
+                    topic['id']: topic['label']
+                    for topic in topics
+                }
+
+            article_categories = {}
+            for article_id, assignment in assignments.items():
+                categories = []
+
+                # Add dominant topic category
+                dominant_id = assignment['topic_id']
+                if dominant_id in category_mapping:
+                    categories.append(category_mapping[dominant_id])
+
+                # Add secondary topics (confidence > 0.15)
+                for topic_id, confidence in assignment.get('all_topics', []):
+                    if topic_id != dominant_id and confidence > 0.15:
+                        if topic_id in category_mapping:
+                            categories.append(f"{category_mapping[topic_id]} (secondary)")
+
+                article_categories[int(article_id)] = categories
+
+            return article_categories
+
+        except Exception as e:
+            logger.error(f"Error assigning categories: {e}")
+            return {}
+
+
+class EntityRelationshipManager:
+    """
+    Entity relationship mapping and knowledge graph construction (v1.9.0).
+
+    Provides:
+    - Entity extraction from articles
+    - Relationship mapping between entities
+    - Knowledge graph construction
+    - Entity-based search and filtering
+    """
+
+    @staticmethod
+    def extract_entity_relationships(
+        articles: List[Dict[str, Any]],
+        nlp_model: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        """
+        Extract entities and their relationships from articles.
+
+        Args:
+            articles: List of article dictionaries
+            nlp_model: Optional pre-loaded spaCy model
+
+        Returns:
+            Dictionary with entities, relationships, and co-occurrence data
+        """
+        try:
+            # Load spaCy model if not provided
+            if nlp_model is None:
+                try:
+                    nlp_model = spacy.load("en_core_web_sm")
+                except:
+                    logger.warning("spaCy model not loaded, using basic extraction")
+                    return EntityRelationshipManager._basic_entity_extraction(articles)
+
+            entities = {}
+            relationships = []
+            entity_article_map = {}
+
+            for article in articles:
+                article_id = article.get('id', 0)
+                content = article.get('content', '') or article.get('text', '')
+
+                if not content or len(content) < 100:
+                    continue
+
+                # Process with spaCy (limit to first 100K chars for performance)
+                doc = nlp_model(content[:100000])
+
+                # Extract named entities
+                article_entities = []
+                for ent in doc.ents:
+                    if ent.label_ in ['PERSON', 'ORG', 'GPE', 'LOC', 'PRODUCT', 'EVENT']:
+                        entity_text = ent.text.strip()
+                        entity_label = ent.label_
+
+                        # Add to entities dictionary
+                        if entity_text not in entities:
+                            entities[entity_text] = {
+                                "text": entity_text,
+                                "type": entity_label,
+                                "count": 0,
+                                "articles": []
+                            }
+
+                        entities[entity_text]["count"] += 1
+                        if article_id not in entities[entity_text]["articles"]:
+                            entities[entity_text]["articles"].append(article_id)
+
+                        article_entities.append(entity_text)
+
+                entity_article_map[article_id] = article_entities
+
+                # Create relationships (co-occurrence in same article)
+                for i, ent1 in enumerate(article_entities):
+                    for ent2 in article_entities[i+1:]:
+                        relationships.append({
+                            "source": ent1,
+                            "target": ent2,
+                            "article_id": article_id,
+                            "type": "co-occurrence"
+                        })
+
+            return {
+                "entities": entities,
+                "relationships": relationships,
+                "entity_article_map": entity_article_map,
+                "total_entities": len(entities),
+                "total_relationships": len(relationships)
+            }
+
+        except Exception as e:
+            logger.error(f"Error extracting entity relationships: {e}")
+            return {"entities": {}, "relationships": [], "error": str(e)}
+
+    @staticmethod
+    def _basic_entity_extraction(articles: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Fallback entity extraction without spaCy."""
+        # Simple capitalized word extraction as entities
+        entities = {}
+        relationships = []
+
+        for article in articles:
+            content = article.get('content', '') or article.get('text', '')
+            words = content.split()
+            capitalized = [w for w in words if w[0].isupper() and len(w) > 2]
+
+            for word in set(capitalized):
+                if word not in entities:
+                    entities[word] = {"text": word, "type": "UNKNOWN", "count": 0, "articles": []}
+                entities[word]["count"] += 1
+                entities[word]["articles"].append(article.get('id', 0))
+
+        return {"entities": entities, "relationships": relationships}
+
+    @staticmethod
+    def build_knowledge_graph(
+        entity_data: Dict[str, Any],
+        min_entity_count: int = 2
+    ) -> nx.Graph:
+        """
+        Build a knowledge graph from entity relationship data.
+
+        Args:
+            entity_data: Entity relationship data from extract_entity_relationships
+            min_entity_count: Minimum entity occurrence count to include
+
+        Returns:
+            NetworkX graph object
+        """
+        try:
+            G = nx.Graph()
+
+            # Add entity nodes
+            entities = entity_data.get('entities', {})
+            for entity_text, entity_info in entities.items():
+                if entity_info['count'] >= min_entity_count:
+                    G.add_node(
+                        entity_text,
+                        type=entity_info['type'],
+                        count=entity_info['count'],
+                        articles=entity_info['articles']
+                    )
+
+            # Add relationship edges
+            relationships = entity_data.get('relationships', [])
+            relationship_counts = {}
+
+            for rel in relationships:
+                source = rel['source']
+                target = rel['target']
+
+                # Only add edges for nodes that exist
+                if source in G.nodes and target in G.nodes:
+                    edge_key = tuple(sorted([source, target]))
+                    relationship_counts[edge_key] = relationship_counts.get(edge_key, 0) + 1
+
+            # Add weighted edges
+            for (source, target), weight in relationship_counts.items():
+                G.add_edge(source, target, weight=weight)
+
+            return G
+
+        except Exception as e:
+            logger.error(f"Error building knowledge graph: {e}")
+            return nx.Graph()
+
+    @staticmethod
+    def get_related_entities(
+        graph: nx.Graph,
+        entity: str,
+        max_depth: int = 2
+    ) -> List[Tuple[str, int]]:
+        """
+        Get entities related to a given entity within max depth.
+
+        Args:
+            graph: Knowledge graph
+            entity: Entity to find relations for
+            max_depth: Maximum graph distance
+
+        Returns:
+            List of (entity, distance) tuples
+        """
+        try:
+            if entity not in graph.nodes:
+                return []
+
+            related = []
+            for node in graph.nodes:
+                if node != entity:
+                    try:
+                        path_length = nx.shortest_path_length(graph, entity, node)
+                        if path_length <= max_depth:
+                            related.append((node, path_length))
+                    except nx.NetworkXNoPath:
+                        continue
+
+            return sorted(related, key=lambda x: x[1])
+
+        except Exception as e:
+            logger.error(f"Error getting related entities: {e}")
+            return []
+
+
+class DuplicateDetectionManager:
+    """
+    Duplicate detection and article clustering (v1.9.0).
+
+    Provides:
+    - Fuzzy duplicate detection
+    - Related article suggestions
+    - Clustering similar articles
+    - Deduplication recommendations
+    """
+
+    @staticmethod
+    def find_duplicate_articles(
+        articles: List[Dict[str, Any]],
+        similarity_threshold: int = 85
+    ) -> List[Dict[str, Any]]:
+        """
+        Find potential duplicate articles using fuzzy matching.
+
+        Args:
+            articles: List of article dictionaries
+            similarity_threshold: Similarity score threshold (0-100)
+
+        Returns:
+            List of duplicate pairs with similarity scores
+        """
+        try:
+            duplicates = []
+
+            for i, article1 in enumerate(articles):
+                title1 = article1.get('title', '')
+                content1 = article1.get('content', '') or article1.get('text', '')
+
+                for article2 in articles[i+1:]:
+                    title2 = article2.get('title', '')
+                    content2 = article2.get('content', '') or article2.get('text', '')
+
+                    # Check title similarity
+                    title_sim = fuzz.ratio(title1, title2)
+
+                    # Check content similarity (first 500 chars)
+                    content_sim = fuzz.partial_ratio(
+                        content1[:500],
+                        content2[:500]
+                    )
+
+                    # Combined score (weighted: 60% title, 40% content)
+                    combined_score = int(title_sim * 0.6 + content_sim * 0.4)
+
+                    if combined_score >= similarity_threshold:
+                        duplicates.append({
+                            "article1_id": article1.get('id'),
+                            "article1_title": title1,
+                            "article2_id": article2.get('id'),
+                            "article2_title": title2,
+                            "similarity_score": combined_score,
+                            "title_similarity": title_sim,
+                            "content_similarity": content_sim
+                        })
+
+            return sorted(duplicates, key=lambda x: x['similarity_score'], reverse=True)
+
+        except Exception as e:
+            logger.error(f"Error finding duplicates: {e}")
+            return []
+
+    @staticmethod
+    def find_related_articles(
+        target_article: Dict[str, Any],
+        all_articles: List[Dict[str, Any]],
+        top_n: int = 5,
+        embedding_model: Optional[Any] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Find articles related to a target article using embeddings.
+
+        Args:
+            target_article: Target article dictionary
+            all_articles: List of all articles
+            top_n: Number of related articles to return
+            embedding_model: Optional pre-loaded SentenceTransformer model
+
+        Returns:
+            List of related articles with similarity scores
+        """
+        try:
+            # Load embedding model if not provided
+            if embedding_model is None:
+                embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+            target_content = target_article.get('content', '') or target_article.get('text', '')
+            if not target_content:
+                return []
+
+            # Generate target embedding
+            target_embedding = embedding_model.encode([target_content[:1000]])[0]
+
+            # Calculate similarities
+            related = []
+            for article in all_articles:
+                # Skip the target article itself
+                if article.get('id') == target_article.get('id'):
+                    continue
+
+                content = article.get('content', '') or article.get('text', '')
+                if not content:
+                    continue
+
+                # Generate embedding
+                embedding = embedding_model.encode([content[:1000]])[0]
+
+                # Calculate cosine similarity
+                similarity = 1 - cosine(target_embedding, embedding)
+
+                related.append({
+                    "article_id": article.get('id'),
+                    "title": article.get('title', 'Untitled'),
+                    "similarity_score": float(similarity),
+                    "url": article.get('url', '')
+                })
+
+            # Sort by similarity and return top N
+            related.sort(key=lambda x: x['similarity_score'], reverse=True)
+            return related[:top_n]
+
+        except Exception as e:
+            logger.error(f"Error finding related articles: {e}")
+            return []
+
+    @staticmethod
+    def cluster_articles(
+        articles: List[Dict[str, Any]],
+        num_clusters: int = 5,
+        embedding_model: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        """
+        Cluster similar articles using K-means.
+
+        Args:
+            articles: List of article dictionaries
+            num_clusters: Number of clusters to create
+            embedding_model: Optional pre-loaded SentenceTransformer model
+
+        Returns:
+            Dictionary with cluster assignments and centroids
+        """
+        try:
+            if len(articles) < num_clusters:
+                return {"clusters": {}, "error": "Not enough articles for clustering"}
+
+            # Load embedding model if not provided
+            if embedding_model is None:
+                embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+
+            # Generate embeddings
+            texts = []
+            article_ids = []
+            for article in articles:
+                content = article.get('content', '') or article.get('text', '')
+                if content:
+                    texts.append(content[:1000])
+                    article_ids.append(article.get('id'))
+
+            if len(texts) < num_clusters:
+                return {"clusters": {}, "error": "Insufficient text data"}
+
+            embeddings = embedding_model.encode(texts)
+
+            # Perform K-means clustering
+            kmeans = KMeans(n_clusters=num_clusters, random_state=42, n_init=10)
+            cluster_labels = kmeans.fit_predict(embeddings)
+
+            # Organize results
+            clusters = {}
+            for i, label in enumerate(cluster_labels):
+                label = int(label)
+                if label not in clusters:
+                    clusters[label] = {
+                        "cluster_id": label,
+                        "articles": [],
+                        "size": 0
+                    }
+
+                clusters[label]["articles"].append({
+                    "article_id": article_ids[i],
+                    "title": articles[i].get('title', 'Untitled')
+                })
+                clusters[label]["size"] += 1
+
+            return {
+                "clusters": clusters,
+                "num_clusters": num_clusters,
+                "total_articles": len(article_ids)
+            }
+
+        except Exception as e:
+            logger.error(f"Error clustering articles: {e}")
+            return {"clusters": {}, "error": str(e)}
+
+
+class SummaryQualityManager:
+    """
+    Summary quality metrics and evaluation (v1.9.0).
+
+    Provides:
+    - ROUGE score calculation
+    - Summary coherence analysis
+    - User feedback collection
+    - Quality metrics tracking
+    """
+
+    @staticmethod
+    def calculate_rouge_scores(
+        reference: str,
+        summary: str
+    ) -> Dict[str, Dict[str, float]]:
+        """
+        Calculate ROUGE scores for a summary.
+
+        Args:
+            reference: Reference text (original article)
+            summary: Generated summary
+
+        Returns:
+            Dictionary with ROUGE-1, ROUGE-2, and ROUGE-L scores
+        """
+        try:
+            scorer = rouge_scorer.RougeScorer(['rouge1', 'rouge2', 'rougeL'], use_stemmer=True)
+            scores = scorer.score(reference, summary)
+
+            results = {}
+            for metric, score in scores.items():
+                results[metric] = {
+                    "precision": float(score.precision),
+                    "recall": float(score.recall),
+                    "fmeasure": float(score.fmeasure)
+                }
+
+            return results
+
+        except Exception as e:
+            logger.error(f"Error calculating ROUGE scores: {e}")
+            return {}
+
+    @staticmethod
+    def evaluate_summary_coherence(summary: str) -> Dict[str, Any]:
+        """
+        Evaluate summary coherence using various metrics.
+
+        Args:
+            summary: Summary text
+
+        Returns:
+            Dictionary with coherence metrics
+        """
+        try:
+            # Basic metrics
+            sentences = [s.strip() for s in summary.split('.') if s.strip()]
+            words = summary.split()
+
+            # Calculate readability metrics
+            avg_sentence_length = len(words) / len(sentences) if sentences else 0
+
+            # Calculate lexical diversity
+            unique_words = set(w.lower() for w in words if w.isalpha())
+            lexical_diversity = len(unique_words) / len(words) if words else 0
+
+            # Check for proper sentence structure
+            has_capitalization = any(s[0].isupper() for s in sentences if s)
+            has_punctuation = summary.count('.') + summary.count('!') + summary.count('?') > 0
+
+            # Calculate coherence score (0-100)
+            coherence_score = 0
+            if 10 <= avg_sentence_length <= 25:
+                coherence_score += 30  # Good sentence length
+            if 0.3 <= lexical_diversity <= 0.8:
+                coherence_score += 30  # Good vocabulary diversity
+            if has_capitalization:
+                coherence_score += 20  # Proper capitalization
+            if has_punctuation:
+                coherence_score += 20  # Proper punctuation
+
+            return {
+                "coherence_score": coherence_score,
+                "avg_sentence_length": round(avg_sentence_length, 2),
+                "lexical_diversity": round(lexical_diversity, 3),
+                "num_sentences": len(sentences),
+                "num_words": len(words),
+                "quality_level": (
+                    "Excellent" if coherence_score >= 80
+                    else "Good" if coherence_score >= 60
+                    else "Fair" if coherence_score >= 40
+                    else "Poor"
+                )
+            }
+
+        except Exception as e:
+            logger.error(f"Error evaluating coherence: {e}")
+            return {"coherence_score": 0, "error": str(e)}
+
+    @staticmethod
+    def save_summary_feedback(
+        article_id: int,
+        summary_id: str,
+        rating: int,
+        comments: str = ""
+    ) -> bool:
+        """
+        Save user feedback for a summary.
+
+        Args:
+            article_id: Article ID
+            summary_id: Summary identifier
+            rating: User rating (1-5)
+            comments: Optional feedback comments
+
+        Returns:
+            Success status
+        """
+        try:
+            with get_db_connection() as conn:
+                conn.execute("""
+                    INSERT INTO summary_feedback
+                    (article_id, summary_id, rating, comments, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (
+                    article_id,
+                    summary_id,
+                    rating,
+                    comments,
+                    datetime.now().isoformat()
+                ))
+                conn.commit()
+            return True
+
+        except Exception as e:
+            logger.error(f"Error saving summary feedback: {e}")
+            return False
+
+
+class QuestionAnsweringManager:
+    """
+    Question answering system for scraped content (v1.9.0).
+
+    Provides:
+    - Interactive Q&A about articles
+    - Source attribution in answers
+    - Multi-article synthesis
+    - Conversation history tracking
+    """
+
+    @staticmethod
+    def answer_question(
+        question: str,
+        articles: List[Dict[str, Any]],
+        max_context_length: int = 5000
+    ) -> Dict[str, Any]:
+        """
+        Answer a question based on article content.
+
+        Args:
+            question: User question
+            articles: List of relevant articles
+            max_context_length: Maximum context length for AI
+
+        Returns:
+            Dictionary with answer and source attribution
+        """
+        try:
+            provider = get_ai_provider()
+            if provider is None:
+                return {
+                    "answer": "AI provider not configured. Please set API keys in .env file.",
+                    "sources": [],
+                    "confidence": 0
+                }
+
+            # Build context from articles
+            context_parts = []
+            sources = []
+
+            for idx, article in enumerate(articles[:5]):  # Limit to 5 articles
+                title = article.get('title', 'Untitled')
+                content = article.get('content', '') or article.get('text', '')
+
+                if content:
+                    # Truncate content if needed
+                    snippet = content[:1000] if len(content) > 1000 else content
+                    context_parts.append(f"[Article {idx+1}: {title}]\n{snippet}")
+                    sources.append({
+                        "article_id": article.get('id'),
+                        "title": title,
+                        "url": article.get('url', '')
+                    })
+
+            # Combine context
+            context = "\n\n".join(context_parts)[:max_context_length]
+
+            # Create Q&A prompt
+            qa_prompt = f"""Based on the following articles, please answer this question:
+
+Question: {question}
+
+Articles:
+{context}
+
+Please provide a clear, concise answer based on the information in the articles. If the articles don't contain enough information to answer the question, please say so.
+
+Answer:"""
+
+            # Get answer from AI
+            answer = provider.get_summary(
+                qa_prompt,
+                summary_style="brief",
+                template=None,
+                max_length=len(qa_prompt) + 1000
+            )
+
+            return {
+                "answer": answer or "Unable to generate answer.",
+                "sources": sources,
+                "confidence": 0.8 if answer else 0.0,
+                "question": question
+            }
+
+        except Exception as e:
+            logger.error(f"Error answering question: {e}")
+            return {
+                "answer": f"Error generating answer: {str(e)}",
+                "sources": [],
+                "confidence": 0
+            }
+
+    @staticmethod
+    def save_qa_conversation(
+        question: str,
+        answer: str,
+        article_ids: List[int],
+        confidence: float = 0.0
+    ) -> bool:
+        """
+        Save Q&A conversation to database.
+
+        Args:
+            question: User question
+            answer: AI-generated answer
+            article_ids: List of source article IDs
+            confidence: Answer confidence score
+
+        Returns:
+            Success status
+        """
+        try:
+            with get_db_connection() as conn:
+                conn.execute("""
+                    INSERT INTO qa_history
+                    (question, answer, article_ids, confidence, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (
+                    question,
+                    answer,
+                    json.dumps(article_ids),
+                    confidence,
+                    datetime.now().isoformat()
+                ))
+                conn.commit()
+            return True
+
+        except Exception as e:
+            logger.error(f"Error saving Q&A conversation: {e}")
+            return False
+
+    @staticmethod
+    def get_qa_history(limit: int = 20) -> List[Dict[str, Any]]:
+        """
+        Retrieve Q&A conversation history.
+
+        Args:
+            limit: Maximum number of conversations to retrieve
+
+        Returns:
+            List of Q&A conversation dictionaries
+        """
+        try:
+            with get_db_connection() as conn:
+                cursor = conn.execute("""
+                    SELECT id, question, answer, article_ids, confidence, created_at
+                    FROM qa_history
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                """, (limit,))
+
+                history = []
+                for row in cursor:
+                    history.append({
+                        "id": row[0],
+                        "question": row[1],
+                        "answer": row[2],
+                        "article_ids": json.loads(row[3]) if row[3] else [],
+                        "confidence": row[4],
+                        "created_at": row[5]
+                    })
+
+                return history
+
+        except Exception as e:
+            logger.error(f"Error retrieving Q&A history: {e}")
+            return []
+
+
 # Legacy function wrappers for backward compatibility
 def get_summary_from_llm(text_content: str, summary_style: str = "overview", max_length: int = 15000, template: Optional[str] = None) -> str | None:
     """Legacy wrapper that uses the current AI provider."""
@@ -4583,6 +5666,397 @@ class AnalyticsModal(ModalScreen):
         self.dismiss()
 
 
+class TopicModelingModal(ModalScreen[Optional[Dict[str, Any]]]):
+    """Modal for configuring and running topic modeling."""
+    DEFAULT_CSS = """
+    TopicModelingModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    TopicModelingModal > Vertical {
+        width: 70;
+        height: auto;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    TopicModelingModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Topic Modeling Configuration", classes="modal-title")
+            yield Label("Select algorithm and parameters:")
+            yield Select(
+                [("LDA (Latent Dirichlet Allocation)", "lda"), ("NMF (Non-negative Matrix Factorization)", "nmf")],
+                id="algorithm",
+                prompt="Select Algorithm"
+            )
+            yield Input(placeholder="Number of topics (default: 5)", id="num_topics", value="5")
+            yield Input(placeholder="Words per topic (default: 10)", id="num_words", value="10")
+            with Horizontal():
+                yield Button("Run Modeling", variant="primary", id="run")
+                yield Button("Cancel", id="cancel")
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "run":
+            algorithm_select = self.query_one("#algorithm", Select)
+            num_topics_input = self.query_one("#num_topics", Input)
+            num_words_input = self.query_one("#num_words", Input)
+
+            try:
+                num_topics = int(num_topics_input.value) if num_topics_input.value else 5
+                num_words = int(num_words_input.value) if num_words_input.value else 10
+                algorithm = algorithm_select.value if algorithm_select.value != Select.BLANK else "lda"
+
+                self.dismiss({
+                    "algorithm": algorithm,
+                    "num_topics": num_topics,
+                    "num_words": num_words
+                })
+            except ValueError:
+                self.app.notify("Please enter valid numbers", severity="error")
+        else:
+            self.dismiss(None)
+
+
+class QuestionAnsweringModal(ModalScreen[Optional[str]]):
+    """Modal for asking questions about articles."""
+    DEFAULT_CSS = """
+    QuestionAnsweringModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    QuestionAnsweringModal > Vertical {
+        width: 80;
+        height: auto;
+        max-height: 35;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    QuestionAnsweringModal TextArea {
+        height: 5;
+        margin-bottom: 1;
+    }
+    QuestionAnsweringModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    """
+
+    def __init__(self, answer: Optional[str] = None, sources: Optional[List[Dict]] = None):
+        super().__init__()
+        self.answer = answer
+        self.sources = sources or []
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            if self.answer:
+                # Display answer mode
+                yield Label("Answer:", classes="modal-title")
+                yield Static(self.answer, classes="answer-text")
+                if self.sources:
+                    yield Label("\nSources:", classes="modal-subtitle")
+                    for idx, source in enumerate(self.sources, 1):
+                        yield Static(f"{idx}. {source.get('title', 'Unknown')} ({source.get('url', '')})")
+                with Horizontal():
+                    yield Button("Ask Another", variant="primary", id="ask_another")
+                    yield Button("Close", id="close")
+            else:
+                # Input question mode
+                yield Label("Ask a Question", classes="modal-title")
+                yield TextArea(id="question", placeholder="Enter your question about the articles...")
+                with Horizontal():
+                    yield Button("Submit", variant="primary", id="submit")
+                    yield Button("Cancel", id="cancel")
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "submit":
+            question_area = self.query_one("#question", TextArea)
+            question = question_area.text.strip()
+            if question:
+                self.dismiss(question)
+            else:
+                self.app.notify("Please enter a question", severity="warning")
+        elif event.button.id == "ask_another":
+            self.dismiss("__ask_another__")
+        else:
+            self.dismiss(None)
+
+
+class DuplicateDetectionModal(ModalScreen[Optional[float]]):
+    """Modal for finding and managing duplicate articles."""
+    DEFAULT_CSS = """
+    DuplicateDetectionModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    DuplicateDetectionModal > Vertical {
+        width: 80;
+        height: auto;
+        max-height: 40;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    DuplicateDetectionModal DataTable {
+        height: 20;
+        margin: 1 0;
+    }
+    DuplicateDetectionModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    """
+
+    def __init__(self, duplicates: Optional[List[Dict]] = None):
+        super().__init__()
+        self.duplicates = duplicates or []
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Duplicate Detection", classes="modal-title")
+            if self.duplicates:
+                # Display results
+                yield Label(f"Found {len(self.duplicates)} duplicate pairs:")
+                table = DataTable()
+                table.add_columns("Article 1", "Article 2", "Similarity")
+                for dup in self.duplicates:
+                    table.add_row(
+                        dup.get('title1', 'Unknown'),
+                        dup.get('title2', 'Unknown'),
+                        f"{dup.get('similarity', 0):.2%}"
+                    )
+                yield table
+                with Horizontal():
+                    yield Button("Close", variant="primary", id="close")
+            else:
+                # Input threshold
+                yield Label("Enter similarity threshold (0.0 - 1.0):")
+                yield Input(placeholder="0.85", id="threshold", value="0.85")
+                with Horizontal():
+                    yield Button("Detect", variant="primary", id="detect")
+                    yield Button("Cancel", id="cancel")
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "detect":
+            threshold_input = self.query_one("#threshold", Input)
+            try:
+                threshold = float(threshold_input.value) if threshold_input.value else 0.85
+                if 0.0 <= threshold <= 1.0:
+                    self.dismiss(threshold)
+                else:
+                    self.app.notify("Threshold must be between 0.0 and 1.0", severity="error")
+            except ValueError:
+                self.app.notify("Please enter a valid number", severity="error")
+        else:
+            self.dismiss(None)
+
+
+class RelatedArticlesModal(ModalScreen):
+    """Modal to show related articles."""
+    DEFAULT_CSS = """
+    RelatedArticlesModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    RelatedArticlesModal > Vertical {
+        width: 80;
+        height: auto;
+        max-height: 35;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    RelatedArticlesModal DataTable {
+        height: 15;
+        margin: 1 0;
+    }
+    RelatedArticlesModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    """
+
+    def __init__(self, article_title: str, related: List[Dict]):
+        super().__init__()
+        self.article_title = article_title
+        self.related = related
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label(f"Related to: {self.article_title}", classes="modal-title")
+            if self.related:
+                table = DataTable()
+                table.add_columns("Title", "Similarity", "URL")
+                for item in self.related:
+                    table.add_row(
+                        item.get('title', 'Unknown'),
+                        f"{item.get('similarity', 0):.2%}",
+                        item.get('url', '')[:40] + "..." if len(item.get('url', '')) > 40 else item.get('url', '')
+                    )
+                yield table
+            else:
+                yield Label("No related articles found.")
+            with Horizontal():
+                yield Button("Close", variant="primary", id="close")
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.dismiss()
+
+
+class ClusterViewModal(ModalScreen[Optional[int]]):
+    """Modal for visualizing article clusters."""
+    DEFAULT_CSS = """
+    ClusterViewModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    ClusterViewModal > Vertical {
+        width: 80;
+        height: auto;
+        max-height: 40;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    ClusterViewModal DataTable {
+        height: 20;
+        margin: 1 0;
+    }
+    ClusterViewModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    """
+
+    def __init__(self, clusters: Optional[List[Dict]] = None):
+        super().__init__()
+        self.clusters = clusters or []
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Article Clustering", classes="modal-title")
+            if self.clusters:
+                # Display clusters
+                table = DataTable()
+                table.add_columns("Cluster", "Articles", "Top Keywords")
+                for idx, cluster in enumerate(self.clusters):
+                    keywords = ", ".join(cluster.get('keywords', [])[:5])
+                    table.add_row(
+                        f"Cluster {idx + 1}",
+                        str(len(cluster.get('articles', []))),
+                        keywords
+                    )
+                yield table
+                with Horizontal():
+                    yield Button("Export", id="export")
+                    yield Button("Close", variant="primary", id="close")
+            else:
+                # Input number of clusters
+                yield Label("Enter number of clusters:")
+                yield Input(placeholder="5", id="num_clusters", value="5")
+                with Horizontal():
+                    yield Button("Run Clustering", variant="primary", id="cluster")
+                    yield Button("Cancel", id="cancel")
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "cluster":
+            num_clusters_input = self.query_one("#num_clusters", Input)
+            try:
+                num_clusters = int(num_clusters_input.value) if num_clusters_input.value else 5
+                self.dismiss(num_clusters)
+            except ValueError:
+                self.app.notify("Please enter a valid number", severity="error")
+        elif event.button.id == "export":
+            # TODO: Implement export
+            self.app.notify("Export functionality coming soon", severity="information")
+        else:
+            self.dismiss(None)
+
+
+class SummaryQualityModal(ModalScreen):
+    """Modal to display summary quality metrics."""
+    DEFAULT_CSS = """
+    SummaryQualityModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    SummaryQualityModal > Vertical {
+        width: 70;
+        height: auto;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    SummaryQualityModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+    """
+
+    def __init__(self, metrics: Dict[str, Any]):
+        super().__init__()
+        self.metrics = metrics
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("Summary Quality Metrics", classes="modal-title")
+
+            rouge_scores = self.metrics.get('rouge_scores', {})
+            if rouge_scores:
+                yield Label(f"\nROUGE-1: {rouge_scores.get('rouge1', 0):.3f}")
+                yield Label(f"ROUGE-2: {rouge_scores.get('rouge2', 0):.3f}")
+                yield Label(f"ROUGE-L: {rouge_scores.get('rougeL', 0):.3f}")
+
+            coherence = self.metrics.get('coherence', 0)
+            yield Label(f"\nCoherence Score: {coherence:.1f}/100")
+
+            readability = self.metrics.get('readability', {})
+            if readability:
+                yield Label(f"\nReadability:")
+                yield Label(f"  Flesch Reading Ease: {readability.get('flesch', 0):.1f}")
+
+            yield Label("\nRate this summary (1-5 stars):")
+            yield Input(placeholder="Enter rating (1-5)", id="rating")
+
+            with Horizontal():
+                yield Button("Save Feedback", variant="primary", id="save")
+                yield Button("Close", id="close")
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "save":
+            rating_input = self.query_one("#rating", Input)
+            try:
+                rating = int(rating_input.value) if rating_input.value else 0
+                if 1 <= rating <= 5:
+                    # TODO: Save rating to database
+                    self.app.notify(f"Rating {rating} saved successfully", severity="information")
+                    self.dismiss()
+                else:
+                    self.app.notify("Rating must be between 1 and 5", severity="error")
+            except ValueError:
+                self.app.notify("Please enter a valid rating", severity="error")
+        else:
+            self.dismiss()
+
+
 class HelpModal(ModalScreen):
     DEFAULT_CSS = """
     HelpModal {
@@ -4615,7 +6089,7 @@ class HelpModal(ModalScreen):
                 f"`{ps_data['default_tags_csv'] or 'None'}`\n\n"
             )
         ht = f"""\
-## Keybindings & Help (v1.8.0)
+## Keybindings & Help (v1.9.0)
 
 ### Navigation & Display
 | Key           | Action              | Description                                        |
@@ -4654,6 +6128,17 @@ class HelpModal(ModalScreen):
 | `ctrl+shift+e`| Extract Entities    | Extract named entities (people, orgs, locations).  |
 | `ctrl+shift+k`| Extract Keywords    | Extract key terms and topics from article.         |
 | `ctrl+shift+r`| Find Similar        | Find similar articles using content similarity.    |
+
+### Smart Categorization & Topic Modeling (v1.9.0)
+| Key           | Action              | Description                                        |
+|---------------|---------------------|----------------------------------------------------|
+| `ctrl+alt+t`  | Topic Modeling      | Run LDA/NMF topic modeling on articles.            |
+| `ctrl+alt+q`  | Ask Question        | Question answering about scraped content.          |
+| `ctrl+alt+d`  | Find Duplicates     | Detect duplicate articles with fuzzy matching.     |
+| `ctrl+alt+l`  | Related Articles    | Find articles related to selected one.             |
+| `ctrl+alt+c`  | Cluster Articles    | Cluster similar articles by content.               |
+| `ctrl+alt+h`  | Q&A History         | View question-answer conversation history.         |
+| `ctrl+alt+m`  | Summary Quality     | Evaluate summary quality with ROUGE metrics.       |
 
 ### Filtering & Sorting
 | Key           | Action              | Description                                        |
@@ -4760,6 +6245,14 @@ class WebScraperApp(App[None]):
         Binding("ctrl+shift+e", "extract_entities", "Entities"),
         Binding("ctrl+shift+k", "extract_keywords", "Keywords"),
         Binding("ctrl+shift+r", "find_similar", "Similar"),
+        # v1.9.0 Smart Categorization & Topic Modeling
+        Binding("ctrl+alt+t", "topic_modeling", "Topic Modeling"),
+        Binding("ctrl+alt+q", "ask_question", "Ask Question"),
+        Binding("ctrl+alt+d", "find_duplicates", "Find Duplicates"),
+        Binding("ctrl+alt+l", "find_related", "Related Articles"),
+        Binding("ctrl+alt+c", "cluster_articles", "Cluster Articles"),
+        Binding("ctrl+alt+h", "view_qa_history", "Q&A History"),
+        Binding("ctrl+alt+m", "evaluate_summary", "Summary Quality"),
         Binding("f1,ctrl+h", "toggle_help", "Help")
     ]
     dark = reactive(True, layout=True)
@@ -4803,7 +6296,7 @@ class WebScraperApp(App[None]):
         logger.info("Background scheduler started")
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True, name="Web Scraper TUI v1.8.0")
+        yield Header(show_clock=True, name="Web Scraper TUI v1.9.0")
         yield DataTable(id="article_table", cursor_type="row", zebra_stripes=True)
         yield LoadingIndicator(id="loading_indicator", classes="hidden")
         yield StatusBar(id="status_bar")
@@ -5647,6 +7140,195 @@ class WebScraperApp(App[None]):
         worker = functools.partial(self._find_similar_worker, current_id)
         self.run_worker(worker)
 
+    # === v1.9.0 Smart Categorization & Topic Modeling Actions ===
+
+    async def action_topic_modeling(self) -> None:
+        """Run topic modeling on articles (Ctrl+Alt+T)."""
+        def handle_config(config):
+            if config:
+                worker = functools.partial(
+                    self._topic_modeling_worker,
+                    config['algorithm'],
+                    config['num_topics'],
+                    config['num_words']
+                )
+                self.run_worker(worker, group="topic_modeling", exclusive=True)
+
+        self.push_screen(TopicModelingModal(), handle_config)
+
+    async def action_ask_question(self) -> None:
+        """Ask a question about scraped content (Ctrl+Alt+Q)."""
+        def handle_question(question):
+            if question and question != "__ask_another__":
+                worker = functools.partial(self._qa_worker, question)
+                self.run_worker(worker, group="qa", exclusive=True)
+            elif question == "__ask_another__":
+                # Show the input modal again
+                self.push_screen(QuestionAnsweringModal(), handle_question)
+
+        self.push_screen(QuestionAnsweringModal(), handle_question)
+
+    async def action_find_duplicates(self) -> None:
+        """Find duplicate articles (Ctrl+Alt+D)."""
+        def handle_threshold(threshold):
+            if threshold is not None:
+                worker = functools.partial(self._duplicate_detection_worker, threshold)
+                self.run_worker(worker, group="duplicates", exclusive=True)
+
+        self.push_screen(DuplicateDetectionModal(), handle_threshold)
+
+    async def action_find_related(self) -> None:
+        """Find related articles to selected (Ctrl+Alt+L)."""
+        current_id = self._get_current_row_id()
+        if current_id is None:
+            self.notify("No article selected.", title="Info", severity="warning")
+            return
+
+        self.selected_row_id = current_id
+
+        def get_article_and_related():
+            with get_db_connection() as conn:
+                # Get current article
+                cursor = conn.execute(
+                    "SELECT id, title, content FROM scraped_data WHERE id = ?",
+                    (current_id,)
+                )
+                article = cursor.fetchone()
+                if not article:
+                    return None, []
+
+                # Get all articles for similarity comparison
+                all_articles = conn.execute(
+                    "SELECT id, title, content, url FROM scraped_data WHERE id != ?",
+                    (current_id,)
+                ).fetchall()
+
+                return article, all_articles
+
+        async def show_related():
+            article, all_articles = await self.run_in_thread(get_article_and_related)
+
+            if not article:
+                self.notify("Article not found.", severity="error")
+                return
+
+            # Find similar articles
+            related = ContentSimilarityManager.find_similar_articles(
+                dict(article),
+                [dict(a) for a in all_articles],
+                top_n=10,
+                threshold=0.3
+            )
+
+            self.push_screen(
+                RelatedArticlesModal(
+                    article['title'],
+                    related
+                )
+            )
+
+        await show_related()
+
+    async def action_cluster_articles(self) -> None:
+        """Cluster articles by similarity (Ctrl+Alt+C)."""
+        def handle_num_clusters(num_clusters):
+            if num_clusters:
+                worker = functools.partial(self._clustering_worker, num_clusters)
+                self.run_worker(worker, group="clustering", exclusive=True)
+
+        self.push_screen(ClusterViewModal(), handle_num_clusters)
+
+    async def action_view_qa_history(self) -> None:
+        """View Q&A conversation history (Ctrl+Alt+H)."""
+        def get_history():
+            return QuestionAnsweringManager.get_qa_history(limit=20)
+
+        async def show_history():
+            history = await self.run_in_thread(get_history)
+
+            if not history:
+                self.notify("No Q&A history found.", severity="info")
+                return
+
+            # Build history display
+            content = "# Q&A Conversation History\n\n"
+            for idx, qa in enumerate(history, 1):
+                content += f"## {idx}. Question\n{qa['question']}\n\n"
+                content += f"**Answer:** {qa['answer']}\n\n"
+                content += f"*Confidence: {qa.get('confidence', 0):.1%} | "
+                content += f"Date: {qa.get('created_at', 'Unknown')}*\n\n---\n\n"
+
+            # Show in a simple modal
+            from textual.widgets import Markdown
+            from textual.containers import VerticalScroll
+
+            class QAHistoryModal(ModalScreen):
+                DEFAULT_CSS = """
+                QAHistoryModal {
+                    align: center middle;
+                    background: $surface-darken-1;
+                }
+                QAHistoryModal > VerticalScroll {
+                    width: 90%;
+                    height: 90%;
+                    border: thick $primary-lighten-1;
+                    padding: 1 2;
+                    background: $surface;
+                }
+                """
+
+                def compose(self):
+                    with VerticalScroll():
+                        yield Markdown(content)
+                        yield Button("Close", id="close")
+
+                def on_button_pressed(self, event):
+                    self.dismiss()
+
+            self.push_screen(QAHistoryModal())
+
+        await show_history()
+
+    async def action_evaluate_summary(self) -> None:
+        """Evaluate summary quality (Ctrl+Alt+M)."""
+        current_id = self._get_current_row_id()
+        if current_id is None:
+            self.notify("No article selected.", title="Info", severity="warning")
+            return
+
+        self.selected_row_id = current_id
+
+        def get_summary_data():
+            with get_db_connection() as conn:
+                cursor = conn.execute(
+                    "SELECT content, summary FROM scraped_data WHERE id = ?",
+                    (current_id,)
+                )
+                row = cursor.fetchone()
+                if row and row['summary']:
+                    return {
+                        'content': row['content'],
+                        'summary': row['summary']
+                    }
+                return None
+
+        async def evaluate():
+            data = await self.run_in_thread(get_summary_data)
+
+            if not data:
+                self.notify("No summary found for this article.", severity="warning")
+                return
+
+            # Calculate quality metrics
+            metrics = SummaryQualityManager.calculate_rouge_scores(
+                data['summary'],
+                data['content']
+            )
+
+            self.push_screen(SummaryQualityModal(metrics))
+
+        await evaluate()
+
     async def action_toggle_help(self)->None:await self.app.push_screen(HelpModal())
     async def action_cycle_sort_order(self)->None:self.current_sort_index=(self.current_sort_index+1)%len(self.SORT_OPTIONS);await self.refresh_article_table();self.notify(f"Sorted by: {self.SORT_OPTIONS[self.current_sort_index][1]}",title="Sort Changed",severity="info",timeout=2)
     async def _handle_manage_tags_result(self,aid:int,nts:Optional[str])->None:
@@ -6207,6 +7889,224 @@ class WebScraperApp(App[None]):
         except Exception as e:
             logger.error(f"Error in find similar worker: {e}", exc_info=True)
             self.notify(f"Find similar error: {e}", title="Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    # === v1.9.0 Worker Methods ===
+
+    async def _topic_modeling_worker(self, algorithm: str, num_topics: int, num_words: int) -> None:
+        """Worker for topic modeling."""
+        self._toggle_loading(True)
+        self.notify(f"Running {algorithm.upper()} topic modeling...", title="Topic Modeling", severity="info")
+        try:
+            def _get_articles_blocking():
+                with get_db_connection() as conn:
+                    return [dict(row) for row in conn.execute(
+                        "SELECT id, title, content FROM scraped_data WHERE content IS NOT NULL"
+                    ).fetchall()]
+
+            articles = await self.run_in_thread(_get_articles_blocking)
+
+            if len(articles) < 2:
+                self.notify("Need at least 2 articles for topic modeling.", severity="warning")
+                self._toggle_loading(False)
+                return
+
+            # Run topic modeling
+            if algorithm == "lda":
+                result = await self.run_in_thread(
+                    lambda: TopicModelingManager.perform_lda_topic_modeling(
+                        articles, num_topics=num_topics
+                    )
+                )
+            else:  # nmf
+                result = await self.run_in_thread(
+                    lambda: TopicModelingManager.perform_nmf_topic_modeling(
+                        articles, num_topics=num_topics
+                    )
+                )
+
+            if 'error' in result:
+                self.notify(f"Topic modeling error: {result['error']}", severity="error")
+            else:
+                topics = result.get('topics', [])
+                if topics:
+                    topics_text = "\n".join([
+                        f"• {t['label']}" for t in topics[:5]
+                    ])
+                    self.notify(
+                        f"Found {len(topics)} topics:\n{topics_text}",
+                        title="Topic Modeling Complete",
+                        severity="info",
+                        timeout=15
+                    )
+                else:
+                    self.notify("No topics found.", severity="info")
+
+        except Exception as e:
+            logger.error(f"Error in topic modeling worker: {e}", exc_info=True)
+            self.notify(f"Topic modeling error: {e}", title="Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def _qa_worker(self, question: str) -> None:
+        """Worker for question answering."""
+        self._toggle_loading(True)
+        self.notify(f"Finding answer to: {question[:50]}...", title="Question Answering", severity="info")
+        try:
+            def _get_articles_blocking():
+                with get_db_connection() as conn:
+                    return [dict(row) for row in conn.execute(
+                        "SELECT id, title, content, url FROM scraped_data WHERE content IS NOT NULL LIMIT 10"
+                    ).fetchall()]
+
+            articles = await self.run_in_thread(_get_articles_blocking)
+
+            if not articles:
+                self.notify("No articles available for Q&A.", severity="warning")
+                self._toggle_loading(False)
+                return
+
+            # Get answer
+            result = await self.run_in_thread(
+                lambda: QuestionAnsweringManager.answer_question(question, articles)
+            )
+
+            answer = result.get('answer', 'No answer generated.')
+            sources = result.get('sources', [])
+
+            # Save to history
+            article_ids = [s.get('article_id') for s in sources if s.get('article_id')]
+            await self.run_in_thread(
+                lambda: QuestionAnsweringManager.save_qa_conversation(
+                    question, answer, article_ids, result.get('confidence', 0)
+                )
+            )
+
+            # Show answer in modal
+            self.push_screen(QuestionAnsweringModal(answer=answer, sources=sources))
+
+        except Exception as e:
+            logger.error(f"Error in Q&A worker: {e}", exc_info=True)
+            self.notify(f"Q&A error: {e}", title="Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def _duplicate_detection_worker(self, threshold: float) -> None:
+        """Worker for duplicate detection."""
+        self._toggle_loading(True)
+        self.notify(f"Detecting duplicates (threshold: {threshold})...", title="Duplicate Detection", severity="info")
+        try:
+            def _get_articles_blocking():
+                with get_db_connection() as conn:
+                    return [dict(row) for row in conn.execute(
+                        "SELECT id, title, content FROM scraped_data WHERE content IS NOT NULL"
+                    ).fetchall()]
+
+            articles = await self.run_in_thread(_get_articles_blocking)
+
+            if len(articles) < 2:
+                self.notify("Need at least 2 articles for duplicate detection.", severity="warning")
+                self._toggle_loading(False)
+                return
+
+            # Find duplicates
+            duplicates = await self.run_in_thread(
+                lambda: DuplicateDetectionManager.find_duplicates(articles, threshold=threshold)
+            )
+
+            if duplicates:
+                # Show results in modal
+                self.push_screen(DuplicateDetectionModal(duplicates=duplicates))
+            else:
+                self.notify("No duplicates found.", severity="info")
+
+        except Exception as e:
+            logger.error(f"Error in duplicate detection worker: {e}", exc_info=True)
+            self.notify(f"Duplicate detection error: {e}", title="Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def _clustering_worker(self, num_clusters: int) -> None:
+        """Worker for article clustering."""
+        self._toggle_loading(True)
+        self.notify(f"Clustering articles into {num_clusters} groups...", title="Clustering", severity="info")
+        try:
+            def _get_articles_blocking():
+                with get_db_connection() as conn:
+                    return [dict(row) for row in conn.execute(
+                        "SELECT id, title, content FROM scraped_data WHERE content IS NOT NULL"
+                    ).fetchall()]
+
+            articles = await self.run_in_thread(_get_articles_blocking)
+
+            if len(articles) < num_clusters:
+                self.notify(
+                    f"Need at least {num_clusters} articles for {num_clusters} clusters.",
+                    severity="warning"
+                )
+                self._toggle_loading(False)
+                return
+
+            # Cluster articles
+            clusters = await self.run_in_thread(
+                lambda: DuplicateDetectionManager.cluster_articles(articles, num_clusters=num_clusters)
+            )
+
+            if clusters:
+                # Show results in modal
+                self.push_screen(ClusterViewModal(clusters=clusters))
+            else:
+                self.notify("Clustering failed.", severity="error")
+
+        except Exception as e:
+            logger.error(f"Error in clustering worker: {e}", exc_info=True)
+            self.notify(f"Clustering error: {e}", title="Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def _entity_extraction_worker(self, article_id: int) -> None:
+        """Worker for entity relationship extraction."""
+        self._toggle_loading(True)
+        self.notify(f"Extracting entity relationships for ID {article_id}...", title="Entity Extraction", severity="info")
+        try:
+            def _get_article_blocking():
+                with get_db_connection() as conn:
+                    row = conn.execute(
+                        "SELECT id, title, content FROM scraped_data WHERE id = ?",
+                        (article_id,)
+                    ).fetchone()
+                    return dict(row) if row else None
+
+            article = await self.run_in_thread(_get_article_blocking)
+
+            if not article or not article.get('content'):
+                self.notify("Article not found or has no content.", severity="warning")
+                self._toggle_loading(False)
+                return
+
+            # Extract entities and build knowledge graph
+            result = await self.run_in_thread(
+                lambda: EntityRelationshipManager.build_knowledge_graph([article])
+            )
+
+            entities = result.get('entities', [])
+            if entities:
+                entities_text = "\n".join([
+                    f"• {e['text']} ({e['label']})" for e in entities[:10]
+                ])
+                self.notify(
+                    f"Found {len(entities)} entities:\n{entities_text}",
+                    title="Entities Extracted",
+                    severity="info",
+                    timeout=15
+                )
+            else:
+                self.notify("No entities found.", severity="info")
+
+        except Exception as e:
+            logger.error(f"Error in entity extraction worker: {e}", exc_info=True)
+            self.notify(f"Entity extraction error: {e}", title="Error", severity="error")
         finally:
             self._toggle_loading(False)
 

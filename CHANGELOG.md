@@ -5,6 +5,179 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2025-10-01
+
+### 🎯 Major Feature Release: Smart Categorization & Topic Modeling
+
+This release transforms WebScrape-TUI into an intelligent content analysis platform with advanced topic modeling, entity relationship mapping, duplicate detection, and interactive question-answering capabilities.
+
+### Added
+
+- **Topic Modeling & Categorization**
+  - LDA (Latent Dirichlet Allocation) topic modeling for discovering content themes
+  - NMF (Non-negative Matrix Factorization) alternative algorithm
+  - Automatic category assignment based on topic distributions
+  - Multi-label topic classification with confidence scores
+  - Topic hierarchy creation for organized content structure
+  - Configurable number of topics and words per topic
+  - Keyboard shortcut: `Ctrl+Alt+T`
+
+- **Question Answering System**
+  - Interactive Q&A interface for querying scraped content
+  - Multi-article synthesis for comprehensive answers
+  - Source attribution with confidence scores
+  - Conversation history tracking in database
+  - Context-aware answer generation using AI
+  - Support for up to 5 articles per answer context
+  - View Q&A history: `Ctrl+Alt+H`
+  - Ask questions: `Ctrl+Alt+Q`
+
+- **Entity Relationship Mapping**
+  - Knowledge graph construction from extracted entities
+  - Entity co-occurrence analysis and relationship detection
+  - NetworkX-powered graph building and visualization
+  - Entity-based article filtering and search
+  - Relationship storage in database for persistence
+  - Fallback entity extraction when spaCy unavailable
+
+- **Duplicate Detection & Clustering**
+  - Fuzzy string matching for finding similar/duplicate articles
+  - Configurable similarity threshold (0.0-1.0)
+  - FuzzyWuzzy + Levenshtein distance for accurate matching
+  - Article clustering by content similarity
+  - Related article suggestions with similarity scores
+  - Duplicate pair identification and management
+  - Find duplicates: `Ctrl+Alt+D`
+  - Related articles: `Ctrl+Alt+L`
+  - Cluster articles: `Ctrl+Alt+C`
+
+- **Summary Quality Evaluation**
+  - ROUGE score calculation (ROUGE-1, ROUGE-2, ROUGE-L)
+  - Coherence scoring for summary quality assessment
+  - Readability metrics (Flesch Reading Ease)
+  - User feedback collection (1-5 star ratings)
+  - Quality metrics storage in database
+  - Evaluation modal: `Ctrl+Alt+M`
+
+- **New Manager Classes**
+  - `TopicModelingManager`: LDA/NMF topic modeling and categorization
+    - `perform_lda_topic_modeling()`: LDA algorithm implementation
+    - `perform_nmf_topic_modeling()`: NMF algorithm implementation
+    - Topic assignment and labeling
+  - `EntityRelationshipManager`: Knowledge graph and entity relationships
+    - `build_knowledge_graph()`: Construct entity relationship graph
+    - Entity extraction and relationship detection
+    - Graph storage and retrieval
+  - `DuplicateDetectionManager`: Duplicate and similarity detection
+    - `find_duplicates()`: Fuzzy duplicate detection
+    - `cluster_articles()`: Content-based clustering
+    - `find_related_articles()`: Similarity matching
+  - `SummaryQualityManager`: Quality metrics and evaluation
+    - `calculate_rouge_scores()`: ROUGE metric calculation
+    - Quality assessment and user feedback
+  - `QuestionAnsweringManager`: Interactive Q&A system
+    - `answer_question()`: Generate answers from articles
+    - `save_qa_conversation()`: Store Q&A history
+    - `get_qa_history()`: Retrieve conversation history
+
+- **New Database Tables (7 tables)**
+  - `topics`: Store discovered topics and their keywords
+  - `article_topics`: Many-to-many relationship for article topic assignment
+  - `entity_mentions`: Track entity occurrences in articles
+  - `entity_relationships`: Store relationships between entities
+  - `article_clusters`: Clustering results and assignments
+  - `summary_quality`: Quality metrics and user ratings
+  - `qa_history`: Question-answer conversation history
+
+- **UI Enhancements**
+  - Six new modal dialogs:
+    - TopicModelingModal: Configure and run topic modeling
+    - QuestionAnsweringModal: Interactive Q&A interface
+    - DuplicateDetectionModal: Duplicate detection results
+    - RelatedArticlesModal: Display related articles
+    - ClusterViewModal: Visualize article clusters
+    - SummaryQualityModal: Show quality metrics and ratings
+  - Seven new keyboard shortcuts (Ctrl+Alt+T/Q/D/L/C/H/M)
+  - Updated help modal with v1.9.0 features documentation
+  - Enhanced error handling and user notifications
+  - Loading indicators for background operations
+
+### Technical Implementation
+
+- **New Dependencies**
+  - `gensim>=4.3.0`: LDA and NMF topic modeling algorithms
+  - `networkx>=3.0`: Knowledge graph construction and analysis
+  - `rouge-score>=0.1.2`: ROUGE metrics for summary quality
+  - `fuzzywuzzy>=0.18.0`: Fuzzy string matching for duplicates
+  - `python-Levenshtein>=0.20.0`: Fast string distance calculations
+
+- **Backend Implementation**
+  - 5 new manager classes (~1,083 lines of business logic)
+  - 7 new database tables with proper indexing
+  - Async worker pattern for background processing
+  - Graceful degradation when optional dependencies unavailable
+  - Comprehensive error handling and logging
+
+- **UI Integration**
+  - 6 modal dialogs (~500 lines of UI code)
+  - 7 action methods for user interactions (~300 lines)
+  - 5 async workers for non-blocking operations (~200 lines)
+  - Sequential modal workflows with callback patterns
+  - Visual feedback and progress indicators
+
+- **Testing**
+  - 92 new comprehensive tests across 5 test files (~1,500 lines)
+  - Tests for topic modeling (LDA/NMF) - 16 tests
+  - Tests for entity relationships - 14 tests
+  - Tests for duplicate detection - 23 tests
+  - Tests for summary quality - 19 tests
+  - Tests for question answering - 20 tests
+  - Total test suite: 219+ tests with excellent coverage
+
+### Files Modified
+
+- `scrapetui.py`:
+  - Added 5 manager classes (lines 3175-4120)
+  - Added 6 modal dialogs (lines 5669-6058)
+  - Added 7 action methods (lines 7145-7330)
+  - Added 5 async workers (lines 7897-8111)
+  - Added 7 keybindings (lines 6238-6244)
+  - Updated help text (lines 6132-6141)
+  - Total additions: ~2,233 lines
+
+- `requirements.txt`:
+  - Added 5 new dependencies for v1.9.0 features
+
+- `tests/`:
+  - New: `test_topic_modeling.py` (16 tests)
+  - New: `test_entity_relationships.py` (14 tests)
+  - New: `test_duplicate_detection.py` (23 tests)
+  - New: `test_summary_quality.py` (19 tests)
+  - New: `test_question_answering.py` (20 tests)
+
+### Database Schema Updates
+
+- Created 7 new tables for v1.9.0 features
+- Added proper indexes for performance
+- Maintained backward compatibility with existing schema
+
+### Performance & Optimization
+
+- Async workers prevent UI blocking during heavy operations
+- Efficient database queries with proper indexing
+- Caching of topic models and embeddings where appropriate
+- Graceful fallback for missing optional dependencies
+
+### Breaking Changes
+
+None - All changes are backward compatible.
+
+### Migration Notes
+
+- Run the application to auto-create new database tables
+- Install new dependencies: `pip install gensim networkx rouge-score fuzzywuzzy python-Levenshtein`
+- No manual migration required
+
 ## [1.8.0] - 2025-10-01
 
 ### 🤖 Major Feature Release: Advanced AI Features
