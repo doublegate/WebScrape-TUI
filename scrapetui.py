@@ -112,6 +112,9 @@ from pathlib import Path
 from typing import Any, List, Optional, Tuple, Dict
 from abc import ABC, abstractmethod
 import functools
+import secrets
+import shutil
+import bcrypt
 
 # APScheduler imports for scheduling functionality
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -273,18 +276,413 @@ logging.getLogger("asyncio").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 
+# --- DateTime Utilities (Python 3.12+ compatible) ---
+def db_datetime_now() -> str:
+    """Get current datetime as ISO string for database storage (Python 3.12+ compatible)."""
+    return datetime.now().isoformat()
+
+
+def db_datetime_future(hours: int = 24) -> str:
+    """Get future datetime as ISO string for database storage (Python 3.12+ compatible)."""
+    return (datetime.now() + timedelta(hours=hours)).isoformat()
+
+
+def parse_db_datetime(iso_string: Optional[str]) -> Optional[datetime]:
+    """Parse ISO datetime string from database to datetime object."""
+    return datetime.fromisoformat(iso_string) if iso_string else None
+
+
 # --- Database Utilities ---
 def get_db_connection():
     try:
-        conn = sqlite3.connect(
-            DB_PATH,
-            detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES
-        )
+        # Python 3.12+ compatible: no automatic datetime conversion
+        # Datetime values stored as ISO strings, no adapters needed
+        conn = sqlite3.connect(DB_PATH)
         conn.row_factory = sqlite3.Row
+        # Enable foreign key constraints (required for v2.0.0 multi-user support)
+        conn.execute("PRAGMA foreign_keys = ON")
         return conn
     except sqlite3.Error as e:
         logger.critical(f"DB connection error: {e}", exc_info=True)
         raise
+
+
+# --- Authentication & User Management (v2.0.0) ---
+
+def hash_password(password: str) -> str:
+    """
+    Hash password using bcrypt with cost factor 12.
+
+    Args:
+        password: Plaintext password to hash
+
+    Returns:
+        Bcrypt hash string
+    """
+    salt = bcrypt.gensalt(rounds=12)
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    """
+    Verify password against bcrypt hash.
+
+    Args:
+        password: Plaintext password to verify
+        password_hash: Bcrypt hash to check against
+
+    Returns:
+        True if password matches, False otherwise
+    """
+    try:
+        return bcrypt.checkpw(
+            password.encode('utf-8'),
+            password_hash.encode('utf-8')
+        )
+    except Exception as e:
+        logger.error(f"Password verification error: {e}")
+        return False
+
+
+def create_session_token() -> str:
+    """
+    Generate cryptographically secure session token (32 bytes).
+
+    Returns:
+        URL-safe base64-encoded token string
+    """
+    return secrets.token_urlsafe(32)
+
+
+def create_user_session(
+    user_id: int,
+    duration_hours: int = 24,
+    ip_address: Optional[str] = None
+) -> str:
+    """
+    Create new session for user.
+
+    Args:
+        user_id: User ID to create session for
+        duration_hours: Session validity duration (default 24 hours)
+        ip_address: Optional IP address to associate with session
+
+    Returns:
+        Session token string
+    """
+    with get_db_connection() as conn:
+        token = create_session_token()
+        expires_at = db_datetime_future(duration_hours)
+
+        conn.execute("""
+            INSERT INTO user_sessions (user_id, session_token, expires_at, ip_address)
+            VALUES (?, ?, ?, ?)
+        """, (user_id, token, expires_at, ip_address))
+        conn.commit()
+
+        logger.info(f"Created session for user_id={user_id}, expires at {expires_at}")
+        return token
+
+
+def validate_session(session_token: str) -> Optional[int]:
+    """
+    Validate session token and return user_id if valid.
+
+    Args:
+        session_token: Session token to validate
+
+    Returns:
+        user_id if session is valid and not expired, None otherwise
+    """
+    if not session_token:
+        return None
+
+    try:
+        with get_db_connection() as conn:
+            row = conn.execute("""
+                SELECT user_id, expires_at
+                FROM user_sessions
+                WHERE session_token = ? AND expires_at > ?
+            """, (session_token, db_datetime_now())).fetchone()
+
+            if row:
+                logger.debug(
+                    f"Session validated for user_id={row['user_id']}"
+                )
+                return row['user_id']
+            else:
+                logger.debug("Session invalid or expired")
+                return None
+    except Exception as e:
+        logger.error(f"Session validation error: {e}", exc_info=True)
+        return None
+
+
+def logout_session(session_token: str) -> None:
+    """
+    Delete session from database.
+
+    Args:
+        session_token: Session token to logout
+    """
+    try:
+        with get_db_connection() as conn:
+            conn.execute(
+                "DELETE FROM user_sessions WHERE session_token = ?",
+                (session_token,)
+            )
+            conn.commit()
+            logger.info("Session logged out successfully")
+    except Exception as e:
+        logger.error(f"Session logout error: {e}", exc_info=True)
+
+
+def authenticate_user(username: str, password: str) -> Optional[int]:
+    """
+    Authenticate user with username and password.
+
+    Args:
+        username: Username to authenticate
+        password: Plaintext password to verify
+
+    Returns:
+        user_id if credentials are valid and user is active, None otherwise
+    """
+    try:
+        with get_db_connection() as conn:
+            row = conn.execute("""
+                SELECT id, password_hash, is_active
+                FROM users
+                WHERE username = ?
+            """, (username,)).fetchone()
+
+            if row and row['is_active'] and verify_password(
+                password, row['password_hash']
+            ):
+                # Update last_login timestamp
+                conn.execute(
+                    "UPDATE users SET last_login = ? WHERE id = ?",
+                    (db_datetime_now(), row['id'])
+                )
+                conn.commit()
+                logger.info(f"User authenticated: {username}")
+                return row['id']
+            else:
+                logger.warning(
+                    f"Authentication failed for username: {username}"
+                )
+                return None
+    except Exception as e:
+        logger.error(f"Authentication error: {e}", exc_info=True)
+        return None
+
+
+def initialize_admin_user() -> None:
+    """
+    Create default admin user on first run if no users exist.
+    Uses configuration: username='admin', password='Ch4ng3M3'
+    """
+    try:
+        with get_db_connection() as conn:
+            # Check if any users exist
+            count_row = conn.execute(
+                "SELECT COUNT(*) as cnt FROM users"
+            ).fetchone()
+
+            if count_row['cnt'] == 0:
+                # Create default admin user
+                password_hash = hash_password('Ch4ng3M3')
+                conn.execute("""
+                    INSERT INTO users (username, password_hash, email, role)
+                    VALUES (?, ?, ?, ?)
+                """, ('admin', password_hash, 'admin@localhost', 'admin'))
+                conn.commit()
+                logger.info(
+                    "Default admin user created: username='admin', "
+                    "password='Ch4ng3M3' (please change after first login)"
+                )
+    except Exception as e:
+        logger.error(f"Admin user initialization error: {e}", exc_info=True)
+
+
+def migrate_database_to_v2() -> bool:
+    """
+    Migrate v1.x database to v2.0 schema.
+
+    Returns:
+        True if migration successful, False otherwise
+    """
+    try:
+        with get_db_connection() as conn:
+            # Check current version
+            try:
+                version_row = conn.execute("""
+                    SELECT version FROM schema_version
+                    ORDER BY applied_at DESC LIMIT 1
+                """).fetchone()
+                current_version = (
+                    version_row['version'] if version_row else '1.0'
+                )
+            except sqlite3.OperationalError:
+                # schema_version table doesn't exist - this is v1.x
+                current_version = '1.0'
+
+            if current_version.startswith('2.'):
+                logger.info(
+                    f"Database already at version {current_version}"
+                )
+                return True
+
+            # Backup database before migration (skip for :memory:)
+            if DB_PATH != ":memory:" and isinstance(DB_PATH, (str, Path)):
+                db_path = Path(DB_PATH) if isinstance(DB_PATH, str) else DB_PATH
+                if db_path != Path(":memory:"):
+                    backup_path = db_path.with_suffix('.db.backup-v1')
+                    shutil.copy2(db_path, backup_path)
+                    logger.info(f"Database backed up to {backup_path}")
+
+            # Create new tables for v2.0
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    password_hash TEXT NOT NULL,
+                    email TEXT UNIQUE,
+                    role TEXT DEFAULT 'user' CHECK(role IN ('admin', 'user', 'viewer')),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_login TIMESTAMP,
+                    is_active BOOLEAN DEFAULT 1
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS user_sessions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    session_token TEXT UNIQUE NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP NOT NULL,
+                    ip_address TEXT,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            """)
+
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS schema_version (
+                    version TEXT PRIMARY KEY,
+                    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    description TEXT
+                )
+            """)
+
+            # Create indexes for performance
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_users_username "
+                "ON users(username)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_users_email "
+                "ON users(email)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_sessions_token "
+                "ON user_sessions(session_token)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_sessions_user_id "
+                "ON user_sessions(user_id)"
+            )
+
+            # Add user_id columns to existing tables
+            try:
+                conn.execute(
+                    "ALTER TABLE saved_scrapers ADD COLUMN user_id INTEGER"
+                )
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+
+            try:
+                conn.execute(
+                    "ALTER TABLE saved_scrapers "
+                    "ADD COLUMN is_shared BOOLEAN DEFAULT 0"
+                )
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+
+            try:
+                conn.execute(
+                    "ALTER TABLE scraped_data ADD COLUMN user_id INTEGER"
+                )
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+
+            # Create default admin user (inline to use same connection)
+            count_row = conn.execute("SELECT COUNT(*) as cnt FROM users").fetchone()
+
+            if count_row['cnt'] == 0:
+                password_hash = hash_password('Ch4ng3M3')
+                conn.execute("""
+                    INSERT INTO users (username, password_hash, email, role)
+                    VALUES (?, ?, ?, ?)
+                """, ('admin', password_hash, 'admin@localhost', 'admin'))
+                logger.info(
+                    "Default admin user created: username='admin', "
+                    "password='Ch4ng3M3' (please change after first login)"
+                )
+
+            # Get admin user ID
+            admin_row = conn.execute(
+                "SELECT id FROM users WHERE username = 'admin'"
+            ).fetchone()
+
+            if not admin_row:
+                logger.error("Failed to create or find admin user during migration")
+                return False
+
+            admin_id = admin_row['id']
+
+            # Assign all existing data to admin user (only if tables exist)
+            # Check if saved_scrapers table exists
+            scrapers_table = conn.execute("""
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name='saved_scrapers'
+            """).fetchone()
+            if scrapers_table:
+                conn.execute(
+                    "UPDATE saved_scrapers SET user_id = ? WHERE user_id IS NULL",
+                    (admin_id,)
+                )
+
+            # Check if scraped_data table exists
+            data_table = conn.execute("""
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name='scraped_data'
+            """).fetchone()
+            if data_table:
+                conn.execute(
+                    "UPDATE scraped_data SET user_id = ? WHERE user_id IS NULL",
+                    (admin_id,)
+                )
+
+            # Record migration
+            conn.execute("""
+                INSERT INTO schema_version (version, description)
+                VALUES (?, ?)
+            """, (
+                '2.0.0',
+                'Multi-user foundation: users, sessions, ownership tracking'
+            ))
+
+            conn.commit()
+            logger.info("Database successfully migrated to v2.0.0")
+            return True
+
+    except Exception as e:
+        logger.error(
+            f"Database migration failed: {e}",
+            exc_info=True
+        )
+        return False
 
 
 PREINSTALLED_SCRAPERS = [
@@ -578,6 +976,19 @@ PREINSTALLED_SCRAPERS = [
 
 
 def init_db():
+    """
+    Initialize or migrate database to latest schema version.
+
+    For v2.0.0+: Calls migrate_database_to_v2() if needed
+    Returns:
+        True if successful, False otherwise
+    """
+    # First, attempt migration to v2.0 if needed
+    migration_result = migrate_database_to_v2()
+    if not migration_result:
+        logger.error("Database migration to v2.0 failed")
+        return False
+
     try:
         with get_db_connection() as conn:
             conn.execute(
@@ -588,7 +999,8 @@ def init_db():
                 "link TEXT NOT NULL, "
                 "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
                 "summary TEXT, "
-                "sentiment TEXT)"
+                "sentiment TEXT, "
+                "user_id INTEGER)"
             )
             try:
                 conn.execute("ALTER TABLE scraped_data ADD COLUMN summary TEXT")
@@ -621,7 +1033,9 @@ def init_db():
                     default_limit INTEGER DEFAULT 0,
                     default_tags_csv TEXT,
                     description TEXT,
-                    is_preinstalled INTEGER DEFAULT 0
+                    is_preinstalled INTEGER DEFAULT 0,
+                    user_id INTEGER,
+                    is_shared BOOLEAN DEFAULT 0
                 )
             """)
             try:
@@ -4145,8 +4559,17 @@ def get_sentiment_from_llm(text_content: str, max_length: int = 10000) -> Option
 
 
 def scrape_url_action(
-    source_url: str, selector: str, limit: int = 0
+    source_url: str, selector: str, limit: int = 0, user_id: Optional[int] = None
 ) -> tuple[int, int, str, Optional[List[int]]]:
+    """
+    Scrape URL and store articles.
+
+    Args:
+        source_url: URL to scrape
+        selector: CSS selector for articles
+        limit: Maximum number of articles (0 = no limit)
+        user_id: User ID for tracking ownership (v2.0.0)
+    """
     logger.info(
         f"Scraping {source_url} with selector '{selector}', limit {limit}"
     )
@@ -4178,7 +4601,11 @@ def scrape_url_action(
             c = conn.cursor()
             for rec_url, rec_title, rec_link in records:
                 try:
-                    c.execute("INSERT INTO scraped_data (url, title, link) VALUES (?, ?, ?)", (rec_url, rec_title, rec_link))
+                    # v2.0.0: Add user_id tracking
+                    c.execute(
+                        "INSERT INTO scraped_data (url, title, link, user_id) VALUES (?, ?, ?, ?)",
+                        (rec_url, rec_title, rec_link, user_id)
+                    )
                     if c.lastrowid:
                         inserted_ids.append(c.lastrowid)
                 except sqlite3.IntegrityError:
@@ -4191,6 +4618,714 @@ def scrape_url_action(
     except sqlite3.Error as e:
         logger.error(f"DB error storing from {source_url}: {e}", exc_info=True)
         raise
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# v2.0.0 Multi-User UI Components (Phase 2)
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class LoginModal(ModalScreen[Optional[int]]):
+    """
+    Login modal for user authentication (v2.0.0).
+
+    Shown on application startup. Returns user_id if successful, None if cancelled.
+    """
+
+    DEFAULT_CSS = """
+    LoginModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+
+    LoginModal > Vertical {
+        width: 60;
+        height: auto;
+        border: thick $primary;
+        background: $panel;
+        padding: 2 4;
+    }
+
+    LoginModal Label {
+        margin: 1 0;
+        width: 100%;
+    }
+
+    LoginModal #login-title {
+        text-align: center;
+        text-style: bold;
+        color: $accent;
+    }
+
+    LoginModal Input {
+        margin: 1 0;
+    }
+
+    LoginModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+
+    LoginModal Button {
+        margin: 0 2;
+    }
+    """
+
+    BINDINGS = [
+        Binding("escape", "cancel_login", "Cancel"),
+        Binding("enter", "attempt_login", "Login")
+    ]
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("🔐 Login to WebScrape-TUI v2.0.0", id="login-title")
+            yield Label("Please enter your credentials:")
+            yield Input(placeholder="Username", id="username")
+            yield Input(placeholder="Password", password=True, id="password")
+            with Horizontal():
+                yield Button("Login", variant="primary", id="login-btn")
+                yield Button("Cancel", id="cancel-btn")
+
+    def on_mount(self) -> None:
+        """Focus username field on mount."""
+        self.query_one("#username", Input).focus()
+
+    def action_cancel_login(self) -> None:
+        """Cancel login (ESC key)."""
+        self.dismiss(None)
+
+    def action_attempt_login(self) -> None:
+        """Attempt login (Enter key)."""
+        username_input = self.query_one("#username", Input)
+        password_input = self.query_one("#password", Input)
+        self._try_login(username_input.value, password_input.value)
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button clicks."""
+        if event.button.id == "login-btn":
+            username = self.query_one("#username", Input).value
+            password = self.query_one("#password", Input).value
+            self._try_login(username, password)
+        else:
+            self.dismiss(None)
+
+    def _try_login(self, username: str, password: str) -> None:
+        """Execute login attempt."""
+        if not username or not password:
+            self.app.notify(
+                "Please enter both username and password",
+                severity="warning"
+            )
+            return
+
+        # Call authentication function from Phase 1
+        user_id = authenticate_user(username, password)
+
+        if user_id:
+            self.dismiss(user_id)
+        else:
+            self.app.notify("Invalid credentials", severity="error")
+            self.query_one("#password", Input).value = ""
+            self.query_one("#password", Input).focus()
+
+
+class UserProfileModal(ModalScreen[None]):
+    """User profile view/edit modal (v2.0.0)."""
+
+    DEFAULT_CSS = """
+    UserProfileModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+
+    UserProfileModal > Vertical {
+        width: 70;
+        height: auto;
+        border: thick $primary;
+        background: $panel;
+        padding: 2 4;
+    }
+
+    UserProfileModal Label {
+        margin: 1 0;
+    }
+
+    UserProfileModal #profile-title {
+        text-align: center;
+        text-style: bold;
+        color: $accent;
+    }
+
+    UserProfileModal Input {
+        margin: 1 0;
+    }
+
+    UserProfileModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+
+    UserProfileModal Button {
+        margin: 0 1;
+    }
+    """
+
+    def __init__(self, user_id: int):
+        super().__init__()
+        self.user_id = user_id
+        self.user_data = {}
+
+    def compose(self) -> ComposeResult:
+        # Load user data
+        try:
+            with get_db_connection() as conn:
+                row = conn.execute("""
+                    SELECT username, email, role, created_at, last_login, is_active
+                    FROM users WHERE id = ?
+                """, (self.user_id,)).fetchone()
+                if row:
+                    self.user_data = dict(row)
+        except Exception as e:
+            logger.error(f"Error loading user profile: {e}")
+
+        with Vertical():
+            yield Label("👤 User Profile", id="profile-title")
+            yield Label(f"Username: {self.user_data.get('username', 'Unknown')}")
+            yield Label(f"Email: {self.user_data.get('email', 'Not set')}")
+            yield Label(f"Role: {self.user_data.get('role', 'user').upper()}")
+            yield Label(f"Created: {self.user_data.get('created_at', 'Unknown')}")
+            yield Label(f"Last Login: {self.user_data.get('last_login', 'Never')}")
+            yield Label(f"Status: {'Active' if self.user_data.get('is_active') else 'Inactive'}")
+            yield Label("Email Address:")
+            yield Input(
+                placeholder="Email address",
+                value=self.user_data.get('email', '') or '',
+                id="email-input"
+            )
+            with Horizontal():
+                yield Button("Update Email", variant="primary", id="update-btn")
+                yield Button("Change Password", id="password-btn")
+                yield Button("Close", id="close-btn")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button clicks."""
+        if event.button.id == "update-btn":
+            email = self.query_one("#email-input", Input).value
+            try:
+                with get_db_connection() as conn:
+                    conn.execute(
+                        "UPDATE users SET email = ? WHERE id = ?",
+                        (email or None, self.user_id)
+                    )
+                    conn.commit()
+                self.app.notify("Email updated successfully", severity="information")
+            except Exception as e:
+                logger.error(f"Error updating email: {e}")
+                self.app.notify("Failed to update email", severity="error")
+
+        elif event.button.id == "password-btn":
+            self.app.push_screen(ChangePasswordModal(self.user_id))
+
+        else:
+            self.dismiss()
+
+
+class ChangePasswordModal(ModalScreen[bool]):
+    """Modal for changing user password (v2.0.0)."""
+
+    DEFAULT_CSS = """
+    ChangePasswordModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+
+    ChangePasswordModal > Vertical {
+        width: 60;
+        height: auto;
+        border: thick $primary;
+        background: $panel;
+        padding: 2 4;
+    }
+
+    ChangePasswordModal Label {
+        margin: 1 0;
+    }
+
+    ChangePasswordModal #pwd-title {
+        text-align: center;
+        text-style: bold;
+        color: $accent;
+    }
+
+    ChangePasswordModal Input {
+        margin: 1 0;
+    }
+
+    ChangePasswordModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+
+    ChangePasswordModal Button {
+        margin: 0 1;
+    }
+    """
+
+    def __init__(self, user_id: int):
+        super().__init__()
+        self.user_id = user_id
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("🔒 Change Password", id="pwd-title")
+            yield Input(placeholder="Current Password", password=True, id="current-pwd")
+            yield Input(placeholder="New Password", password=True, id="new-pwd")
+            yield Input(placeholder="Confirm New Password", password=True, id="confirm-pwd")
+            with Horizontal():
+                yield Button("Change Password", variant="primary", id="change-btn")
+                yield Button("Cancel", id="cancel-btn")
+
+    def on_mount(self) -> None:
+        """Focus current password field."""
+        self.query_one("#current-pwd", Input).focus()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button clicks."""
+        if event.button.id == "change-btn":
+            current = self.query_one("#current-pwd", Input).value
+            new = self.query_one("#new-pwd", Input).value
+            confirm = self.query_one("#confirm-pwd", Input).value
+
+            # Validate current password
+            try:
+                with get_db_connection() as conn:
+                    row = conn.execute(
+                        "SELECT password_hash FROM users WHERE id = ?",
+                        (self.user_id,)
+                    ).fetchone()
+
+                    if not row or not verify_password(current, row['password_hash']):
+                        self.app.notify("Current password incorrect", severity="error")
+                        return
+            except Exception as e:
+                logger.error(f"Error validating password: {e}")
+                self.app.notify("Error validating password", severity="error")
+                return
+
+            # Validate new passwords match
+            if new != confirm:
+                self.app.notify("New passwords do not match", severity="error")
+                return
+
+            # Validate password strength (min 8 chars)
+            if len(new) < 8:
+                self.app.notify(
+                    "Password must be at least 8 characters",
+                    severity="error"
+                )
+                return
+
+            # Update password
+            try:
+                new_hash = hash_password(new)
+                with get_db_connection() as conn:
+                    conn.execute(
+                        "UPDATE users SET password_hash = ? WHERE id = ?",
+                        (new_hash, self.user_id)
+                    )
+                    conn.commit()
+
+                self.app.notify(
+                    "Password changed successfully",
+                    severity="information"
+                )
+                self.dismiss(True)
+            except Exception as e:
+                logger.error(f"Error changing password: {e}")
+                self.app.notify("Failed to change password", severity="error")
+        else:
+            self.dismiss(False)
+
+
+class UserManagementModal(ModalScreen[None]):
+    """Admin-only user management screen (v2.0.0)."""
+
+    DEFAULT_CSS = """
+    UserManagementModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+
+    UserManagementModal > Vertical {
+        width: 90;
+        height: 40;
+        border: thick $primary;
+        background: $panel;
+        padding: 2 4;
+    }
+
+    UserManagementModal Label {
+        margin: 1 0;
+    }
+
+    UserManagementModal #mgmt-title {
+        text-align: center;
+        text-style: bold;
+        color: $accent;
+    }
+
+    UserManagementModal DataTable {
+        height: 1fr;
+        margin: 1 0;
+    }
+
+    UserManagementModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+
+    UserManagementModal Button {
+        margin: 0 1;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("👥 User Management [ADMIN]", id="mgmt-title")
+            yield DataTable(id="users-table", cursor_type="row", zebra_stripes=True)
+            with Horizontal():
+                yield Button("Create User", variant="primary", id="create-btn")
+                yield Button("Edit User", id="edit-btn")
+                yield Button("Toggle Active", id="toggle-btn")
+                yield Button("Close", id="close-btn")
+
+    def on_mount(self) -> None:
+        """Initialize user table."""
+        table = self.query_one("#users-table", DataTable)
+        table.add_columns("ID", "Username", "Email", "Role", "Active", "Last Login")
+        self.refresh_users()
+        table.focus()
+
+    def refresh_users(self, *args) -> None:
+        """Refresh user list from database."""
+        table = self.query_one("#users-table", DataTable)
+        table.clear()
+
+        try:
+            with get_db_connection() as conn:
+                rows = conn.execute("""
+                    SELECT id, username, email, role, is_active, last_login
+                    FROM users
+                    ORDER BY id
+                """).fetchall()
+
+                for row in rows:
+                    table.add_row(
+                        str(row['id']),
+                        row['username'],
+                        row['email'] or '',
+                        row['role'].upper(),
+                        "✓" if row['is_active'] else "✗",
+                        row['last_login'] or 'Never',
+                        key=str(row['id'])
+                    )
+        except Exception as e:
+            logger.error(f"Error refreshing users: {e}")
+            self.app.notify("Failed to load users", severity="error")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button clicks."""
+        if event.button.id == "create-btn":
+            self.app.push_screen(CreateUserModal(), self.refresh_users)
+
+        elif event.button.id == "edit-btn":
+            table = self.query_one("#users-table", DataTable)
+            if table.row_count > 0:
+                try:
+                    row_key = table.get_row_key_from_coordinate(table.cursor_coordinate)
+                    if row_key:
+                        user_id = int(row_key.value)
+                        self.app.push_screen(EditUserModal(user_id), self.refresh_users)
+                except Exception as e:
+                    logger.error(f"Error getting selected user: {e}")
+                    self.app.notify("Please select a user", severity="warning")
+
+        elif event.button.id == "toggle-btn":
+            table = self.query_one("#users-table", DataTable)
+            if table.row_count > 0:
+                try:
+                    row_key = table.get_row_key_from_coordinate(table.cursor_coordinate)
+                    if row_key:
+                        user_id = int(row_key.value)
+                        with get_db_connection() as conn:
+                            conn.execute("""
+                                UPDATE users SET is_active = NOT is_active WHERE id = ?
+                            """, (user_id,))
+                            conn.commit()
+                        self.refresh_users()
+                        self.app.notify("User status toggled", severity="information")
+                except Exception as e:
+                    logger.error(f"Error toggling user: {e}")
+                    self.app.notify("Failed to toggle user status", severity="error")
+
+        else:
+            self.dismiss()
+
+
+class CreateUserModal(ModalScreen[bool]):
+    """Modal for creating new user (admin only, v2.0.0)."""
+
+    DEFAULT_CSS = """
+    CreateUserModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+
+    CreateUserModal > Vertical {
+        width: 60;
+        height: auto;
+        border: thick $primary;
+        background: $panel;
+        padding: 2 4;
+    }
+
+    CreateUserModal Label {
+        margin: 1 0;
+    }
+
+    CreateUserModal #create-title {
+        text-align: center;
+        text-style: bold;
+        color: $accent;
+    }
+
+    CreateUserModal Input {
+        margin: 1 0;
+    }
+
+    CreateUserModal RadioSet {
+        margin: 1 0;
+    }
+
+    CreateUserModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+
+    CreateUserModal Button {
+        margin: 0 1;
+    }
+    """
+
+    def compose(self) -> ComposeResult:
+        with Vertical():
+            yield Label("➕ Create New User", id="create-title")
+            yield Input(placeholder="Username", id="username")
+            yield Input(placeholder="Email (optional)", id="email")
+            yield Input(placeholder="Password", password=True, id="password")
+            yield Label("Role:")
+            with RadioSet(id="role-radio"):
+                yield RadioButton("Admin", id="role-admin")
+                yield RadioButton("User", id="role-user", value=True)
+                yield RadioButton("Viewer", id="role-viewer")
+            with Horizontal():
+                yield Button("Create", variant="primary", id="create-btn")
+                yield Button("Cancel", id="cancel-btn")
+
+    def on_mount(self) -> None:
+        """Focus username field."""
+        self.query_one("#username", Input).focus()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button clicks."""
+        if event.button.id == "create-btn":
+            username = self.query_one("#username", Input).value
+            email = self.query_one("#email", Input).value
+            password = self.query_one("#password", Input).value
+
+            # Determine role from radio buttons
+            role = "user"  # default
+            if self.query_one("#role-admin", RadioButton).value:
+                role = "admin"
+            elif self.query_one("#role-viewer", RadioButton).value:
+                role = "viewer"
+
+            # Validate inputs
+            if not username or not password:
+                self.app.notify(
+                    "Username and password required",
+                    severity="error"
+                )
+                return
+
+            if len(password) < 8:
+                self.app.notify(
+                    "Password must be at least 8 characters",
+                    severity="error"
+                )
+                return
+
+            # Create user
+            try:
+                password_hash = hash_password(password)
+                with get_db_connection() as conn:
+                    conn.execute("""
+                        INSERT INTO users (username, email, password_hash, role)
+                        VALUES (?, ?, ?, ?)
+                    """, (username, email or None, password_hash, role))
+                    conn.commit()
+
+                self.app.notify(
+                    f"User '{username}' created successfully",
+                    severity="information"
+                )
+                self.dismiss(True)
+
+            except sqlite3.IntegrityError:
+                self.app.notify("Username already exists", severity="error")
+            except Exception as e:
+                logger.error(f"Error creating user: {e}")
+                self.app.notify("Failed to create user", severity="error")
+        else:
+            self.dismiss(False)
+
+
+class EditUserModal(ModalScreen[bool]):
+    """Modal for editing existing user (admin only, v2.0.0)."""
+
+    DEFAULT_CSS = """
+    EditUserModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+
+    EditUserModal > Vertical {
+        width: 60;
+        height: auto;
+        border: thick $primary;
+        background: $panel;
+        padding: 2 4;
+    }
+
+    EditUserModal Label {
+        margin: 1 0;
+    }
+
+    EditUserModal #edit-title {
+        text-align: center;
+        text-style: bold;
+        color: $accent;
+    }
+
+    EditUserModal Input {
+        margin: 1 0;
+    }
+
+    EditUserModal RadioSet {
+        margin: 1 0;
+    }
+
+    EditUserModal Horizontal {
+        width: 100%;
+        height: auto;
+        align-horizontal: center;
+        padding-top: 1;
+    }
+
+    EditUserModal Button {
+        margin: 0 1;
+    }
+    """
+
+    def __init__(self, user_id: int):
+        super().__init__()
+        self.user_id = user_id
+        self.user_data = {}
+
+    def compose(self) -> ComposeResult:
+        # Load user data
+        try:
+            with get_db_connection() as conn:
+                row = conn.execute("""
+                    SELECT username, email, role
+                    FROM users WHERE id = ?
+                """, (self.user_id,)).fetchone()
+                if row:
+                    self.user_data = dict(row)
+        except Exception as e:
+            logger.error(f"Error loading user data: {e}")
+
+        current_role = self.user_data.get('role', 'user')
+
+        with Vertical():
+            yield Label(
+                f"✏️ Edit User: {self.user_data.get('username', 'Unknown')}",
+                id="edit-title"
+            )
+            yield Label("Email:")
+            yield Input(
+                placeholder="Email",
+                value=self.user_data.get('email', '') or '',
+                id="email"
+            )
+            yield Label("Role:")
+            with RadioSet(id="role-radio"):
+                yield RadioButton(
+                    "Admin",
+                    id="role-admin",
+                    value=(current_role == 'admin')
+                )
+                yield RadioButton(
+                    "User",
+                    id="role-user",
+                    value=(current_role == 'user')
+                )
+                yield RadioButton(
+                    "Viewer",
+                    id="role-viewer",
+                    value=(current_role == 'viewer')
+                )
+            with Horizontal():
+                yield Button("Update", variant="primary", id="update-btn")
+                yield Button("Cancel", id="cancel-btn")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button clicks."""
+        if event.button.id == "update-btn":
+            email = self.query_one("#email", Input).value
+
+            # Determine role
+            role = "user"
+            if self.query_one("#role-admin", RadioButton).value:
+                role = "admin"
+            elif self.query_one("#role-viewer", RadioButton).value:
+                role = "viewer"
+
+            # Update user
+            try:
+                with get_db_connection() as conn:
+                    conn.execute("""
+                        UPDATE users SET email = ?, role = ? WHERE id = ?
+                    """, (email or None, role, self.user_id))
+                    conn.commit()
+
+                self.app.notify("User updated successfully", severity="information")
+                self.dismiss(True)
+            except Exception as e:
+                logger.error(f"Error updating user: {e}")
+                self.app.notify("Failed to update user", severity="error")
+        else:
+            self.dismiss(False)
 
 
 class ConfirmModal(ModalScreen[bool]):
@@ -6191,9 +7326,20 @@ class StatusBar(Static):
     sort_status = reactive("")
     current_theme = reactive("Dark")
     scraper_profile = reactive("Manual Entry")
+    # v2.0.0 User information
+    current_username = reactive("Not logged in")
+    current_user_role = reactive("guest")
 
     def render(self) -> str:
+        # Build user info with role indicator
+        user_info = f"👤 {self.current_username}"
+        if self.current_user_role == "admin":
+            user_info += " [ADMIN]"
+        elif self.current_user_role == "viewer":
+            user_info += " [VIEWER]"
+
         parts = [
+            user_info,
             f"Total: {self.total_articles}",
             f"Profile: {self.scraper_profile}",
             f"Theme: {self.current_theme}"
@@ -6232,6 +7378,9 @@ class WebScraperApp(App[None]):
         Binding("ctrl+shift+w", "export_word_cloud", "Word Cloud"),
         Binding("ctrl+x", "clear_database", "Clear DB"),
         Binding("ctrl+f", "open_filters", "Filters"),
+        Binding("ctrl+shift+l", "logout", "Logout"),  # v2.0.0 (changed from ctrl+l)
+        Binding("ctrl+u", "user_profile", "Profile"),  # v2.0.0
+        Binding("ctrl+alt+u", "user_management", "Users"),  # v2.0.0 (admin only)
         Binding("ctrl+l", "toggle_dark_mode", "Theme"),
         Binding("ctrl+a", "select_all", "Select All"),
         Binding("ctrl+d", "deselect_all", "Deselect All"),
@@ -6284,6 +7433,11 @@ class WebScraperApp(App[None]):
         ("sd.url COLLATE NOCASE DESC", "Src URL Z-A")
     ]
     current_sort_index = reactive(0)
+    # v2.0.0 User state
+    current_user_id: reactive[Optional[int]] = reactive(None)
+    current_username: reactive[str] = reactive("Not logged in")
+    current_user_role: reactive[str] = reactive("guest")
+    session_token: reactive[Optional[str]] = reactive(None)
 
     def __init__(self):
         super().__init__()
@@ -6311,6 +7465,18 @@ class WebScraperApp(App[None]):
         if not self.db_init_ok:
             self.notify("CRITICAL: DB init failed!", title="DB Error", severity="error", timeout=0)
             return
+
+        # v2.0.0: Show login modal before initializing app
+        user_id = await self.push_screen_wait(LoginModal())
+        if user_id is None:
+            # User cancelled login - exit app
+            self.notify("Login required. Exiting...", severity="warning")
+            self.exit()
+            return
+
+        # Login successful - initialize user session
+        await self._initialize_user_session(user_id)
+
         tbl = self.query_one(DataTable)
         tbl.add_columns("ID", "S", "Sentiment", "Title", "Source URL", "Tags", "Scraped At")
         sbar.sort_status = self.SORT_OPTIONS[self.current_sort_index][1]
@@ -6403,10 +7569,12 @@ class WebScraperApp(App[None]):
                 return
 
             # Execute the scrape
+            # v2.0.0: Scheduled scrapes use admin user (id=1) or profile owner
             inserted, skipped, url, ids = scrape_url_action(
                 profile_url,
                 profile_selector,
-                limit=0  # No limit for scheduled scrapes
+                limit=0,  # No limit for scheduled scrapes
+                user_id=1  # Default to admin for scheduled jobs
             )
 
             # Record success
@@ -6687,6 +7855,125 @@ class WebScraperApp(App[None]):
         self.notify("Refreshing...", title="Data Update", severity="info", timeout=2)
         await self.refresh_article_table()
 
+    # ═══════════════════════════════════════════════════════════════════════════
+    # v2.0.0 Multi-User Methods (Phase 2)
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    async def _initialize_user_session(self, user_id: int) -> None:
+        """
+        Initialize user session after successful login (v2.0.0).
+
+        Args:
+            user_id: ID of authenticated user
+        """
+        try:
+            # Create session token
+            self.session_token = create_user_session(user_id)
+
+            # Load user details
+            with get_db_connection() as conn:
+                row = conn.execute("""
+                    SELECT username, role
+                    FROM users WHERE id = ?
+                """, (user_id,)).fetchone()
+
+                if row:
+                    self.current_user_id = user_id
+                    self.current_username = row['username']
+                    self.current_user_role = row['role']
+
+                    # Update status bar
+                    sbar = self.query_one(StatusBar)
+                    sbar.current_username = self.current_username
+                    sbar.current_user_role = self.current_user_role
+
+                    logger.info(
+                        f"Session initialized for user '{self.current_username}' "
+                        f"(role: {self.current_user_role})"
+                    )
+                    self.notify(
+                        f"Welcome, {self.current_username}!",
+                        severity="information"
+                    )
+        except Exception as e:
+            logger.error(f"Error initializing user session: {e}")
+            self.notify("Error initializing session", severity="error")
+
+    def watch_current_username(self, username: str) -> None:
+        """Update status bar when username changes (v2.0.0)."""
+        try:
+            sbar = self.query_one(StatusBar)
+            sbar.current_username = username
+        except Exception:
+            pass  # Status bar might not be mounted yet
+
+    def watch_current_user_role(self, role: str) -> None:
+        """Update status bar when user role changes (v2.0.0)."""
+        try:
+            sbar = self.query_one(StatusBar)
+            sbar.current_user_role = role
+        except Exception:
+            pass  # Status bar might not be mounted yet
+
+    def check_permission(self, required_role: str) -> bool:
+        """
+        Check if current user has required role (v2.0.0).
+
+        Args:
+            required_role: 'admin', 'user', or 'viewer'
+
+        Returns:
+            True if user has permission
+        """
+        role_hierarchy = {'admin': 3, 'user': 2, 'viewer': 1, 'guest': 0}
+        current = role_hierarchy.get(self.current_user_role, 0)
+        required = role_hierarchy.get(required_role, 0)
+        return current >= required
+
+    def is_admin(self) -> bool:
+        """Check if current user is admin (v2.0.0)."""
+        return self.current_user_role == "admin"
+
+    def can_edit(self, owner_user_id: Optional[int]) -> bool:
+        """
+        Check if current user can edit a resource (v2.0.0).
+
+        Args:
+            owner_user_id: User ID of resource owner
+
+        Returns:
+            True if user is admin or owns the resource
+        """
+        if self.is_admin():
+            return True
+        return self.current_user_id == owner_user_id
+
+    def can_delete(self, owner_user_id: Optional[int]) -> bool:
+        """Check if current user can delete a resource (v2.0.0)."""
+        return self.can_edit(owner_user_id)
+
+    def action_user_profile(self) -> None:
+        """Show user profile modal (v2.0.0) - Ctrl+U."""
+        if self.current_user_id:
+            self.push_screen(UserProfileModal(self.current_user_id))
+        else:
+            self.notify("Not logged in", severity="warning")
+
+    def action_user_management(self) -> None:
+        """Show user management screen (v2.0.0) - Ctrl+Alt+U (admin only)."""
+        if not self.is_admin():
+            self.notify("Admin access required", severity="error")
+            return
+        self.push_screen(UserManagementModal())
+
+    def action_logout(self) -> None:
+        """Log out current user (v2.0.0) - Ctrl+Shift+L."""
+        if self.session_token:
+            logout_session(self.session_token)
+
+        self.notify("Logged out successfully. Exiting...", severity="information")
+        self.exit()
+
     async def action_toggle_dark_mode(self) -> None:
         self.dark = not self.dark
         self.query_one(StatusBar).current_theme = "Dark" if self.dark else "Light"
@@ -6858,7 +8145,10 @@ class WebScraperApp(App[None]):
         self._toggle_loading(True)
         self.notify(f"Scraping {url}...", title="Scraping", severity="info", timeout=3)
         try:
-            inserted, skipped, scraped_url, inserted_ids = scrape_url_action(url, selector, limit)
+            # v2.0.0: Pass current user_id
+            inserted, skipped, scraped_url, inserted_ids = scrape_url_action(
+                url, selector, limit, user_id=self.current_user_id
+            )
             self.last_scrape_url = scraped_url
             if inserted_ids and default_tags_csv:
                 logger.info(f"Applying default tags '{default_tags_csv}' to {len(inserted_ids)} new articles.")
@@ -8212,7 +9502,9 @@ class WebScraperApp(App[None]):
                 if sd:
                     try:
                         def _add_scraper_blocking():
-                            with get_db_connection() as conn_blocking:conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0)",sd);conn_blocking.commit()
+                            # v2.0.0: Add user_id tracking
+                            sd['user_id'] = self.current_user_id
+                            with get_db_connection() as conn_blocking:conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled,user_id) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0,:user_id)",sd);conn_blocking.commit()
                         _add_scraper_blocking()
                         self.notify(f"Scraper '{sd['name']}' added.",title="Success",severity="info")
                     except sqlite3.IntegrityError:self.notify(f"Scraper name '{sd['name']}' already exists.",title="Error",severity="error")
@@ -8224,10 +9516,12 @@ class WebScraperApp(App[None]):
                     try:
                         def _edit_scraper_blocking():
                             with get_db_connection() as conn_blocking:
-                                if 'id' in sd: 
+                                if 'id' in sd:
                                      conn_blocking.execute("UPDATE saved_scrapers SET name=:name,url=:url,selector=:selector,default_limit=:default_limit,default_tags_csv=:default_tags_csv,description=:description,is_preinstalled=:is_preinstalled WHERE id=:id",sd)
-                                else: 
-                                     conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0)",sd)
+                                else:
+                                     # v2.0.0: Add user_id tracking
+                                     sd['user_id'] = self.current_user_id
+                                     conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled,user_id) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0,:user_id)",sd)
                                 conn_blocking.commit()
                         _edit_scraper_blocking()
                         self.notify(f"Scraper '{sd['name']}' saved.",title="Success",severity="info")
