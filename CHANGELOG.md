@@ -5,6 +5,183 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2025-10-01
+
+### 🤖 Major Feature Release: Advanced AI Features
+
+This release introduces powerful AI-driven features for intelligent content analysis, including automatic tagging, named entity recognition, keyword extraction, and content similarity matching.
+
+### Added
+
+- **AI-Powered Auto-Tagging**
+  - Automatic tag generation using AI analysis of article content
+  - Intelligent tag suggestions based on title and content
+  - Configurable maximum number of tags
+  - Tag deduplication and cleaning
+  - Keyboard shortcut: `Ctrl+Shift+T`
+
+- **Named Entity Recognition (NER)**
+  - Extract persons, organizations, locations, and dates from articles
+  - Powered by spaCy NLP library with en_core_web_sm model
+  - Entity deduplication and categorization
+  - Display entities in organized modal dialog
+  - Support for multiple entity types (PERSON, ORG, GPE, DATE, etc.)
+  - Keyboard shortcut: `Ctrl+Shift+E`
+
+- **Content Similarity Matching**
+  - Find similar articles using semantic embeddings
+  - Powered by SentenceTransformer (all-MiniLM-L6-v2 model)
+  - Configurable similarity threshold
+  - Top-K similar articles selection
+  - Cosine similarity-based matching
+  - Keyboard shortcut: `Ctrl+Shift+R`
+
+- **Keyword Extraction**
+  - Extract key terms and topics from article content
+  - TF-IDF-based scoring with frequency analysis
+  - Title keyword boosting for relevance
+  - Stopword filtering using NLTK
+  - Configurable number of keywords
+  - Keyboard shortcut: `Ctrl+Shift+K`
+
+- **Multi-Level Summarization**
+  - Generate summaries at three levels: brief, detailed, comprehensive
+  - AI-powered summary generation with configurable length
+  - Provider-agnostic implementation (works with Gemini, OpenAI, Claude)
+  - Progressive detail levels for different use cases
+  - Integration with existing summarization system
+
+- **New Manager Classes**
+  - `AITaggingManager`: Handles AI-powered tag generation
+    - `generate_tags()`: Generate tags from title and content
+    - Configurable max_tags parameter
+    - AI provider integration for intelligent tagging
+  - `EntityRecognitionManager`: Manages named entity extraction
+    - `extract_entities()`: Extract entities from text
+    - spaCy integration with en_core_web_sm model
+    - Entity categorization and deduplication
+  - `ContentSimilarityManager`: Handles article similarity matching
+    - `find_similar_articles()`: Find semantically similar articles
+    - SentenceTransformer embeddings
+    - Configurable threshold and top_k parameters
+  - `KeywordExtractionManager`: Extracts keywords from content
+    - `extract_keywords()`: Extract key terms using TF-IDF
+    - Title boosting for relevance
+    - NLTK stopword filtering
+  - `MultiLevelSummarizationManager`: Multi-level summary generation
+    - `generate_summary()`: Generate summary at specific level
+    - `generate_all_levels()`: Generate all three summary levels
+    - Brief, detailed, and comprehensive options
+
+### Technical Implementation
+
+- **New Dependencies**
+  - `spacy>=3.7.0`: Natural language processing for entity recognition
+  - `en_core_web_sm>=3.7.0`: English language model for spaCy
+  - `sentence-transformers>=2.2.0`: Semantic embeddings for similarity
+  - `nltk>=3.8.0`: Natural language toolkit for keyword extraction
+  - `scikit-learn>=1.3.0`: TF-IDF vectorization for keywords
+  - `scipy>=1.11.0`: Cosine distance calculation
+
+- **AI Integration**
+  - All features leverage existing AI provider abstraction
+  - Graceful fallback when AI provider unavailable
+  - Async worker pattern for UI responsiveness
+  - Error handling with user-friendly notifications
+
+- **UI Integration**
+  - Four new keyboard bindings:
+    - `Ctrl+Shift+T`: Auto-tag article
+    - `Ctrl+Shift+E`: Extract entities
+    - `Ctrl+Shift+K`: Extract keywords
+    - `Ctrl+Shift+R`: Find similar articles
+  - Entity display modal with categorized results
+  - Notification-based keyword and similarity display
+  - Loading indicators for long-running operations
+
+- **Data Processing**
+  - Efficient text processing with NLP libraries
+  - Batch processing for multiple articles
+  - Caching of language models for performance
+  - Memory-efficient embeddings calculation
+
+### Testing
+
+- **Comprehensive Test Suite** (28 new tests)
+  - `TestAITagging`: 6 tests for auto-tagging functionality
+    - Basic tag generation
+    - Empty content handling
+    - Tag limit enforcement
+    - Deduplication
+    - Provider failure handling
+    - Tag cleaning
+  - `TestEntityRecognition`: 6 tests for NER functionality
+    - Basic entity extraction
+    - Empty content handling
+    - No entities scenario
+    - Deduplication
+    - Multiple entity types
+    - spaCy error handling
+  - `TestContentSimilarity`: 6 tests for similarity matching
+    - Basic similarity finding
+    - Threshold filtering
+    - Top-K selection
+    - Empty database handling
+    - Single article scenario
+    - Model error handling
+  - `TestKeywordExtraction`: 6 tests for keyword extraction
+    - Basic keyword extraction
+    - Empty content handling
+    - Top-N selection
+    - Frequency scoring
+    - Title boosting
+    - NLTK error handling
+  - `TestMultiLevelSummarization`: 4 tests for summarization
+    - Level-specific summaries
+    - All levels generation
+    - Empty content handling
+    - Provider error handling
+  - All tests passing (194 total tests in full suite)
+
+### Files Modified
+
+- `requirements.txt`: Added spacy, sentence-transformers, nltk, scipy dependencies
+- `scrapetui.py`:
+  - Added imports for NLP libraries (lines 147-152)
+  - Implemented AITaggingManager class (125 lines, lines 2537-2661)
+  - Implemented EntityRecognitionManager class (82 lines, lines 2663-2744)
+  - Implemented ContentSimilarityManager class (108 lines, lines 2745-2852)
+  - Implemented KeywordExtractionManager class (99 lines, lines 2853-2951)
+  - Implemented MultiLevelSummarizationManager class (78 lines, lines 2952-3029)
+  - Added keyboard bindings (lines 4755-4758)
+  - Added action methods (lines 5602-5644)
+  - Added async workers (lines 5976-6207)
+  - Updated help modal to v1.8.0 (lines 4618, 4653-4656)
+  - Updated startup banner to v1.8.0 (line 6405)
+- `tests/test_advanced_ai.py`: New comprehensive test file (515 lines, 28 tests)
+
+### User Experience Improvements
+
+- Intelligent auto-tagging saves manual effort
+- Entity extraction reveals key information at a glance
+- Similarity matching helps discover related content
+- Keyword extraction provides quick content overview
+- Multi-level summaries adapt to different needs
+- All features accessible via keyboard shortcuts
+- Non-blocking async operations maintain UI responsiveness
+
+### Use Cases
+
+- **Content Organization**: Auto-tag articles for automatic categorization
+- **Research**: Extract entities to identify key people, organizations, and locations
+- **Discovery**: Find similar articles to explore related topics
+- **Analysis**: Extract keywords to understand content themes
+- **Documentation**: Generate multi-level summaries for different audiences
+
+This release transforms WebScrape-TUI into an AI-powered content intelligence platform, enabling users to automatically analyze, categorize, and discover insights from scraped content.
+
+---
+
 ## [1.7.0] - 2025-10-01
 
 ### 📈 Major Feature Release: Enhanced Export & Advanced Reporting

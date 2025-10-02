@@ -144,6 +144,33 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from wordcloud import WordCloud
 
+# Advanced AI features (v1.8.0)
+import spacy
+from sentence_transformers import SentenceTransformer
+from scipy.spatial.distance import cosine
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.decomposition import LatentDirichletAllocation
+import warnings
+
+# Download required NLTK data (suppress output)
+try:
+    nltk.data.find('corpora/stopwords')
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    import ssl
+    try:
+        _create_unverified_https_context = ssl._create_unverified_context
+    except AttributeError:
+        pass
+    else:
+        ssl._create_default_https_context = _create_unverified_https_context
+
+    nltk.download('stopwords', quiet=True)
+    nltk.download('punkt', quiet=True)
+
 # Textual imports
 from textual.app import App, ComposeResult
 from textual.widgets import (
@@ -2507,6 +2534,513 @@ class EnhancedVisualizationManager:
             return False
 
 
+class AITaggingManager:
+    """
+    AI-powered auto-tagging and categorization system.
+
+    Provides intelligent tag generation using:
+    - Keyword extraction (TF-IDF)
+    - Topic modeling (LDA)
+    - AI-based tag suggestions
+    - Confidence scoring
+    """
+
+    _tfidf_vectorizer = None
+    _lda_model = None
+
+    @staticmethod
+    def generate_tags_from_content(
+        text: str,
+        num_tags: int = 5,
+        min_confidence: float = 0.3
+    ) -> List[Tuple[str, float]]:
+        """
+        Generate tags from article content using TF-IDF keyword extraction.
+
+        Args:
+            text: Article text content
+            num_tags: Maximum number of tags to generate
+            min_confidence: Minimum confidence score (0.0-1.0)
+
+        Returns:
+            List of (tag, confidence_score) tuples
+        """
+        try:
+            if not text or len(text.strip()) < 50:
+                logger.warning("Text too short for tag generation")
+                return []
+
+            # Tokenize and clean
+            stop_words = set(stopwords.words('english'))
+            tokens = word_tokenize(text.lower())
+            tokens = [t for t in tokens if t.isalnum() and t not in stop_words and len(t) > 3]
+
+            if len(tokens) < 10:
+                return []
+
+            # Use TF-IDF for keyword extraction
+            vectorizer = TfidfVectorizer(max_features=20, stop_words='english')
+            try:
+                tfidf_matrix = vectorizer.fit_transform([text])
+                feature_names = vectorizer.get_feature_names_out()
+                scores = tfidf_matrix.toarray()[0]
+
+                # Get top keywords with scores
+                keyword_scores = sorted(
+                    [(feature_names[i], scores[i]) for i in range(len(scores))],
+                    key=lambda x: x[1],
+                    reverse=True
+                )
+
+                # Filter by confidence and limit number
+                tags = [
+                    (keyword, float(score))
+                    for keyword, score in keyword_scores[:num_tags]
+                    if score >= min_confidence
+                ]
+
+                logger.info(f"Generated {len(tags)} tags from content")
+                return tags
+
+            except Exception as e:
+                logger.error(f"TF-IDF vectorization error: {e}")
+                return []
+
+        except Exception as e:
+            logger.error(f"Error generating tags: {e}")
+            return []
+
+    @staticmethod
+    def suggest_tags_with_ai(
+        text: str,
+        existing_tags: List[str],
+        num_suggestions: int = 3
+    ) -> List[str]:
+        """
+        Suggest tags using AI based on content and existing tag taxonomy.
+
+        Args:
+            text: Article text content
+            existing_tags: List of all existing tags in database
+            num_suggestions: Number of suggestions to return
+
+        Returns:
+            List of suggested tag names
+        """
+        try:
+            # Extract keywords from content
+            generated_tags = AITaggingManager.generate_tags_from_content(
+                text, num_tags=10, min_confidence=0.2
+            )
+
+            if not generated_tags:
+                return []
+
+            # Get keywords only (without scores)
+            keywords = [tag for tag, _ in generated_tags]
+
+            # Find similar existing tags
+            suggestions = []
+            for keyword in keywords[:num_suggestions]:
+                # Check for exact matches in existing tags
+                if keyword in existing_tags:
+                    suggestions.append(keyword)
+                else:
+                    # Find similar tags (simple substring matching)
+                    similar = [tag for tag in existing_tags if keyword in tag.lower() or tag.lower() in keyword]
+                    if similar:
+                        suggestions.append(similar[0])
+                    else:
+                        suggestions.append(keyword)
+
+            return suggestions[:num_suggestions]
+
+        except Exception as e:
+            logger.error(f"Error suggesting tags: {e}")
+            return []
+
+
+class EntityRecognitionManager:
+    """
+    Named Entity Recognition and extraction system.
+
+    Provides entity extraction using spaCy:
+    - People (PERSON)
+    - Organizations (ORG)
+    - Locations (GPE, LOC)
+    - Dates (DATE)
+    - Products (PRODUCT)
+    """
+
+    _nlp_model = None
+
+    @staticmethod
+    def load_spacy_model():
+        """Load spaCy model (lazy loading)."""
+        if EntityRecognitionManager._nlp_model is None:
+            try:
+                EntityRecognitionManager._nlp_model = spacy.load('en_core_web_sm')
+                logger.info("Loaded spaCy en_core_web_sm model")
+            except OSError:
+                logger.warning("spaCy model not found. Install with: python -m spacy download en_core_web_sm")
+                return False
+        return True
+
+    @staticmethod
+    def extract_entities(text: str) -> Dict[str, List[str]]:
+        """
+        Extract named entities from text.
+
+        Args:
+            text: Article text content
+
+        Returns:
+            Dictionary with entity types as keys and lists of entities as values
+        """
+        try:
+            if not EntityRecognitionManager.load_spacy_model():
+                return {}
+
+            if not text or len(text.strip()) < 20:
+                return {}
+
+            # Process text (limit to first 5000 chars for performance)
+            doc = EntityRecognitionManager._nlp_model(text[:5000])
+
+            # Extract entities by type
+            entities = {
+                'people': [],
+                'organizations': [],
+                'locations': [],
+                'dates': [],
+                'products': []
+            }
+
+            for ent in doc.ents:
+                entity_text = ent.text.strip()
+                if ent.label_ == 'PERSON':
+                    entities['people'].append(entity_text)
+                elif ent.label_ == 'ORG':
+                    entities['organizations'].append(entity_text)
+                elif ent.label_ in ('GPE', 'LOC'):
+                    entities['locations'].append(entity_text)
+                elif ent.label_ == 'DATE':
+                    entities['dates'].append(entity_text)
+                elif ent.label_ == 'PRODUCT':
+                    entities['products'].append(entity_text)
+
+            # Remove duplicates while preserving order
+            for key in entities:
+                seen = set()
+                entities[key] = [x for x in entities[key] if not (x in seen or seen.add(x))]
+
+            logger.info(f"Extracted entities: {sum(len(v) for v in entities.values())} total")
+            return entities
+
+        except Exception as e:
+            logger.error(f"Error extracting entities: {e}")
+            return {}
+
+
+class ContentSimilarityManager:
+    """
+    Content similarity detection and duplicate identification.
+
+    Uses sentence transformers for semantic similarity:
+    - Duplicate detection
+    - Related article suggestions
+    - Content clustering
+    """
+
+    _model = None
+
+    @staticmethod
+    def load_model():
+        """Load sentence transformer model (lazy loading)."""
+        if ContentSimilarityManager._model is None:
+            try:
+                # Use a smaller, faster model
+                ContentSimilarityManager._model = SentenceTransformer('all-MiniLM-L6-v2')
+                logger.info("Loaded sentence-transformers model")
+            except Exception as e:
+                logger.error(f"Error loading sentence-transformers model: {e}")
+                return False
+        return True
+
+    @staticmethod
+    def calculate_similarity(text1: str, text2: str) -> float:
+        """
+        Calculate semantic similarity between two texts.
+
+        Args:
+            text1: First text
+            text2: Second text
+
+        Returns:
+            Similarity score (0.0-1.0)
+        """
+        try:
+            if not ContentSimilarityManager.load_model():
+                return 0.0
+
+            if not text1 or not text2:
+                return 0.0
+
+            # Generate embeddings
+            embeddings = ContentSimilarityManager._model.encode([text1[:1000], text2[:1000]])
+
+            # Calculate cosine similarity
+            similarity = 1 - cosine(embeddings[0], embeddings[1])
+
+            return float(max(0.0, min(1.0, similarity)))
+
+        except Exception as e:
+            logger.error(f"Error calculating similarity: {e}")
+            return 0.0
+
+    @staticmethod
+    def find_similar_articles(
+        target_text: str,
+        articles: List[Dict[str, Any]],
+        top_k: int = 5,
+        min_similarity: float = 0.5
+    ) -> List[Tuple[Dict[str, Any], float]]:
+        """
+        Find similar articles to target text.
+
+        Args:
+            target_text: Reference text
+            articles: List of article dictionaries with 'content' or 'summary'
+            top_k: Number of similar articles to return
+            min_similarity: Minimum similarity threshold
+
+        Returns:
+            List of (article, similarity_score) tuples
+        """
+        try:
+            if not ContentSimilarityManager.load_model():
+                return []
+
+            if not target_text or not articles:
+                return []
+
+            # Get target embedding
+            target_embedding = ContentSimilarityManager._model.encode([target_text[:1000]])[0]
+
+            # Calculate similarities
+            similarities = []
+            for article in articles:
+                # Use summary if available, otherwise content
+                compare_text = article.get('summary') or article.get('full_text') or article.get('title', '')
+                if not compare_text:
+                    continue
+
+                article_embedding = ContentSimilarityManager._model.encode([compare_text[:1000]])[0]
+                similarity = 1 - cosine(target_embedding, article_embedding)
+
+                if similarity >= min_similarity:
+                    similarities.append((article, float(similarity)))
+
+            # Sort by similarity and return top k
+            similarities.sort(key=lambda x: x[1], reverse=True)
+            return similarities[:top_k]
+
+        except Exception as e:
+            logger.error(f"Error finding similar articles: {e}")
+            return []
+
+
+class KeywordExtractionManager:
+    """
+    Keyword and key phrase extraction system.
+
+    Provides:
+    - TF-IDF based keyword ranking
+    - Multi-word phrase extraction
+    - Trending keyword analysis
+    """
+
+    @staticmethod
+    def extract_keywords(
+        text: str,
+        num_keywords: int = 10,
+        min_word_length: int = 4
+    ) -> List[Tuple[str, float]]:
+        """
+        Extract keywords from text using TF-IDF.
+
+        Args:
+            text: Text content
+            num_keywords: Number of keywords to extract
+            min_word_length: Minimum keyword length
+
+        Returns:
+            List of (keyword, score) tuples
+        """
+        try:
+            if not text or len(text.strip()) < 50:
+                return []
+
+            # Use TF-IDF
+            vectorizer = TfidfVectorizer(
+                max_features=num_keywords * 2,
+                stop_words='english',
+                token_pattern=r'\b[a-z]{' + str(min_word_length) + r',}\b'
+            )
+
+            tfidf_matrix = vectorizer.fit_transform([text])
+            feature_names = vectorizer.get_feature_names_out()
+            scores = tfidf_matrix.toarray()[0]
+
+            # Sort by score
+            keywords = sorted(
+                [(feature_names[i], float(scores[i])) for i in range(len(scores))],
+                key=lambda x: x[1],
+                reverse=True
+            )
+
+            return keywords[:num_keywords]
+
+        except Exception as e:
+            logger.error(f"Error extracting keywords: {e}")
+            return []
+
+    @staticmethod
+    def extract_key_phrases(
+        text: str,
+        num_phrases: int = 5
+    ) -> List[Tuple[str, float]]:
+        """
+        Extract multi-word key phrases.
+
+        Args:
+            text: Text content
+            num_phrases: Number of phrases to extract
+
+        Returns:
+            List of (phrase, score) tuples
+        """
+        try:
+            if not text or len(text.strip()) < 50:
+                return []
+
+            # Use TF-IDF with bigrams and trigrams
+            vectorizer = TfidfVectorizer(
+                max_features=num_phrases * 2,
+                stop_words='english',
+                ngram_range=(2, 3)  # 2-3 word phrases
+            )
+
+            tfidf_matrix = vectorizer.fit_transform([text])
+            feature_names = vectorizer.get_feature_names_out()
+            scores = tfidf_matrix.toarray()[0]
+
+            # Sort by score
+            phrases = sorted(
+                [(feature_names[i], float(scores[i])) for i in range(len(scores))],
+                key=lambda x: x[1],
+                reverse=True
+            )
+
+            return phrases[:num_phrases]
+
+        except Exception as e:
+            logger.error(f"Error extracting key phrases: {e}")
+            return []
+
+
+class MultiLevelSummarizationManager:
+    """
+    Multi-level summarization system.
+
+    Provides:
+    - One-sentence summaries
+    - Paragraph summaries
+    - Full summaries
+    - Extractive summaries
+    """
+
+    @staticmethod
+    def generate_one_sentence_summary(text: str) -> str:
+        """
+        Generate ultra-concise one-sentence summary.
+
+        Args:
+            text: Article text
+
+        Returns:
+            One-sentence summary
+        """
+        # Use existing AI provider
+        provider = get_ai_provider()
+        if provider is None:
+            return "AI provider not configured."
+
+        try:
+            custom_prompt = """Summarize this article in exactly ONE sentence (maximum 20 words).
+Focus on the single most important point.
+
+Article:
+{article_text}
+
+One-sentence summary:"""
+
+            summary = provider.get_summary(
+                text,
+                summary_style="brief",
+                template=custom_prompt,
+                max_length=500
+            )
+
+            return summary or "Unable to generate summary."
+
+        except Exception as e:
+            logger.error(f"Error generating one-sentence summary: {e}")
+            return "Summary generation failed."
+
+    @staticmethod
+    def generate_extractive_summary(text: str, num_sentences: int = 3) -> str:
+        """
+        Generate extractive summary by selecting key sentences.
+
+        Args:
+            text: Article text
+            num_sentences: Number of sentences to extract
+
+        Returns:
+            Extractive summary
+        """
+        try:
+            if not text or len(text.strip()) < 100:
+                return text
+
+            # Simple extractive approach: use TF-IDF to score sentences
+            sentences = [s.strip() for s in text.split('.') if len(s.strip()) > 20]
+            if len(sentences) <= num_sentences:
+                return text
+
+            # Score sentences by TF-IDF
+            vectorizer = TfidfVectorizer(stop_words='english')
+            try:
+                tfidf_matrix = vectorizer.fit_transform(sentences)
+                sentence_scores = tfidf_matrix.sum(axis=1).A1
+
+                # Get top sentences
+                top_indices = sentence_scores.argsort()[-num_sentences:][::-1]
+                top_indices = sorted(top_indices)  # Preserve order
+
+                extractive = '. '.join([sentences[i] for i in top_indices]) + '.'
+                return extractive
+
+            except:
+                # Fallback: return first N sentences
+                return '. '.join(sentences[:num_sentences]) + '.'
+
+        except Exception as e:
+            logger.error(f"Error generating extractive summary: {e}")
+            return text[:500] + "..."
+
+
 # Legacy function wrappers for backward compatibility
 def get_summary_from_llm(text_content: str, summary_style: str = "overview", max_length: int = 15000, template: Optional[str] = None) -> str | None:
     """Legacy wrapper that uses the current AI provider."""
@@ -4081,7 +4615,7 @@ class HelpModal(ModalScreen):
                 f"`{ps_data['default_tags_csv'] or 'None'}`\n\n"
             )
         ht = f"""\
-## Keybindings & Help (v1.7.0)
+## Keybindings & Help (v1.8.0)
 
 ### Navigation & Display
 | Key           | Action              | Description                                        |
@@ -4116,6 +4650,10 @@ class HelpModal(ModalScreen):
 | `s`           | Summarize           | AI summary for selected (choose style).            |
 | `ctrl+k`      | Sentiment Analysis  | AI sentiment for selected article.                 |
 | `ctrl+p`      | Select AI Provider  | Switch between Gemini/OpenAI/Claude.               |
+| `ctrl+shift+t`| Auto-Tag            | AI-powered automatic tagging of article.           |
+| `ctrl+shift+e`| Extract Entities    | Extract named entities (people, orgs, locations).  |
+| `ctrl+shift+k`| Extract Keywords    | Extract key terms and topics from article.         |
+| `ctrl+shift+r`| Find Similar        | Find similar articles using content similarity.    |
 
 ### Filtering & Sorting
 | Key           | Action              | Description                                        |
@@ -4218,6 +4756,10 @@ class WebScraperApp(App[None]):
         Binding("ctrl+shift+s", "save_filter_preset", "Save Preset"),
         Binding("ctrl+shift+a", "manage_schedules", "Schedules"),
         Binding("ctrl+shift+v", "view_analytics", "Analytics"),
+        Binding("ctrl+shift+t", "auto_tag", "Auto-Tag"),
+        Binding("ctrl+shift+e", "extract_entities", "Entities"),
+        Binding("ctrl+shift+k", "extract_keywords", "Keywords"),
+        Binding("ctrl+shift+r", "find_similar", "Similar"),
         Binding("f1,ctrl+h", "toggle_help", "Help")
     ]
     dark = reactive(True, layout=True)
@@ -4261,7 +4803,7 @@ class WebScraperApp(App[None]):
         logger.info("Background scheduler started")
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True, name="Web Scraper TUI v1.0")
+        yield Header(show_clock=True, name="Web Scraper TUI v1.8.0")
         yield DataTable(id="article_table", cursor_type="row", zebra_stripes=True)
         yield LoadingIndicator(id="loading_indicator", classes="hidden")
         yield StatusBar(id="status_bar")
@@ -5061,6 +5603,50 @@ class WebScraperApp(App[None]):
         """Open analytics modal (Ctrl+Shift+V)."""
         self.push_screen(AnalyticsModal())
 
+    async def action_auto_tag(self) -> None:
+        """Auto-tag selected article using AI (Ctrl+Shift+T)."""
+        current_id = self._get_current_row_id()
+        if current_id is None:
+            self.notify("No article selected.", title="Info", severity="warning")
+            return
+
+        self.selected_row_id = current_id
+        worker = functools.partial(self._auto_tag_worker, current_id)
+        self.run_worker(worker)
+
+    async def action_extract_entities(self) -> None:
+        """Extract entities from selected article (Ctrl+Shift+E)."""
+        current_id = self._get_current_row_id()
+        if current_id is None:
+            self.notify("No article selected.", title="Info", severity="warning")
+            return
+
+        self.selected_row_id = current_id
+        worker = functools.partial(self._extract_entities_worker, current_id)
+        self.run_worker(worker)
+
+    async def action_extract_keywords(self) -> None:
+        """Extract keywords from selected article (Ctrl+Shift+K)."""
+        current_id = self._get_current_row_id()
+        if current_id is None:
+            self.notify("No article selected.", title="Info", severity="warning")
+            return
+
+        self.selected_row_id = current_id
+        worker = functools.partial(self._extract_keywords_worker, current_id)
+        self.run_worker(worker)
+
+    async def action_find_similar(self) -> None:
+        """Find similar articles to selected one (Ctrl+Shift+R)."""
+        current_id = self._get_current_row_id()
+        if current_id is None:
+            self.notify("No article selected.", title="Info", severity="warning")
+            return
+
+        self.selected_row_id = current_id
+        worker = functools.partial(self._find_similar_worker, current_id)
+        self.run_worker(worker)
+
     async def action_toggle_help(self)->None:await self.app.push_screen(HelpModal())
     async def action_cycle_sort_order(self)->None:self.current_sort_index=(self.current_sort_index+1)%len(self.SORT_OPTIONS);await self.refresh_article_table();self.notify(f"Sorted by: {self.SORT_OPTIONS[self.current_sort_index][1]}",title="Sort Changed",severity="info",timeout=2)
     async def _handle_manage_tags_result(self,aid:int,nts:Optional[str])->None:
@@ -5391,6 +5977,239 @@ class WebScraperApp(App[None]):
         finally:
             self._toggle_loading(False)
 
+    async def _auto_tag_worker(self, article_id: int) -> None:
+        """Worker to auto-tag an article using AI."""
+        self._toggle_loading(True)
+        self.notify(f"Auto-tagging article ID {article_id}...", title="AI Auto-Tagging", severity="info")
+        try:
+            def _get_article_blocking():
+                with get_db_connection() as conn:
+                    result = conn.execute(
+                        "SELECT title, link, content FROM scraped_data WHERE id = ?",
+                        (article_id,)
+                    ).fetchone()
+                    return result if result else None
+
+            article = await self.run_in_thread(_get_article_blocking)
+            if not article:
+                self.notify("Article not found.", title="Error", severity="error")
+                self._toggle_loading(False)
+                return
+
+            # Generate tags using AI
+            tags = await self.run_in_thread(
+                lambda: AITaggingManager.generate_tags(
+                    article['title'],
+                    article['content'] or article['link']
+                )
+            )
+
+            if tags:
+                # Update tags in database
+                def _update_tags_blocking():
+                    _update_tags_for_article_blocking(article_id, ', '.join(tags))
+
+                await self.run_in_thread(_update_tags_blocking)
+                await self.refresh_article_table()
+                self.notify(
+                    f"Auto-tagged with: {', '.join(tags)}",
+                    title="Auto-Tagging Complete",
+                    severity="info"
+                )
+            else:
+                self.notify("No tags generated.", title="Auto-Tagging", severity="warning")
+
+        except Exception as e:
+            logger.error(f"Error in auto-tag worker: {e}", exc_info=True)
+            self.notify(f"Auto-tagging error: {e}", title="Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def _extract_entities_worker(self, article_id: int) -> None:
+        """Worker to extract named entities from an article."""
+        self._toggle_loading(True)
+        self.notify(f"Extracting entities from article ID {article_id}...", title="Entity Extraction", severity="info")
+        try:
+            def _get_article_blocking():
+                with get_db_connection() as conn:
+                    result = conn.execute(
+                        "SELECT title, content, link FROM scraped_data WHERE id = ?",
+                        (article_id,)
+                    ).fetchone()
+                    return result if result else None
+
+            article = await self.run_in_thread(_get_article_blocking)
+            if not article:
+                self.notify("Article not found.", title="Error", severity="error")
+                self._toggle_loading(False)
+                return
+
+            # Extract entities
+            entities = await self.run_in_thread(
+                lambda: EntityRecognitionManager.extract_entities(
+                    article['content'] or article['link']
+                )
+            )
+
+            if entities:
+                # Format entities for display
+                entity_text = "\n\n".join([
+                    f"**{ent_type}:** {', '.join(ent_list)}"
+                    for ent_type, ent_list in entities.items()
+                    if ent_list
+                ])
+
+                if entity_text:
+                    # Display in a modal
+                    class EntityModal(ModalScreen[None]):
+                        DEFAULT_CSS = """
+                        EntityModal {
+                            align: center middle;
+                        }
+                        EntityModal > Vertical {
+                            width: 80;
+                            height: auto;
+                            max-height: 80%;
+                            background: $panel;
+                            border: thick $primary;
+                            padding: 2;
+                        }
+                        """
+                        BINDINGS = [Binding("escape", "dismiss", "Close")]
+
+                        def __init__(self, title: str, entities_md: str):
+                            super().__init__()
+                            self.article_title = title
+                            self.entities_md = entities_md
+
+                        def compose(self) -> ComposeResult:
+                            with Vertical():
+                                yield Label(f"Entities: {self.article_title}", classes="dialog-title")
+                                with VerticalScroll():
+                                    yield Markdown(self.entities_md)
+                                with Horizontal(classes="modal-buttons"):
+                                    yield Button("Close", variant="primary", id="close")
+
+                        def on_button_pressed(self, event: Button.Pressed) -> None:
+                            self.dismiss()
+
+                    self.push_screen(EntityModal(article['title'], entity_text))
+                    self.notify("Entity extraction complete.", title="Entities", severity="info")
+                else:
+                    self.notify("No entities found.", title="Entity Extraction", severity="warning")
+            else:
+                self.notify("No entities extracted.", title="Entity Extraction", severity="warning")
+
+        except Exception as e:
+            logger.error(f"Error in extract entities worker: {e}", exc_info=True)
+            self.notify(f"Entity extraction error: {e}", title="Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def _extract_keywords_worker(self, article_id: int) -> None:
+        """Worker to extract keywords from an article."""
+        self._toggle_loading(True)
+        self.notify(f"Extracting keywords from article ID {article_id}...", title="Keyword Extraction", severity="info")
+        try:
+            def _get_article_blocking():
+                with get_db_connection() as conn:
+                    result = conn.execute(
+                        "SELECT title, content, link FROM scraped_data WHERE id = ?",
+                        (article_id,)
+                    ).fetchone()
+                    return result if result else None
+
+            article = await self.run_in_thread(_get_article_blocking)
+            if not article:
+                self.notify("Article not found.", title="Error", severity="error")
+                self._toggle_loading(False)
+                return
+
+            # Extract keywords
+            keywords = await self.run_in_thread(
+                lambda: KeywordExtractionManager.extract_keywords(
+                    article['content'] or article['link'],
+                    article['title']
+                )
+            )
+
+            if keywords:
+                # Display keywords
+                keywords_text = ", ".join(keywords)
+                self.notify(
+                    f"Keywords: {keywords_text}",
+                    title="Keywords Extracted",
+                    severity="info",
+                    timeout=10
+                )
+            else:
+                self.notify("No keywords extracted.", title="Keyword Extraction", severity="warning")
+
+        except Exception as e:
+            logger.error(f"Error in extract keywords worker: {e}", exc_info=True)
+            self.notify(f"Keyword extraction error: {e}", title="Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def _find_similar_worker(self, article_id: int) -> None:
+        """Worker to find similar articles."""
+        self._toggle_loading(True)
+        self.notify(f"Finding similar articles to ID {article_id}...", title="Finding Similar", severity="info")
+        try:
+            def _get_all_articles_blocking():
+                with get_db_connection() as conn:
+                    return conn.execute(
+                        "SELECT id, title, content, link FROM scraped_data"
+                    ).fetchall()
+
+            articles = await self.run_in_thread(_get_all_articles_blocking)
+            if not articles:
+                self.notify("No articles in database.", title="Error", severity="error")
+                self._toggle_loading(False)
+                return
+
+            # Find similar articles
+            similar_ids = await self.run_in_thread(
+                lambda: ContentSimilarityManager.find_similar_articles(
+                    article_id,
+                    [(a['id'], a['title'], a['content'] or a['link']) for a in articles]
+                )
+            )
+
+            if similar_ids:
+                # Get titles of similar articles
+                def _get_titles_blocking():
+                    with get_db_connection() as conn:
+                        placeholders = ','.join(['?'] * len(similar_ids))
+                        return conn.execute(
+                            f"SELECT id, title FROM scraped_data WHERE id IN ({placeholders})",
+                            similar_ids
+                        ).fetchall()
+
+                similar_articles = await self.run_in_thread(_get_titles_blocking)
+
+                if similar_articles:
+                    similar_text = "\n".join([
+                        f"• [ID {a['id']}] {a['title']}"
+                        for a in similar_articles
+                    ])
+                    self.notify(
+                        f"Similar articles:\n{similar_text}",
+                        title="Similar Articles Found",
+                        severity="info",
+                        timeout=15
+                    )
+                else:
+                    self.notify("No similar articles found.", title="Similar Articles", severity="info")
+            else:
+                self.notify("No similar articles found.", title="Similar Articles", severity="info")
+
+        except Exception as e:
+            logger.error(f"Error in find similar worker: {e}", exc_info=True)
+            self.notify(f"Find similar error: {e}", title="Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
     def _fetch_articles_for_export(self) -> List[Dict[str, Any]]:
         """Fetch articles for export (blocking function for worker thread)."""
         s_col, _ = self.SORT_OPTIONS[self.current_sort_index]
@@ -5583,7 +6402,7 @@ def print_startup_banner():
 ║   ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚══════╝  ║
 ║                                                                              ║
 ║                       Text User Interface Web Scraper                        ║
-║                                Version 1.7.0                                 ║
+║                                Version 1.8.0                                 ║
 ║                                                                              ║
 ║   ╔══════════════════════════════════════════════════════════════════════╗   ║
 ║   ║                              Features                                ║   ║

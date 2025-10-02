@@ -40,6 +40,18 @@ reportlab>=4.0.0
 # Word cloud generation for tag visualization
 wordcloud>=1.9.0
 
+# Advanced AI Features (v1.8.0)
+# Natural language processing for entity recognition and keyword extraction
+spacy>=3.7.0
+# Sentence transformers for content similarity and embeddings
+sentence-transformers>=2.2.0
+# Scientific computing for similarity calculations
+scipy>=1.11.0
+# Natural Language Toolkit for text processing
+nltk>=3.8.0
+# scikit-learn for topic modeling and clustering
+scikit-learn>=1.3.0
+
 # Optional Development Dependencies (uncomment for development)
 # pytest>=7.0.0                    # Testing framework
 # pytest-cov>=4.0.0                # Coverage reporting

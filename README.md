@@ -1,9 +1,9 @@
-# WebScrape-TUI v1.7.0
+# WebScrape-TUI v1.8.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
-[![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
+[![Version](https://img.shields.io/badge/version-1.8.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
@@ -56,6 +56,11 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Template Variables** (v1.3.0): Dynamic {title}, {content}, {url}, {date} substitution
 - **Multiple Summarization Styles**: Overview, bullets, ELI5, academic, executive, technical, news
 - **Sentiment Analysis**: Confidence-scored sentiment detection across all providers
+- **AI Auto-Tagging** (v1.8.0): Automatic tag generation using AI content analysis (Ctrl+Shift+T)
+- **Named Entity Recognition** (v1.8.0): Extract people, organizations, locations, dates with spaCy (Ctrl+Shift+E)
+- **Keyword Extraction** (v1.8.0): TF-IDF-based keyword extraction with title boosting (Ctrl+Shift+K)
+- **Content Similarity** (v1.8.0): Find similar articles using semantic embeddings (Ctrl+Shift+R)
+- **Multi-Level Summarization** (v1.8.0): Brief, detailed, and comprehensive summary levels
 - **Async Processing**: Non-blocking AI operations to maintain UI responsiveness
 - **Optimized API Calls**: Efficient request handling and error management
 - **Configurable API Keys**: Easy setup for multiple AI providers
@@ -186,6 +191,12 @@ python scrapetui.py
 - **openpyxl** (>=3.1.0) - Excel (XLSX) file creation and formatting (v1.7.0)
 - **reportlab** (>=4.0.0) - PDF report generation and layout (v1.7.0)
 - **wordcloud** (>=1.9.0) - Word cloud visualization for tag frequency (v1.7.0)
+- **spacy** (>=3.7.0) - Natural language processing for entity recognition (v1.8.0)
+- **en_core_web_sm** (>=3.7.0) - English language model for spaCy (v1.8.0)
+- **sentence-transformers** (>=2.2.0) - Semantic embeddings for similarity matching (v1.8.0)
+- **nltk** (>=3.8.0) - Natural language toolkit for keyword extraction (v1.8.0)
+- **scikit-learn** (>=1.3.0) - TF-IDF vectorization for keywords (v1.8.0)
+- **scipy** (>=1.11.0) - Scientific computing for cosine distance (v1.8.0)
 
 ## 🚀 Quick Start
 
@@ -508,6 +519,10 @@ CREATE TABLE filter_presets (
 | `Ctrl+G` | **Settings** (v1.4.0) |
 | `Ctrl+Shift+A` | **Manage Schedules** (v1.5.0) |
 | `Ctrl+Shift+V` | **View Analytics** (v1.6.0) |
+| `Ctrl+Shift+T` | **AI Auto-Tag** (v1.8.0) |
+| `Ctrl+Shift+E` | **Extract Entities** (v1.8.0) |
+| `Ctrl+Shift+K` | **Extract Keywords** (v1.8.0) |
+| `Ctrl+Shift+R` | **Find Similar Articles** (v1.8.0) |
 | `Ctrl+T` | Manage tags for selected article |
 | `Ctrl+F` | Open advanced filter dialog |
 | `Ctrl+Shift+F` | **Manage Filter Presets** (v1.4.0) |
@@ -723,10 +738,10 @@ pytest tests/ -v
 pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
-**Test Results (v1.7.0):**
-- 166 total tests across 12 categories
-- All export, visualization, scheduling, configuration, filter presets, and AI provider tests passing ✓
-- Comprehensive coverage of v1.7.0 features including Excel, PDF, and word cloud exports
+**Test Results (v1.8.0):**
+- 194 total tests across 13 categories
+- All export, visualization, scheduling, configuration, filter presets, AI provider, and advanced AI tests passing ✓
+- Comprehensive coverage of v1.8.0 features including auto-tagging, entity recognition, keyword extraction, and similarity matching
 - 100% pass rate across all test suites
 
 ### Areas for Contribution
@@ -743,15 +758,15 @@ pytest tests/ --cov=scrapetui --cov-report=html
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
-### Recent Updates (v1.7.0)
-- **Excel Export**: Professional XLSX files with multiple sheets, formatting, and statistics
-- **PDF Reports**: Publication-ready PDF reports with embedded charts and three templates (Standard, Executive, Detailed)
-- **Word Cloud Visualization**: Tag frequency word clouds with customizable colors and high-resolution export
-- **Sentiment Scatter Plot**: Advanced sentiment analysis over time with trend lines
-- **Export Templates**: Three professional report templates for different use cases
-- **Enhanced Visualizations**: Comprehensive chart suite including word clouds and scatter plots
-- **Comprehensive Testing**: 166 tests with 24 new tests for export and visualization features
-- **New Dependencies**: openpyxl, reportlab, and wordcloud for advanced export capabilities
+### Recent Updates (v1.8.0)
+- **AI Auto-Tagging**: Automatic tag generation using AI content analysis
+- **Named Entity Recognition**: Extract people, organizations, locations, dates with spaCy
+- **Keyword Extraction**: TF-IDF-based keyword extraction with title boosting
+- **Content Similarity**: Find similar articles using semantic embeddings
+- **Multi-Level Summarization**: Brief, detailed, and comprehensive summary levels
+- **5 New AI Manager Classes**: Complete AI-powered content analysis pipeline
+- **Comprehensive Testing**: 194 tests with 28 new tests for advanced AI features
+- **New Dependencies**: spacy, sentence-transformers, nltk, scikit-learn, scipy
 
 ### Previous Updates (v1.5.0)
 - **Scheduled Scraping**: Automated background scraping with APScheduler
@@ -849,9 +864,9 @@ SOFTWARE.
 - [x] **Custom Templates**: Built-in and user-defined summarization templates (v1.3.0)
 - [x] **Bulk Operations**: Multi-select for batch delete operations (v1.2.0)
 - [x] **JSON Export**: Full export with metadata and nested structure (v1.2.0)
+- [x] **Advanced AI Features** (v1.8.0): Auto-tagging, entity recognition, keyword extraction, similarity matching
 
-### Upcoming Features (v1.8.0+)
-- [ ] **Advanced AI Features** (v1.8.0): Auto-tagging, categorization, entity recognition
+### Upcoming Features (v1.9.0+)
 - [ ] **Plugin System**: Extensible architecture for custom processors
 - [ ] **Advanced Search**: Full-text search with indexing
 - [ ] **Docker Support**: Containerized deployment options

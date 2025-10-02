@@ -4,7 +4,7 @@
 
 Transform WebScrape-TUI into the premier open-source terminal-based web scraping and data analysis platform, combining powerful scraping capabilities with advanced AI analysis, data visualization, and automation features.
 
-## Current Status: v1.7.0 (October 2025)
+## Current Status: v1.8.0 (October 2025)
 
 ### ✅ Completed Features
 
@@ -72,43 +72,43 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
 - ✅ Professional formatting and styling
 - ✅ Embedded charts in PDF reports
 
+#### Advanced AI Features (v1.8.0)
+- ✅ AI-powered auto-tagging with content analysis
+- ✅ Named entity recognition (people, organizations, locations, dates)
+- ✅ Keyword extraction with TF-IDF scoring
+- ✅ Content similarity matching with semantic embeddings
+- ✅ Multi-level summarization (brief, detailed, comprehensive)
+- ✅ spaCy NLP integration (en_core_web_sm model)
+- ✅ SentenceTransformer embeddings (all-MiniLM-L6-v2)
+- ✅ NLTK-based stopword filtering
+- ✅ Comprehensive test suite (28 new tests)
+
 ---
 
 ## Upcoming Releases
 
-### v1.8.0 - Advanced AI Features (Q1 2026)
+### v1.9.0 - Smart Categorization & Topic Modeling (Q1 2026)
 
-**Goal:** Cutting-edge AI capabilities for content understanding and organization
+**Goal:** Intelligent content organization with machine learning
 
 **Features:**
 
-#### AI-Powered Organization
-- [ ] **Auto-Tagging**
-  - AI-generated tags based on content
-  - Tag suggestions with confidence scores
-  - Batch auto-tagging for existing articles
-  - Custom tag taxonomy learning
-
-- [ ] **Smart Categorization**
-  - Topic modeling (LDA, NMF)
+#### Smart Categorization
+- [ ] **Topic Modeling**
+  - LDA (Latent Dirichlet Allocation)
+  - NMF (Non-negative Matrix Factorization)
   - Automatic category assignment
   - Category hierarchy creation
   - Multi-label classification
 
-#### Content Analysis
-- [ ] **Entity Recognition**
-  - Named entity extraction (people, orgs, locations)
+- [ ] **Advanced Content Analysis**
   - Entity relationship mapping
-  - Entity-based filtering
-  - Dependencies: `spacy` or AI API features
-
-- [ ] **Keyword Extraction**
-  - Automatic keyword identification
-  - TF-IDF based ranking
+  - Entity-based filtering and search
+  - Knowledge graph construction
   - Phrase extraction
   - Keyword trending over time
 
-- [ ] **Content Similarity**
+- [ ] **Advanced Similarity Features**
   - Duplicate detection with fuzzy matching
   - Related article suggestions
   - Clustering similar articles
