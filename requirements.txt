@@ -32,6 +32,14 @@ matplotlib>=3.7.0
 # Pandas for data analysis and statistics
 pandas>=2.0.0
 
+# Enhanced Export Formats (v1.7.0)
+# Excel export with formatting and embedded charts
+openpyxl>=3.1.0
+# PDF report generation with professional layouts
+reportlab>=4.0.0
+# Word cloud generation for tag visualization
+wordcloud>=1.9.0
+
 # Optional Development Dependencies (uncomment for development)
 # pytest>=7.0.0                    # Testing framework
 # pytest-cov>=4.0.0                # Coverage reporting

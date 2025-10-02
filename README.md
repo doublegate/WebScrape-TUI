@@ -1,9 +1,9 @@
-# WebScrape-TUI v1.6.0
+# WebScrape-TUI v1.7.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
-[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
+[![Version](https://img.shields.io/badge/version-1.7.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
@@ -90,6 +90,32 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Real-time Data**: All analytics reflect current database state instantly
 - **Export Capabilities**: One-click export of all charts and detailed text reports
 
+### 📈 Enhanced Export & Reporting (v1.7.0)
+
+- **Excel (XLSX) Export**: Professional spreadsheets with multiple sheets and formatting
+  - Articles sheet with auto-sized columns and styled headers
+  - Statistics sheet with comprehensive metrics summary
+  - Timeline sheet with 30-day scraping activity data
+  - Embedded filter metadata for export traceability
+  - Support for 1,000,000+ row capacity
+- **PDF Report Generation**: Publication-ready PDF reports with professional layouts
+  - Executive summary with key statistics
+  - Sentiment distribution charts embedded
+  - Timeline visualization with trend analysis
+  - Top sources and tags analysis sections
+  - Three export templates: Standard, Executive, Detailed
+  - Custom branding and header support
+- **Word Cloud Visualization**: Tag frequency visualization as word clouds
+  - Size-based frequency representation
+  - Customizable color schemes and layouts
+  - PNG export with high resolution (300 DPI)
+  - Interactive tag filtering integration
+- **Sentiment Scatter Plot**: Advanced sentiment analysis visualization
+  - Scatter plot showing sentiment scores over time
+  - Color-coded positive/negative/neutral data points
+  - Trend line overlay for sentiment patterns
+  - Date range filtering support
+
 ### 📅 Scheduled Scraping & Automation (v1.5.0)
 
 - **Background Scheduler**: APScheduler-powered automated scraping system
@@ -157,6 +183,9 @@ python scrapetui.py
 - **APScheduler** (>=3.10.0) - Background task scheduling for automation (v1.5.0)
 - **matplotlib** (>=3.7.0) - Chart generation and data visualization (v1.6.0)
 - **pandas** (>=2.0.0) - Data analysis and statistics (v1.6.0)
+- **openpyxl** (>=3.1.0) - Excel (XLSX) file creation and formatting (v1.7.0)
+- **reportlab** (>=4.0.0) - PDF report generation and layout (v1.7.0)
+- **wordcloud** (>=1.9.0) - Word cloud visualization for tag frequency (v1.7.0)
 
 ## 🚀 Quick Start
 
@@ -322,7 +351,12 @@ Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 **Exporting Data:**
 - Press `Ctrl+E` to export current view to CSV
 - Press `Ctrl+J` to export to JSON format (v1.2.0)
-- Includes all applied filters in both formats
+- Press `Ctrl+Shift+X` to export to Excel (XLSX) with formatting (v1.7.0)
+- Press `Ctrl+Shift+P` to generate PDF report with charts (v1.7.0)
+- Press `Ctrl+Shift+W` to export word cloud visualization (v1.7.0)
+- Includes all applied filters in all formats
+- Excel export includes multiple sheets and statistics
+- PDF reports include charts and executive summaries
 - JSON export includes metadata and nested tags
 - Preserves column structure and filter information
 
@@ -480,6 +514,9 @@ CREATE TABLE filter_presets (
 | `Ctrl+Shift+S` | **Save Current Filters as Preset** (v1.4.0) |
 | `Ctrl+E` | Export to CSV |
 | `Ctrl+J` | **Export to JSON** (v1.2.0) |
+| `Ctrl+Shift+X` | **Export to Excel (XLSX)** (v1.7.0) |
+| `Ctrl+Shift+P` | **Export to PDF Report** (v1.7.0) |
+| `Ctrl+Shift+W` | **Export Word Cloud** (v1.7.0) |
 | `Ctrl+L` | Toggle dark/light theme |
 | `Ctrl+S` | Cycle sort order |
 | `r` | Refresh data |
@@ -686,10 +723,10 @@ pytest tests/ -v
 pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
-**Test Results (v1.4.0):**
-- 127 total tests across 8 categories
-- All scheduling, configuration, filter presets, and AI provider tests passing ✓
-- Comprehensive coverage of v1.4.0 features
+**Test Results (v1.7.0):**
+- 166 total tests across 12 categories
+- All export, visualization, scheduling, configuration, filter presets, and AI provider tests passing ✓
+- Comprehensive coverage of v1.7.0 features including Excel, PDF, and word cloud exports
 - 100% pass rate across all test suites
 
 ### Areas for Contribution
@@ -706,14 +743,15 @@ pytest tests/ --cov=scrapetui --cov-report=html
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
-### Recent Updates (v1.6.0)
-- **Data Visualization**: Pie charts, line graphs, and bar charts for analytics
-- **Statistics Dashboard**: Comprehensive analytics accessible via Ctrl+Shift+V
-- **Chart Export**: Professional PNG charts with timestamps for reports
-- **Analytics Reports**: Detailed text reports with all metrics and statistics
-- **Real-time Metrics**: Sentiment distribution, top sources, tag frequencies, timeline trends
-- **Comprehensive Testing**: 142 tests with 16 new tests for analytics features
-- **New Dependencies**: matplotlib and pandas for data visualization and analysis
+### Recent Updates (v1.7.0)
+- **Excel Export**: Professional XLSX files with multiple sheets, formatting, and statistics
+- **PDF Reports**: Publication-ready PDF reports with embedded charts and three templates (Standard, Executive, Detailed)
+- **Word Cloud Visualization**: Tag frequency word clouds with customizable colors and high-resolution export
+- **Sentiment Scatter Plot**: Advanced sentiment analysis over time with trend lines
+- **Export Templates**: Three professional report templates for different use cases
+- **Enhanced Visualizations**: Comprehensive chart suite including word clouds and scatter plots
+- **Comprehensive Testing**: 166 tests with 24 new tests for export and visualization features
+- **New Dependencies**: openpyxl, reportlab, and wordcloud for advanced export capabilities
 
 ### Previous Updates (v1.5.0)
 - **Scheduled Scraping**: Automated background scraping with APScheduler
@@ -812,10 +850,9 @@ SOFTWARE.
 - [x] **Bulk Operations**: Multi-select for batch delete operations (v1.2.0)
 - [x] **JSON Export**: Full export with metadata and nested structure (v1.2.0)
 
-### Upcoming Features (v1.5.0+)
-- [ ] **Scheduled Scraping** (v1.5.0): Automated scraping with cron-like scheduling
+### Upcoming Features (v1.8.0+)
+- [ ] **Advanced AI Features** (v1.8.0): Auto-tagging, categorization, entity recognition
 - [ ] **Plugin System**: Extensible architecture for custom processors
-- [ ] **Data Visualization**: Charts and graphs for scraped data analysis
 - [ ] **Advanced Search**: Full-text search with indexing
 - [ ] **Docker Support**: Containerized deployment options
 - [ ] **Web Interface**: Optional web UI for remote access

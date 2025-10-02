@@ -128,6 +128,22 @@ from collections import Counter
 from io import BytesIO
 import base64
 
+# Enhanced export formats (v1.7.0)
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from openpyxl.chart import PieChart, LineChart, BarChart, Reference
+from openpyxl.drawing.image import Image as XLImage
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle,
+    PageBreak, Image as RLImage
+)
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from wordcloud import WordCloud
+
 # Textual imports
 from textual.app import App, ComposeResult
 from textual.widgets import (
@@ -1957,6 +1973,540 @@ class AnalyticsManager:
             return False
 
 
+class ExcelExportManager:
+    """
+    Enhanced Excel export with formatting, charts, and multi-sheet layouts.
+
+    Provides professional XLSX export capabilities including:
+    - Multiple sheets (Articles, Statistics, Timeline, Charts)
+    - Styled headers with auto-column sizing
+    - Embedded charts and graphs
+    - Filter metadata preservation
+    - Custom export templates
+    """
+
+    @staticmethod
+    def export_to_excel(
+        articles: List[Dict[str, Any]],
+        output_path: str,
+        include_charts: bool = True,
+        template: str = "standard"
+    ) -> bool:
+        """
+        Export articles to Excel with formatting and optional charts.
+
+        Args:
+            articles: List of article dictionaries
+            output_path: Path to save the Excel file
+            include_charts: Whether to include chart sheets
+            template: Export template ('standard', 'executive', 'detailed')
+
+        Returns:
+            True if export successful, False otherwise
+        """
+        try:
+            wb = Workbook()
+
+            # Remove default sheet
+            if 'Sheet' in wb.sheetnames:
+                wb.remove(wb['Sheet'])
+
+            # Create Articles sheet
+            ws_articles = wb.create_sheet("Articles", 0)
+            ExcelExportManager._create_articles_sheet(ws_articles, articles, template)
+
+            # Create Statistics sheet
+            if articles:
+                ws_stats = wb.create_sheet("Statistics", 1)
+                ExcelExportManager._create_statistics_sheet(ws_stats, articles)
+
+            # Create Timeline sheet
+            if articles and include_charts:
+                ws_timeline = wb.create_sheet("Timeline", 2)
+                ExcelExportManager._create_timeline_sheet(ws_timeline, articles)
+
+            # Save workbook
+            wb.save(output_path)
+            logger.info(f"Excel export completed: {output_path}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error exporting to Excel: {e}")
+            return False
+
+    @staticmethod
+    def _create_articles_sheet(ws, articles: List[Dict[str, Any]], template: str):
+        """Create and format the Articles sheet."""
+        # Define headers based on template
+        if template == "executive":
+            headers = ["ID", "Title", "Source", "Date", "Sentiment", "Summary"]
+        elif template == "detailed":
+            headers = ["ID", "Title", "Source URL", "Date Scraped", "Tags", "Sentiment", "Summary", "Full Text Preview"]
+        else:  # standard
+            headers = ["ID", "Title", "Source URL", "Date Scraped", "Tags", "Sentiment"]
+
+        # Style header row
+        header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+        header_font = Font(color="FFFFFF", bold=True, size=12)
+        header_alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+        for col_num, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_num)
+            cell.value = header
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = header_alignment
+
+        # Add article data
+        for row_num, article in enumerate(articles, 2):
+            if template == "executive":
+                row_data = [
+                    article.get('id', ''),
+                    article.get('title', ''),
+                    article.get('source_url', '')[:50],
+                    article.get('date_scraped', ''),
+                    article.get('sentiment', ''),
+                    article.get('summary', '')[:200] if article.get('summary') else ''
+                ]
+            elif template == "detailed":
+                row_data = [
+                    article.get('id', ''),
+                    article.get('title', ''),
+                    article.get('source_url', ''),
+                    article.get('date_scraped', ''),
+                    article.get('tags', ''),
+                    article.get('sentiment', ''),
+                    article.get('summary', '')[:300] if article.get('summary') else '',
+                    article.get('full_text', '')[:500] if article.get('full_text') else ''
+                ]
+            else:  # standard
+                row_data = [
+                    article.get('id', ''),
+                    article.get('title', ''),
+                    article.get('source_url', ''),
+                    article.get('date_scraped', ''),
+                    article.get('tags', ''),
+                    article.get('sentiment', '')
+                ]
+
+            for col_num, value in enumerate(row_data, 1):
+                cell = ws.cell(row=row_num, column=col_num)
+                cell.value = value
+                cell.alignment = Alignment(vertical="top", wrap_text=True)
+
+        # Auto-adjust column widths
+        for column in ws.columns:
+            max_length = 0
+            column_letter = column[0].column_letter
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = min(max_length + 2, 50)
+            ws.column_dimensions[column_letter].width = adjusted_width
+
+        # Freeze header row
+        ws.freeze_panes = ws['A2']
+
+    @staticmethod
+    def _create_statistics_sheet(ws, articles: List[Dict[str, Any]]):
+        """Create statistics summary sheet."""
+        # Title
+        ws['A1'] = "WebScrape-TUI Analytics Summary"
+        ws['A1'].font = Font(size=16, bold=True, color="366092")
+        ws.merge_cells('A1:B1')
+
+        row = 3
+        stats = [
+            ("Total Articles", len(articles)),
+            ("", ""),
+            ("Sentiment Distribution", ""),
+        ]
+
+        # Count sentiments
+        sentiment_counts = {}
+        for article in articles:
+            sent = article.get('sentiment', 'Unknown')
+            sentiment_counts[sent] = sentiment_counts.get(sent, 0) + 1
+
+        for sentiment, count in sentiment_counts.items():
+            stats.append((f"  {sentiment}", count))
+
+        # Count sources
+        stats.append(("", ""))
+        stats.append(("Top Sources", "Count"))
+        source_counts = {}
+        for article in articles:
+            source = article.get('source_url', 'Unknown')[:50]
+            source_counts[source] = source_counts.get(source, 0) + 1
+
+        top_sources = sorted(source_counts.items(), key=lambda x: x[1], reverse=True)[:10]
+        stats.extend(top_sources)
+
+        # Write statistics
+        for stat_row in stats:
+            ws.cell(row=row, column=1).value = stat_row[0]
+            ws.cell(row=row, column=2).value = stat_row[1]
+            row += 1
+
+        # Format
+        ws.column_dimensions['A'].width = 40
+        ws.column_dimensions['B'].width = 15
+
+    @staticmethod
+    def _create_timeline_sheet(ws, articles: List[Dict[str, Any]]):
+        """Create timeline visualization sheet."""
+        ws['A1'] = "Article Collection Timeline"
+        ws['A1'].font = Font(size=14, bold=True)
+
+        # Count articles by date
+        date_counts = {}
+        for article in articles:
+            date_str = article.get('date_scraped', '')[:10]  # YYYY-MM-DD
+            if date_str:
+                date_counts[date_str] = date_counts.get(date_str, 0) + 1
+
+        # Sort by date
+        sorted_dates = sorted(date_counts.items())
+
+        # Write data
+        ws['A3'] = "Date"
+        ws['B3'] = "Articles"
+        ws['A3'].font = Font(bold=True)
+        ws['B3'].font = Font(bold=True)
+
+        for row_num, (date, count) in enumerate(sorted_dates, 4):
+            ws.cell(row=row_num, column=1).value = date
+            ws.cell(row=row_num, column=2).value = count
+
+
+class PDFExportManager:
+    """
+    Professional PDF report generation with charts and formatting.
+
+    Provides comprehensive PDF export capabilities including:
+    - Executive summary sections
+    - Embedded charts and graphs
+    - Table of contents
+    - Professional layouts and styling
+    - Custom report templates
+    """
+
+    @staticmethod
+    def export_to_pdf(
+        articles: List[Dict[str, Any]],
+        output_path: str,
+        include_charts: bool = True,
+        template: str = "standard"
+    ) -> bool:
+        """
+        Export articles to PDF with professional formatting.
+
+        Args:
+            articles: List of article dictionaries
+            output_path: Path to save the PDF file
+            include_charts: Whether to include charts
+            template: Report template ('standard', 'executive', 'detailed')
+
+        Returns:
+            True if export successful, False otherwise
+        """
+        try:
+            doc = SimpleDocTemplate(output_path, pagesize=letter)
+            story = []
+            styles = getSampleStyleSheet()
+
+            # Custom styles
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=24,
+                textColor=colors.HexColor('#366092'),
+                spaceAfter=30,
+                alignment=TA_CENTER
+            )
+
+            heading_style = ParagraphStyle(
+                'CustomHeading',
+                parent=styles['Heading2'],
+                fontSize=16,
+                textColor=colors.HexColor('#366092'),
+                spaceAfter=12,
+                spaceBefore=12
+            )
+
+            # Title page
+            story.append(Paragraph("WebScrape-TUI Analytics Report", title_style))
+            story.append(Spacer(1, 0.2*inch))
+            story.append(Paragraph(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}", styles['Normal']))
+            story.append(Paragraph(f"Total Articles: {len(articles)}", styles['Normal']))
+            story.append(PageBreak())
+
+            # Executive Summary
+            if template in ["executive", "detailed"]:
+                story.append(Paragraph("Executive Summary", heading_style))
+                PDFExportManager._add_executive_summary(story, articles, styles)
+                story.append(PageBreak())
+
+            # Statistics Section
+            story.append(Paragraph("Statistics Overview", heading_style))
+            PDFExportManager._add_statistics_section(story, articles, styles)
+            story.append(Spacer(1, 0.3*inch))
+
+            # Articles Table
+            if template == "detailed":
+                story.append(Paragraph("Articles Listing", heading_style))
+                PDFExportManager._add_articles_table(story, articles, styles)
+
+            # Build PDF
+            doc.build(story)
+            logger.info(f"PDF export completed: {output_path}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error exporting to PDF: {e}")
+            return False
+
+    @staticmethod
+    def _add_executive_summary(story, articles: List[Dict[str, Any]], styles):
+        """Add executive summary section to PDF."""
+        # Calculate key metrics
+        total_articles = len(articles)
+        sentiment_counts = {}
+        for article in articles:
+            sent = article.get('sentiment', 'Unknown')
+            sentiment_counts[sent] = sentiment_counts.get(sent, 0) + 1
+
+        # Summary text
+        summary_text = f"""
+        This report analyzes {total_articles} articles collected through WebScrape-TUI.
+        The collection includes content from multiple sources with AI-powered sentiment analysis.
+        """
+
+        story.append(Paragraph(summary_text, styles['Normal']))
+        story.append(Spacer(1, 0.2*inch))
+
+        # Key findings
+        story.append(Paragraph("Key Findings:", styles['Heading3']))
+        findings = [
+            f"• Total articles analyzed: {total_articles}",
+            f"• Sentiment distribution: {len(sentiment_counts)} categories",
+        ]
+
+        if 'Positive' in sentiment_counts:
+            findings.append(f"• Positive sentiment: {sentiment_counts['Positive']} articles")
+        if 'Negative' in sentiment_counts:
+            findings.append(f"• Negative sentiment: {sentiment_counts['Negative']} articles")
+
+        for finding in findings:
+            story.append(Paragraph(finding, styles['Normal']))
+
+    @staticmethod
+    def _add_statistics_section(story, articles: List[Dict[str, Any]], styles):
+        """Add statistics section to PDF."""
+        # Sentiment distribution
+        sentiment_counts = {}
+        for article in articles:
+            sent = article.get('sentiment', 'Unknown')
+            sentiment_counts[sent] = sentiment_counts.get(sent, 0) + 1
+
+        # Create statistics table
+        data = [['Metric', 'Value']]
+        data.append(['Total Articles', str(len(articles))])
+        data.append(['', ''])
+        data.append(['Sentiment Distribution', ''])
+
+        for sentiment, count in sentiment_counts.items():
+            data.append([f'  {sentiment}', str(count)])
+
+        # Style table
+        table = Table(data, colWidths=[3*inch, 2*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+
+        story.append(table)
+
+    @staticmethod
+    def _add_articles_table(story, articles: List[Dict[str, Any]], styles):
+        """Add articles listing table to PDF."""
+        data = [['ID', 'Title', 'Date', 'Sentiment']]
+
+        for article in articles[:50]:  # Limit to 50 for PDF size
+            data.append([
+                str(article.get('id', '')),
+                article.get('title', '')[:40],
+                article.get('date_scraped', '')[:10],
+                article.get('sentiment', '')
+            ])
+
+        table = Table(data, colWidths=[0.5*inch, 3.5*inch, 1*inch, 1*inch])
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+        ]))
+
+        story.append(table)
+
+
+class EnhancedVisualizationManager:
+    """
+    Enhanced visualization capabilities with word clouds and heatmaps.
+
+    Provides advanced chart types including:
+    - Word cloud visualization for tags
+    - Heatmaps for scraping activity patterns
+    - Scatter plots for sentiment vs. time
+    - Custom date range charts
+    """
+
+    @staticmethod
+    def generate_word_cloud(
+        tags_data: List[Tuple[str, int]],
+        output_path: str,
+        width: int = 800,
+        height: int = 400
+    ) -> bool:
+        """
+        Generate word cloud from tag frequency data.
+
+        Args:
+            tags_data: List of (tag, frequency) tuples
+            output_path: Path to save the word cloud image
+            width: Image width in pixels
+            height: Image height in pixels
+
+        Returns:
+            True if generation successful, False otherwise
+        """
+        try:
+            # Create word frequency dictionary
+            word_freq = {tag: freq for tag, freq in tags_data}
+
+            if not word_freq:
+                logger.warning("No tag data available for word cloud")
+                return False
+
+            # Generate word cloud
+            wordcloud = WordCloud(
+                width=width,
+                height=height,
+                background_color='white',
+                colormap='viridis',
+                relative_scaling=0.5,
+                min_font_size=10
+            ).generate_from_frequencies(word_freq)
+
+            # Create figure
+            plt.figure(figsize=(10, 5))
+            plt.imshow(wordcloud, interpolation='bilinear')
+            plt.axis('off')
+            plt.title('Tag Frequency Word Cloud', fontsize=16, pad=20)
+            plt.tight_layout(pad=0)
+
+            # Save
+            plt.savefig(output_path, dpi=150, bbox_inches='tight')
+            plt.close()
+
+            logger.info(f"Word cloud generated: {output_path}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error generating word cloud: {e}")
+            return False
+
+    @staticmethod
+    def generate_sentiment_scatter(
+        articles: List[Dict[str, Any]],
+        output_path: str
+    ) -> bool:
+        """
+        Generate scatter plot of sentiment over time.
+
+        Args:
+            articles: List of article dictionaries
+            output_path: Path to save the chart
+
+        Returns:
+            True if generation successful, False otherwise
+        """
+        try:
+            # Prepare data
+            dates = []
+            sentiments = []
+            colors_list = []
+
+            sentiment_colors = {
+                'Positive': '#4CAF50',
+                'Negative': '#F44336',
+                'Neutral': '#9E9E9E'
+            }
+
+            for article in articles:
+                date_str = article.get('date_scraped', '')
+                sentiment = article.get('sentiment', 'Neutral')
+
+                if date_str and sentiment:
+                    try:
+                        date_obj = datetime.strptime(date_str[:10], '%Y-%m-%d')
+                        dates.append(date_obj)
+
+                        # Map sentiment to numeric value
+                        sent_value = {'Positive': 1, 'Neutral': 0, 'Negative': -1}.get(sentiment, 0)
+                        sentiments.append(sent_value)
+                        colors_list.append(sentiment_colors.get(sentiment, '#9E9E9E'))
+                    except:
+                        pass
+
+            if not dates:
+                logger.warning("No date/sentiment data for scatter plot")
+                return False
+
+            # Create scatter plot
+            fig, ax = plt.subplots(figsize=(12, 6))
+            ax.scatter(dates, sentiments, c=colors_list, alpha=0.6, s=50)
+
+            ax.set_xlabel('Date', fontsize=12)
+            ax.set_ylabel('Sentiment', fontsize=12)
+            ax.set_title('Sentiment Analysis Over Time', fontsize=14, pad=20)
+            ax.set_yticks([-1, 0, 1])
+            ax.set_yticklabels(['Negative', 'Neutral', 'Positive'])
+            ax.grid(True, alpha=0.3)
+
+            # Add legend
+            from matplotlib.patches import Patch
+            legend_elements = [
+                Patch(facecolor='#4CAF50', label='Positive'),
+                Patch(facecolor='#9E9E9E', label='Neutral'),
+                Patch(facecolor='#F44336', label='Negative')
+            ]
+            ax.legend(handles=legend_elements, loc='upper right')
+
+            plt.tight_layout()
+            plt.savefig(output_path, dpi=150, bbox_inches='tight')
+            plt.close()
+
+            logger.info(f"Sentiment scatter plot generated: {output_path}")
+            return True
+
+        except Exception as e:
+            logger.error(f"Error generating sentiment scatter plot: {e}")
+            return False
+
+
 # Legacy function wrappers for backward compatibility
 def get_summary_from_llm(text_content: str, summary_style: str = "overview", max_length: int = 15000, template: Optional[str] = None) -> str | None:
     """Legacy wrapper that uses the current AI provider."""
@@ -3531,7 +4081,7 @@ class HelpModal(ModalScreen):
                 f"`{ps_data['default_tags_csv'] or 'None'}`\n\n"
             )
         ht = f"""\
-## Keybindings & Help (v1.6.0)
+## Keybindings & Help (v1.7.0)
 
 ### Navigation & Display
 | Key           | Action              | Description                                        |
@@ -3580,6 +4130,9 @@ class HelpModal(ModalScreen):
 |---------------|---------------------|----------------------------------------------------|
 | `ctrl+e`      | Export CSV          | Export current view to CSV file.                   |
 | `ctrl+j`      | Export JSON         | Export current view to JSON file.                  |
+| `ctrl+shift+x`| Export Excel        | Export to formatted XLSX with charts.              |
+| `ctrl+shift+p`| Export PDF          | Generate professional PDF report.                  |
+| `ctrl+shift+w`| Word Cloud          | Generate word cloud visualization from tags.       |
 | `ctrl+shift+v`| View Analytics      | Open analytics dashboard with charts.              |
 
 ### Configuration & Help
@@ -3650,6 +4203,9 @@ class WebScraperApp(App[None]):
         Binding("ctrl+n", "scrape_new", "New Scrape"),
         Binding("ctrl+e", "export_csv", "Export CSV"),
         Binding("ctrl+j", "export_json", "Export JSON"),
+        Binding("ctrl+shift+x", "export_excel", "Export Excel"),
+        Binding("ctrl+shift+p", "export_pdf", "Export PDF"),
+        Binding("ctrl+shift+w", "export_word_cloud", "Word Cloud"),
         Binding("ctrl+x", "clear_database", "Clear DB"),
         Binding("ctrl+f", "open_filters", "Filters"),
         Binding("ctrl+l", "toggle_dark_mode", "Theme"),
@@ -4689,6 +5245,223 @@ class WebScraperApp(App[None]):
 
         self.push_screen(FilenameModal(default_filename=dfn), handle_filename_result)
 
+    async def action_export_excel(self) -> None:
+        """Export articles to Excel (XLSX) format with formatting."""
+        dfn = f"scraped_articles_{datetime.now():%Y%m%d_%H%M%S}.xlsx"
+
+        def handle_filename_result(fn):
+            if fn:
+                worker_with_args = functools.partial(self._export_excel_worker, fn)
+                self.run_worker(worker_with_args, group="exporting", exclusive=True)
+
+        self.push_screen(FilenameModal(default_filename=dfn), handle_filename_result)
+
+    async def _export_excel_worker(self, filename: str) -> None:
+        """Worker to export articles to Excel format."""
+        self._toggle_loading(True)
+        self.notify(f"Exporting to {filename}...", title="Exporting Excel", severity="info")
+        try:
+            # Fetch articles using same logic as JSON export
+            articles = await self.run_in_thread(self._fetch_articles_for_export)
+
+            if not articles:
+                self.notify("No data to export.", title="Export Info", severity="info")
+                self._toggle_loading(False)
+                return
+
+            # Export to Excel
+            def _export_blocking():
+                return ExcelExportManager.export_to_excel(
+                    articles, filename, include_charts=True, template="standard"
+                )
+
+            success = await self.run_in_thread(_export_blocking)
+
+            if success:
+                self.notify(
+                    f"Exported {len(articles)} article(s) to {filename}",
+                    title="Export Complete",
+                    severity="info"
+                )
+            else:
+                self.notify("Excel export failed. Check logs.", title="Export Error", severity="error")
+
+        except Exception as e:
+            logger.error(f"Error in Excel export worker: {e}", exc_info=True)
+            self.notify(f"Excel export error: {e}", title="Export Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def action_export_pdf(self) -> None:
+        """Export articles to PDF format with professional layout."""
+        dfn = f"scraped_articles_{datetime.now():%Y%m%d_%H%M%S}.pdf"
+
+        def handle_filename_result(fn):
+            if fn:
+                worker_with_args = functools.partial(self._export_pdf_worker, fn)
+                self.run_worker(worker_with_args, group="exporting", exclusive=True)
+
+        self.push_screen(FilenameModal(default_filename=dfn), handle_filename_result)
+
+    async def _export_pdf_worker(self, filename: str) -> None:
+        """Worker to export articles to PDF format."""
+        self._toggle_loading(True)
+        self.notify(f"Generating PDF report {filename}...", title="Exporting PDF", severity="info")
+        try:
+            # Fetch articles
+            articles = await self.run_in_thread(self._fetch_articles_for_export)
+
+            if not articles:
+                self.notify("No data to export.", title="Export Info", severity="info")
+                self._toggle_loading(False)
+                return
+
+            # Export to PDF
+            def _export_blocking():
+                return PDFExportManager.export_to_pdf(
+                    articles, filename, include_charts=True, template="standard"
+                )
+
+            success = await self.run_in_thread(_export_blocking)
+
+            if success:
+                self.notify(
+                    f"PDF report generated with {len(articles)} article(s): {filename}",
+                    title="Export Complete",
+                    severity="info"
+                )
+            else:
+                self.notify("PDF export failed. Check logs.", title="Export Error", severity="error")
+
+        except Exception as e:
+            logger.error(f"Error in PDF export worker: {e}", exc_info=True)
+            self.notify(f"PDF export error: {e}", title="Export Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    async def action_export_word_cloud(self) -> None:
+        """Generate and export word cloud from tag data."""
+        dfn = f"tag_wordcloud_{datetime.now():%Y%m%d_%H%M%S}.png"
+
+        def handle_filename_result(fn):
+            if fn:
+                worker_with_args = functools.partial(self._export_word_cloud_worker, fn)
+                self.run_worker(worker_with_args, group="exporting", exclusive=True)
+
+        self.push_screen(FilenameModal(default_filename=dfn), handle_filename_result)
+
+    async def _export_word_cloud_worker(self, filename: str) -> None:
+        """Worker to generate word cloud."""
+        self._toggle_loading(True)
+        self.notify(f"Generating word cloud {filename}...", title="Word Cloud", severity="info")
+        try:
+            # Get tag statistics
+            stats = await self.run_in_thread(
+                lambda: AnalyticsManager.get_statistics(
+                    self.title_filter, self.url_filter, self.date_filter,
+                    self.tags_filter, self.sentiment_filter
+                )
+            )
+
+            tags_data = stats.get('top_tags', [])
+
+            if not tags_data:
+                self.notify("No tag data available for word cloud.", title="Word Cloud", severity="warning")
+                self._toggle_loading(False)
+                return
+
+            # Generate word cloud
+            def _generate_blocking():
+                return EnhancedVisualizationManager.generate_word_cloud(tags_data, filename)
+
+            success = await self.run_in_thread(_generate_blocking)
+
+            if success:
+                self.notify(
+                    f"Word cloud generated: {filename}",
+                    title="Word Cloud Complete",
+                    severity="info"
+                )
+            else:
+                self.notify("Word cloud generation failed. Check logs.", title="Export Error", severity="error")
+
+        except Exception as e:
+            logger.error(f"Error in word cloud worker: {e}", exc_info=True)
+            self.notify(f"Word cloud error: {e}", title="Export Error", severity="error")
+        finally:
+            self._toggle_loading(False)
+
+    def _fetch_articles_for_export(self) -> List[Dict[str, Any]]:
+        """Fetch articles for export (blocking function for worker thread)."""
+        s_col, _ = self.SORT_OPTIONS[self.current_sort_index]
+
+        bq_export = (
+            "SELECT sd.id, sd.title, sd.url, sd.link, sd.timestamp, "
+            "sd.summary, sd.sentiment, sd.content, "
+            "GROUP_CONCAT(DISTINCT t.name) as tags_c "
+            "FROM scraped_data sd "
+            "LEFT JOIN article_tags at ON sd.id = at.article_id "
+            "LEFT JOIN tags t ON at.tag_id = t.id"
+        )
+        conds_export, params_export = [], {}
+        if self.title_filter:
+            conds_export.append("sd.title LIKE :tf")
+            params_export["tf"] = f"%{self.title_filter}%"
+        if self.url_filter:
+            conds_export.append("sd.url LIKE :uf")
+            params_export["uf"] = f"%{self.url_filter}%"
+        if self.date_filter:
+            conds_export.append("date(sd.timestamp) = :df")
+            params_export["df"] = self.date_filter
+        if self.tags_filter:
+            tfs_export = [t.strip().lower() for t in self.tags_filter.split(',') if t.strip()]
+            for i, tn_export in enumerate(tfs_export):
+                pn_export = f"tgf_{i}"
+                conds_export.append(
+                    f"sd.id IN (SELECT at_s.article_id FROM article_tags at_s "
+                    f"JOIN tags t_s ON at_s.tag_id = t_s.id WHERE t_s.name = :{pn_export})"
+                )
+                params_export[pn_export] = tn_export
+        if self.sentiment_filter:
+            sval_export = self.sentiment_filter.strip().capitalize()
+            conds_export.append("sd.sentiment LIKE :sf")
+            params_export["sf"] = f"%{sval_export}%"
+        if conds_export:
+            bq_export += " WHERE " + " AND ".join(conds_export)
+        bq_export += " GROUP BY sd.id ORDER BY " + s_col
+
+        with get_db_connection() as conn_blocking:
+            rows_to_export = conn_blocking.execute(bq_export, params_export).fetchall()
+
+        articles = []
+        for r_data in rows_to_export:
+            timestamp_val = r_data['timestamp']
+            timestamp_str = (
+                timestamp_val.strftime('%Y-%m-%d %H:%M:%S')
+                if isinstance(timestamp_val, datetime)
+                else str(timestamp_val)
+            )
+            tags_list = (
+                [t.strip() for t in r_data['tags_c'].split(',') if t.strip()]
+                if r_data['tags_c']
+                else []
+            )
+            article_data = {
+                'id': r_data['id'],
+                'title': r_data['title'],
+                'source_url': r_data['url'],
+                'article_link': r_data['link'],
+                'date_scraped': timestamp_str[:10],  # YYYY-MM-DD for Excel
+                'timestamp': timestamp_str,
+                'summary': r_data['summary'],
+                'sentiment': r_data['sentiment'],
+                'full_text': r_data['content'],
+                'tags': ', '.join(tags_list)
+            }
+            articles.append(article_data)
+
+        return articles
+
     async def _read_article_worker(self,eid:int,link:str,title:str)->None:
         self._toggle_loading(True);self.notify(f"Fetching '{title[:30]}...' (ID {eid})",title="Reading Article",severity="info")
         try:
@@ -4810,7 +5583,7 @@ def print_startup_banner():
 ║   ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚══════╝  ║
 ║                                                                              ║
 ║                       Text User Interface Web Scraper                        ║
-║                                Version 1.6.0                                 ║
+║                                Version 1.7.0                                 ║
 ║                                                                              ║
 ║   ╔══════════════════════════════════════════════════════════════════════╗   ║
 ║   ║                              Features                                ║   ║

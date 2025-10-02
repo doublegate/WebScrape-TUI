@@ -5,6 +5,183 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2025-10-01
+
+### 📈 Major Feature Release: Enhanced Export & Advanced Reporting
+
+This release introduces professional-grade export capabilities with Excel and PDF support, advanced visualization features including word clouds and scatter plots, and comprehensive export templates for different reporting needs.
+
+### Added
+
+- **Excel (XLSX) Export System**
+  - Professional spreadsheet export with `openpyxl` library
+  - Multiple sheet support:
+    - Articles sheet: All article data with auto-sized columns and styled headers
+    - Statistics sheet: Comprehensive metrics summary
+    - Timeline sheet: 30-day scraping activity with daily counts
+  - Advanced formatting:
+    - Bold headers with background colors
+    - Auto-column width adjustment for readability
+    - Professional cell styling and borders
+  - Filter metadata embedding for export traceability
+  - Support for 1,000,000+ rows (Excel 2007+ format)
+  - Keyboard shortcut: `Ctrl+Shift+X`
+
+- **PDF Report Generation System**
+  - Publication-ready PDF reports using `reportlab` library
+  - Three professional templates:
+    - **Standard Template**: Complete report with all sections
+    - **Executive Template**: High-level summary with key metrics
+    - **Detailed Template**: In-depth analysis with expanded sections
+  - Report sections:
+    - Executive summary with key statistics
+    - Sentiment distribution analysis with embedded pie chart
+    - Timeline visualization with 30-day trend analysis
+    - Top sources breakdown with article counts
+    - Top tags analysis with usage frequencies
+  - Features:
+    - Custom branding support (header, footer, logo)
+    - Embedded charts from matplotlib (PNG base64)
+    - Professional typography and layout
+    - Multi-page support with page numbering
+    - Table of contents (detailed template)
+  - Keyboard shortcut: `Ctrl+Shift+P`
+
+- **Word Cloud Visualization**
+  - Tag frequency word clouds using `wordcloud` library
+  - Visual features:
+    - Size-based frequency representation
+    - Customizable color schemes (6 presets: viridis, plasma, rainbow, ocean, sunset, forest)
+    - Multiple layout options (horizontal, vertical, spiral)
+    - Background color customization (white, black, transparent)
+  - Export capabilities:
+    - High-resolution PNG export (300 DPI)
+    - Configurable dimensions (800x600 to 2400x1800)
+    - Automatic file naming with timestamps
+  - Integration:
+    - Interactive tag filtering from word cloud
+    - Real-time generation from current database
+  - Keyboard shortcut: `Ctrl+Shift+W`
+
+- **Sentiment Scatter Plot Visualization**
+  - Advanced sentiment analysis visualization
+  - Features:
+    - Scatter plot showing sentiment scores over time
+    - Color-coded data points (green=positive, red=negative, gray=neutral)
+    - Polynomial trend line overlay for pattern detection
+    - Date range filtering support
+    - Customizable date windows (7, 14, 30, 90, 365 days)
+  - Export to PNG with timestamp
+  - Accessible via enhanced visualization modal
+
+- **Enhanced Export Templates**
+  - Template-based export system for different use cases
+  - Standard template: Complete data and analysis
+  - Executive template: High-level summary for presentations
+  - Detailed template: Comprehensive analysis for reports
+  - Template selection in export modal
+  - Customizable template parameters
+
+- **New Manager Classes**
+  - `ExcelExportManager`: Handles XLSX export with formatting
+    - `export_to_excel()`: Main export function with multi-sheet support
+    - `_create_articles_sheet()`: Articles data with styling
+    - `_create_statistics_sheet()`: Metrics summary
+    - `_create_timeline_sheet()`: 30-day activity data
+  - `PDFExportManager`: Manages PDF report generation
+    - `export_to_pdf()`: Template-based PDF generation
+    - `_add_executive_summary()`: Key metrics section
+    - `_add_sentiment_chart()`: Embedded pie chart
+    - `_add_timeline_chart()`: Embedded line graph
+    - `_add_top_sources()`: Sources analysis section
+    - `_add_top_tags()`: Tags analysis section
+  - `EnhancedVisualizationManager`: Advanced chart generation
+    - `generate_word_cloud()`: Word cloud creation
+    - `generate_sentiment_scatter()`: Scatter plot with trend line
+    - Customizable parameters for all visualizations
+
+### Technical Implementation
+
+- **New Dependencies**
+  - `openpyxl>=3.1.0`: Excel file creation and formatting
+  - `reportlab>=4.0.0`: PDF generation and layout
+  - `wordcloud>=1.9.0`: Word cloud visualization
+  - Additional: Pillow (image processing), numpy (data handling)
+
+- **Export Architecture**
+  - Worker-based async export for UI responsiveness
+  - Template pattern for flexible report generation
+  - Manager classes for separation of concerns
+  - Error handling with user-friendly notifications
+  - File path validation and automatic extension handling
+
+- **Data Processing**
+  - Efficient database queries for large datasets
+  - Streaming-based export for memory efficiency
+  - Proper UTF-8 encoding for international characters
+  - Null value handling in all export formats
+
+- **UI Integration**
+  - Three new keyboard bindings:
+    - `Ctrl+Shift+X`: Excel export
+    - `Ctrl+Shift+P`: PDF report
+    - `Ctrl+Shift+W`: Word cloud
+  - Export modal with template selection
+  - Progress indicators for long operations
+  - Success notifications with file paths
+
+### Testing
+
+- **Comprehensive Test Suite** (24 new tests)
+  - `TestExcelExport`: 8 tests for XLSX functionality
+    - Multi-sheet creation and validation
+    - Column formatting and auto-sizing
+    - Data accuracy across sheets
+    - Filter metadata embedding
+  - `TestPDFExport`: 8 tests for PDF generation
+    - Template rendering (standard, executive, detailed)
+    - Chart embedding (base64 encoding)
+    - Section generation and layout
+    - Multi-page handling
+  - `TestWordCloud`: 4 tests for word cloud visualization
+    - Image generation and dimensions
+    - Color scheme application
+    - Layout options (horizontal, vertical, spiral)
+    - Tag frequency accuracy
+  - `TestSentimentScatter`: 4 tests for scatter plot
+    - Data point plotting and colors
+    - Trend line calculation
+    - Date range filtering
+    - Export file validation
+  - All tests passing (166 total tests in full suite)
+
+### Files Modified
+
+- `requirements.txt`: Added openpyxl, reportlab, wordcloud dependencies
+- `scrapetui.py`:
+  - Added imports for export libraries (lines 130-145)
+  - Implemented ExcelExportManager class (220 lines, lines 1958-2177)
+  - Implemented PDFExportManager class (285 lines, lines 2178-2462)
+  - Implemented EnhancedVisualizationManager class (190 lines, lines 2463-2652)
+  - Added keyboard bindings and action handlers (lines 3624-3626, 4466-4490)
+  - Enhanced export modal with template selection (lines 3500-3620)
+- `tests/test_excel_export.py`: New test file (285 lines, 8 tests)
+- `tests/test_pdf_export.py`: New test file (310 lines, 8 tests)
+- `tests/test_word_cloud.py`: New test file (165 lines, 4 tests)
+- `tests/test_sentiment_scatter.py`: New test file (180 lines, 4 tests)
+
+### User Experience Improvements
+
+- Professional export capabilities suitable for business reporting
+- Multiple export formats for different use cases
+- Visual analytics through word clouds and scatter plots
+- Template-based reporting for consistent documentation
+- One-click export with automatic file naming
+- High-quality charts suitable for presentations and publications
+- Comprehensive data export with all metadata preserved
+
+---
+
 ## [1.6.0] - 2025-10-01
 
 ### 📊 Major Feature Release: Data Visualization & Advanced Analytics

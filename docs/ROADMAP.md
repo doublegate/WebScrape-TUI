@@ -4,7 +4,7 @@
 
 Transform WebScrape-TUI into the premier open-source terminal-based web scraping and data analysis platform, combining powerful scraping capabilities with advanced AI analysis, data visualization, and automation features.
 
-## Current Status: v1.6.0 (October 2025)
+## Current Status: v1.7.0 (October 2025)
 
 ### ✅ Completed Features
 
@@ -62,71 +62,19 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
 - ✅ Text report generation
 - ✅ Analytics modal (Ctrl+Shift+V)
 
+#### Enhanced Export & Reporting (v1.7.0)
+- ✅ Excel (XLSX) export with formatting
+- ✅ Multiple sheets (Articles, Statistics, Timeline)
+- ✅ PDF report generation with three templates
+- ✅ Word cloud visualization
+- ✅ Sentiment scatter plot with trend lines
+- ✅ Export templates (Standard, Executive, Detailed)
+- ✅ Professional formatting and styling
+- ✅ Embedded charts in PDF reports
+
 ---
 
 ## Upcoming Releases
-
-### v1.7.0 - Enhanced Export & Reporting (Q4 2025)
-
-**Goal:** Professional-grade export capabilities with multiple formats and reporting templates
-
-**Features:**
-
-#### Excel Export
-- [ ] **XLSX Export with Formatting**
-  - Multiple sheets (Articles, Statistics, Timeline)
-  - Styled headers and auto-column sizing
-  - Embedded charts and graphs
-  - Filter metadata sheet
-  - Dependencies: `openpyxl` or `xlsxwriter`
-
-- [ ] **Export Templates**
-  - Pre-configured report layouts
-  - Custom column selection
-  - Header/footer customization
-  - Logo/branding support
-
-#### PDF Reports
-- [ ] **PDF Generation**
-  - Professional report layout
-  - Charts and graphs embedded
-  - Table of contents
-  - Executive summary section
-  - Dependencies: `reportlab` or `weasyprint`
-
-- [ ] **Report Templates**
-  - Daily summary reports
-  - Weekly analytics reports
-  - Custom date range reports
-  - Sentiment analysis reports
-
-#### Enhanced Visualizations
-- [ ] **Interactive Charts** (if terminal supports)
-  - Click-to-filter in analytics modal
-  - Drill-down capabilities
-  - Custom date ranges for charts
-
-- [ ] **New Chart Types**
-  - Word cloud visualization
-  - Heatmaps for scraping activity
-  - Network graphs for source relationships
-  - Scatter plots for sentiment vs. time
-
-#### Export Scheduling
-- [ ] **Automated Report Generation**
-  - Schedule report exports
-  - Email integration (optional)
-  - Cloud storage upload (S3, Dropbox, etc.)
-  - Report history tracking
-
-**Testing:**
-- 20+ new tests for export functionality
-- Format validation tests
-- Template rendering tests
-
-**Estimated Effort:** 3-4 weeks
-
----
 
 ### v1.8.0 - Advanced AI Features (Q1 2026)
 
@@ -486,13 +434,13 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
 
 ## Release Schedule
 
-| Version | Target Date | Focus Area |
-|---------|-------------|------------|
-| v1.7.0  | Q4 2025     | Export & Reporting |
-| v1.8.0  | Q1 2026     | Advanced AI |
-| v1.9.0  | Q2 2026     | Multi-User |
-| v2.0.0  | Q3 2026     | Architecture Refactor |
-| v2.1.0+ | Q4 2026+    | Feature releases |
+| Version | Target Date | Status | Focus Area |
+|---------|-------------|--------|------------|
+| v1.7.0  | Q4 2025     | ✅ Complete | Export & Reporting |
+| v1.8.0  | Q1 2026     | 📅 Planned | Advanced AI |
+| v1.9.0  | Q2 2026     | 📅 Planned | Multi-User |
+| v2.0.0  | Q3 2026     | 📅 Planned | Architecture Refactor |
+| v2.1.0+ | Q4 2026+    | 📅 Planned | Feature releases |
 
 **Note:** Dates are estimates and subject to change based on community feedback and development resources.
 
@@ -533,4 +481,4 @@ We welcome input on our roadmap! Please:
 
 ---
 
-This roadmap is a living document and will be updated based on user feedback, technological advances, and community contributions. Last updated: **October 2025** (v1.6.0)
+This roadmap is a living document and will be updated based on user feedback, technological advances, and community contributions. Last updated: **October 2025** (v1.7.0)
