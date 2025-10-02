@@ -16,7 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        # Python 3.13 excluded: gensim dependency incompatible with Python 3.13
+        # See: INSTALL-ARCH.md and docs/TROUBLESHOOTING.md for details
+        python-version: ["3.11", "3.12"]
 
     steps:
     - uses: actions/checkout@v4

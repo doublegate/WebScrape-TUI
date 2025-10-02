@@ -185,7 +185,8 @@ except LookupError:
 from textual.app import App, ComposeResult
 from textual.widgets import (
     Header, Footer, DataTable, Static, Button, Input, Label, Markdown,
-    LoadingIndicator, RadioSet, RadioButton, ListView, ListItem, Checkbox
+    LoadingIndicator, RadioSet, RadioButton, ListView, ListItem, Checkbox,
+    Select, TextArea
 )
 from textual.containers import Vertical, Horizontal, VerticalScroll
 from textual.screen import ModalScreen
