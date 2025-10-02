@@ -3531,28 +3531,69 @@ class HelpModal(ModalScreen):
                 f"`{ps_data['default_tags_csv'] or 'None'}`\n\n"
             )
         ht = f"""\
-## Keybindings & Help (v1.0)
-| Key      | Action              | Description                                        |
-|----------|---------------------|----------------------------------------------------|
-| `UP`/`DN`| Navigate Table      | Move selection in articles list.                   |
-| `ENTER`  | View Details        | Show full details of selected article.             |
-| `s`      | Summarize           | LLM summary for selected (choose style).           |
-| `ctrl+k` | Sentiment Analysis  | LLM sentiment for selected article.                |
-| `d`/`del`| Delete Selected     | Delete selected article (confirm).                 |
-| `ctrl+r` | Read Article        | Fetch & display full content of selected.          |
-| `ctrl+t` | Manage Tags         | Add/remove tags for selected.                      |
-| `r`      | Refresh List        | Reload articles from DB.                           |
-| `ctrl+s` | Cycle Sort          | Change article list sorting.                       |
-| `ctrl+m` | Scraper Profiles    | Manage & execute saved/pre-installed scrapers.     |
-| `ctrl+n` | New Scrape          | Open dialog to scrape new URL (generic).           |
-| `ctrl+e` | Export CSV          | Export current view to CSV.                        |
-| `ctrl+x` | Clear DB            | Delete ALL articles (confirm).                     |
-| `ctrl+f` | Filters             | Open filter dialog (Title, URL, Date, Tags, Sentiment). |
-| `ctrl+l` | Toggle Theme        | Switch between Light/Dark mode.                    |
-| `F1`/`ctrl+h`| Help           | Show/hide this help screen.                        |
-| `q`/`ctrl+c`| Quit            | Exit application.                                  |
+## Keybindings & Help (v1.6.0)
 
-**Filtering:** Use `ctrl+f` to open filter dialog. Set Title, Source URL, Date (YYYY-MM-DD), Tags (comma-sep, AND), Sentiment (Positive/Negative/Neutral).
+### Navigation & Display
+| Key           | Action              | Description                                        |
+|---------------|---------------------|----------------------------------------------------|
+| `UP`/`DOWN`   | Navigate Table      | Move selection in articles list.                   |
+| `ENTER`       | View Details        | Show full details of selected article.             |
+| `r`           | Refresh List        | Reload articles from database.                     |
+| `ctrl+l`      | Toggle Theme        | Switch between Light/Dark mode.                    |
+
+### Scraping & Data Entry
+| Key           | Action              | Description                                        |
+|---------------|---------------------|----------------------------------------------------|
+| `ctrl+n`      | New Scrape          | Open dialog to scrape new URL (generic).           |
+| `ctrl+m`      | Scraper Profiles    | Manage & execute saved/pre-installed scrapers.     |
+| `ctrl+shift+a`| Manage Schedules    | Create/edit scheduled scraping automation.         |
+
+### Article Management
+| Key           | Action              | Description                                        |
+|---------------|---------------------|----------------------------------------------------|
+| `d`/`DELETE`  | Delete Selected     | Delete selected article (confirm).                 |
+| `ctrl+r`      | Read Article        | Fetch & display full content of selected.          |
+| `ctrl+t`      | Manage Tags         | Add/remove tags for selected article.              |
+| `SPACE`       | Toggle Selection    | Toggle bulk selection for current article.         |
+| `ctrl+a`      | Select All          | Select all articles in current view.               |
+| `ctrl+d`      | Deselect All        | Clear all bulk selections.                         |
+| `ctrl+shift+d`| Bulk Delete         | Delete all selected articles (confirm).            |
+| `ctrl+x`      | Clear Database      | Delete ALL articles (confirm).                     |
+
+### AI Features
+| Key           | Action              | Description                                        |
+|---------------|---------------------|----------------------------------------------------|
+| `s`           | Summarize           | AI summary for selected (choose style).            |
+| `ctrl+k`      | Sentiment Analysis  | AI sentiment for selected article.                 |
+| `ctrl+p`      | Select AI Provider  | Switch between Gemini/OpenAI/Claude.               |
+
+### Filtering & Sorting
+| Key           | Action              | Description                                        |
+|---------------|---------------------|----------------------------------------------------|
+| `ctrl+f`      | Open Filters        | Filter by Title, URL, Date, Tags, Sentiment.       |
+| `ctrl+shift+f`| Filter Presets      | Manage saved filter combinations.                  |
+| `ctrl+shift+s`| Save Filter Preset  | Save current filters as a preset.                  |
+| `ctrl+s`      | Cycle Sort          | Change article list sorting order.                 |
+
+### Export & Analytics
+| Key           | Action              | Description                                        |
+|---------------|---------------------|----------------------------------------------------|
+| `ctrl+e`      | Export CSV          | Export current view to CSV file.                   |
+| `ctrl+j`      | Export JSON         | Export current view to JSON file.                  |
+| `ctrl+shift+v`| View Analytics      | Open analytics dashboard with charts.              |
+
+### Configuration & Help
+| Key           | Action              | Description                                        |
+|---------------|---------------------|----------------------------------------------------|
+| `ctrl+g`      | Settings            | Open application settings editor.                  |
+| `F1`/`ctrl+h` | Help                | Show/hide this help screen.                        |
+| `q`/`ctrl+c`  | Quit                | Exit application.                                  |
+
+**Tips:**
+- Use `ctrl+f` for advanced filtering (regex, date ranges, tag logic).
+- Use `ctrl+shift+f` to save/load frequently-used filter combinations.
+- Press `SPACE` to bulk-select articles, then `ctrl+shift+d` to delete multiple at once.
+- Analytics (`ctrl+shift+v`) provides sentiment charts, timelines, and source statistics.
 {ps_desc}"""
         with VerticalScroll():
             yield Markdown(ht)
@@ -4769,7 +4810,7 @@ def print_startup_banner():
 ║   ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚══════╝  ║
 ║                                                                              ║
 ║                       Text User Interface Web Scraper                        ║
-║                                Version 1.0.1                                 ║
+║                                Version 1.6.0                                 ║
 ║                                                                              ║
 ║   ╔══════════════════════════════════════════════════════════════════════╗   ║
 ║   ║                              Features                                ║   ║
