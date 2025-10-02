@@ -17,49 +17,64 @@ This guide covers setting up your development environment, understanding the cod
 
 ## Environment Setup
 
+### Python Version Requirements
+
+WebScrape-TUI development currently requires **Python 3.8 to 3.12**. Python 3.13 is not yet supported due to gensim dependency incompatibility.
+
+**Recommended for Development**: Python 3.10, 3.11, or 3.12
+
 ### Prerequisites
 
-- **Python 3.8+** (Python 3.9+ recommended for best compatibility)
+- **Python 3.8 to 3.12** (Python 3.10-3.12 recommended for best compatibility)
+  - **Python 3.13**: Not yet supported (gensim incompatibility)
 - **Git** for version control
 - **Virtual environment** tool (venv, virtualenv, or conda)
 - **Terminal with Unicode support** for TUI testing
 
-### Initial Setup
+### Setting Up Development Environment
 
-1. **Clone the repository:**
+#### Step 1: Install Python 3.12 (if using Python 3.13)
+
+See [INSTALL-ARCH.md](../INSTALL-ARCH.md) or [TROUBLESHOOTING.md](TROUBLESHOOTING.md#python-version-compatibility-issues) for platform-specific Python 3.12 installation instructions.
+
+#### Step 2: Create Virtual Environment
 
 ```bash
-git clone https://github.com/doublegate/WebScrape-TUI.git
-cd WebScrape-TUI
+# With Python 3.12
+python3.12 -m venv venv-dev
+source venv-dev/bin/activate  # Linux/macOS
+# or
+venv-dev\Scripts\activate     # Windows
+
+# Verify Python version
+python --version  # Should show Python 3.12.x
 ```
 
-2. **Create virtual environment:**
+#### Step 3: Install Dependencies
 
 ```bash
-# Using venv (recommended)
-python -m venv .venv
-
-# Activate on Linux/macOS
-source .venv/bin/activate
-
-# Activate on Windows
-.venv\Scripts\activate
-```
-
-3. **Install dependencies:**
-
-```bash
-# Production dependencies
+# Install all production dependencies
 pip install -r requirements.txt
 
-# Development dependencies (testing)
-pip install pytest pytest-cov
+# Install development dependencies (optional)
+pip install pytest pytest-cov black flake8 mypy isort
+
+# Download spaCy model
+python -m spacy download en_core_web_sm
 ```
 
-4. **Verify installation:**
+### Troubleshooting Development Setup
 
+**Issue**: gensim installation fails
+
+**Solution**: You're likely using Python 3.13. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#python-version-compatibility-issues) for solutions.
+
+**Issue**: Tests fail due to missing dependencies
+
+**Solution**: Ensure all dependencies are installed:
 ```bash
-python scrapetui.py
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
 ```
 
 ### Development Tools (Optional)

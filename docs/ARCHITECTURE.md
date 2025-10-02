@@ -506,6 +506,43 @@ requests    BeautifulSoup  APScheduler   matplotlib
               (persistence)
 ```
 
+### Dependency Compatibility Matrix
+
+| Dependency | Version | Python 3.8-3.12 | Python 3.13 | Notes |
+|------------|---------|-----------------|-------------|-------|
+| textual | >=0.38.0 | ✅ Compatible | ✅ Compatible | Modern TUI framework |
+| requests | >=2.28.0 | ✅ Compatible | ✅ Compatible | HTTP library |
+| beautifulsoup4 | >=4.11.0 | ✅ Compatible | ✅ Compatible | HTML parsing |
+| gensim | >=4.3.0 | ✅ Compatible | ❌ Not Compatible | Topic modeling (v1.9.0) |
+| spacy | >=3.7.0 | ✅ Compatible | ✅ Compatible | NLP/NER (v1.8.0) |
+| sentence-transformers | >=2.2.0 | ✅ Compatible | ✅ Compatible | Embeddings (v1.8.0) |
+| All others | Various | ✅ Compatible | ✅ Compatible | See requirements.txt |
+
+**Python 3.13 Limitation**:
+- gensim is the only dependency incompatible with Python 3.13
+- Affects topic modeling features only (Ctrl+Alt+T)
+- All other features (99%) work on Python 3.13
+- See [TROUBLESHOOTING.md](TROUBLESHOOTING.md#python-version-compatibility-issues) for solutions
+
+### Installation Scripts
+
+WebScrape-TUI provides platform-specific installation scripts:
+
+1. **install-python313.sh** (Bash)
+   - Installs all dependencies except gensim
+   - For users who want to use Python 3.13
+   - Located in project root
+
+2. **install-arch-python312.fish** (Fish Shell)
+   - Arch Linux specific installation
+   - Sets up Python 3.12 from AUR
+   - Fish shell compatible
+
+3. **INSTALL-ARCH.md** (Documentation)
+   - Comprehensive Arch Linux installation guide
+   - Fish shell command examples
+   - Troubleshooting for Arch-specific issues
+
 ## Conclusion
 
 WebScrape-TUI follows a **modular single-file architecture** that balances simplicity with extensibility. The codebase is organized into clear manager classes for distinct responsibilities, uses modern Python patterns (async/await, context managers, reactive programming), and maintains comprehensive test coverage.

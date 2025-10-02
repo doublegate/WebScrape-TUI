@@ -6089,7 +6089,7 @@ class HelpModal(ModalScreen):
                 f"`{ps_data['default_tags_csv'] or 'None'}`\n\n"
             )
         ht = f"""\
-## Keybindings & Help (v1.9.0)
+## Keybindings & Help (v1.9.5)
 
 ### Navigation & Display
 | Key           | Action              | Description                                        |
@@ -6296,7 +6296,7 @@ class WebScraperApp(App[None]):
         logger.info("Background scheduler started")
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=True, name="Web Scraper TUI v1.9.0")
+        yield Header(show_clock=True, name="Web Scraper TUI v1.9.5")
         yield DataTable(id="article_table", cursor_type="row", zebra_stripes=True)
         yield LoadingIndicator(id="loading_indicator", classes="hidden")
         yield StatusBar(id="status_bar")
@@ -8302,7 +8302,7 @@ def print_startup_banner():
 ║   ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚══════╝  ║
 ║                                                                              ║
 ║                       Text User Interface Web Scraper                        ║
-║                                Version 1.8.0                                 ║
+║                                Version 1.9.5                                 ║
 ║                                                                              ║
 ║   ╔══════════════════════════════════════════════════════════════════════╗   ║
 ║   ║                              Features                                ║   ║

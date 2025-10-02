@@ -4,6 +4,7 @@ This guide covers common issues, error messages, and solutions for WebScrape-TUI
 
 ## Table of Contents
 
+- [Python Version Compatibility Issues](#python-version-compatibility-issues)
 - [Installation Issues](#installation-issues)
 - [Runtime Errors](#runtime-errors)
 - [Database Issues](#database-issues)
@@ -13,6 +14,142 @@ This guide covers common issues, error messages, and solutions for WebScrape-TUI
 - [Analytics & Export Issues](#analytics--export-issues)
 - [Performance Issues](#performance-issues)
 - [UI Display Issues](#ui-display-issues)
+
+---
+
+## Python Version Compatibility Issues
+
+### Python 3.13 Incompatibility with gensim
+
+**Symptom**: Installation fails with compilation errors when running `pip install -r requirements.txt` on Python 3.13.
+
+**Error Messages**:
+```
+gensim/models/word2vec_inner.c:9378:39: error: 'PyArray_Descr' has no member named 'subarray'
+error: command '/usr/bin/gcc' failed with exit code 1
+ERROR: Failed building wheel for gensim
+```
+
+**Root Cause**:
+- gensim 4.3.x uses Cython code compiled for Python 3.12 and earlier
+- Python 3.13 introduced breaking changes to the C API
+- `PyArray_Descr` structure changed, `_PyLong_AsByteArray` signature changed
+- gensim maintainers have not yet released a Python 3.13-compatible version
+
+**Solutions**:
+
+#### Solution 1: Use Python 3.12 (Recommended - 100% Feature Compatibility)
+
+**For Arch Linux + Fish Shell**:
+```fish
+# Install Python 3.12 from AUR
+yay -S python312
+
+# Create venv with Python 3.12
+cd ~/Code/WebScrape-TUI
+python3.12 -m venv venv-312
+source venv-312/bin/activate.fish
+
+# Install all dependencies
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+
+# See INSTALL-ARCH.md for detailed instructions
+```
+
+**For Ubuntu/Debian**:
+```bash
+# Install Python 3.12
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.12 python3.12-venv
+
+# Create venv with Python 3.12
+python3.12 -m venv venv-312
+source venv-312/bin/activate
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+```
+
+**For macOS**:
+```bash
+# Install Python 3.12
+brew install python@3.12
+
+# Create venv with Python 3.12
+python3.12 -m venv venv-312
+source venv-312/bin/activate
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+```
+
+**For Windows**:
+```powershell
+# Download Python 3.12 from python.org
+# Install to C:\Python312
+
+# Create venv with Python 3.12
+C:\Python312\python.exe -m venv venv-312
+venv-312\Scripts\activate
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+```
+
+#### Solution 2: Use Python 3.13 Without Topic Modeling (99% Features)
+
+**Automated Installation** (Linux/macOS):
+```bash
+# Run the provided script
+./install-python313.sh
+```
+
+**Manual Installation**:
+```bash
+# Activate your Python 3.13 venv
+source .venv/bin/activate
+
+# Install all dependencies except gensim
+grep -v "^gensim" requirements.txt | pip install -r /dev/stdin
+
+# Download spaCy model
+python -m spacy download en_core_web_sm
+```
+
+**What Works**:
+- ✅ All v1.0-v1.8 features
+- ✅ 16/17 v1.9.0 features
+
+**What Doesn't Work**:
+- ❌ Topic Modeling (Ctrl+Alt+T)
+
+If you try to use topic modeling, you'll see an error message in the UI.
+
+#### Solution 3: Wait for gensim Update
+
+Monitor the gensim PyPI page for Python 3.13 support:
+- https://pypi.org/project/gensim/
+- GitHub issue tracker: https://github.com/RaRe-Technologies/gensim
+
+Once gensim 4.4.0 or later with Python 3.13 support is released:
+```bash
+pip install --upgrade gensim
+```
+
+### Verifying Your Python Version
+
+Check which Python version you're using:
+```bash
+python --version
+# or
+python3 --version
+```
+
+Inside a virtual environment, this should show the Python version the venv was created with.
+
+### Platform-Specific Installation Guides
+
+- **Arch Linux + Fish Shell**: See [INSTALL-ARCH.md](../INSTALL-ARCH.md)
+- **General Linux/macOS/Windows**: See [README.md Installation section](../README.md#-installation)
 
 ---
 

@@ -156,7 +156,9 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 
 ### Prerequisites
 
-- **Python 3.8+** (Python 3.9+ recommended)
+- **Python 3.8 to 3.12** (Python 3.10-3.12 recommended)
+  - **Python 3.13**: Currently not fully supported (see installation workarounds below)
+  - **gensim incompatibility**: Topic modeling features (v1.9.0) require Python 3.12 or earlier
 - **Terminal with Unicode support** for proper display
 - **Internet connection** for web scraping
 
@@ -196,6 +198,55 @@ python -m spacy download en_core_web_sm
 python scrapetui.py
 ```
 
+### Method 3: Installation Scripts (Platform-Specific)
+
+WebScrape-TUI provides automated installation scripts for different platforms and Python versions.
+
+#### Arch Linux + Fish Shell
+
+If you're using Arch Linux with Fish shell, use the provided installation guide:
+
+```fish
+# See detailed instructions
+cat INSTALL-ARCH.md
+
+# Quick install with Python 3.12 (recommended)
+yay -S python312
+python3.12 -m venv venv-312
+source venv-312/bin/activate.fish
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+```
+
+#### Python 3.13 Users (Any Platform)
+
+Python 3.13 is not yet fully supported due to gensim compatibility issues. Choose one option:
+
+**Option A: Install without topic modeling** (Quick, 99% features work):
+```bash
+# Run the provided script
+./install-python313.sh
+
+# Or manually
+grep -v "^gensim" requirements.txt | pip install -r /dev/stdin
+```
+
+**Option B: Use Python 3.12** (Recommended, 100% features work):
+```bash
+# Install Python 3.12 (method varies by OS)
+# - Arch: yay -S python312
+# - Ubuntu: sudo add-apt-repository ppa:deadsnakes/ppa && sudo apt install python3.12
+# - macOS: brew install python@3.12
+
+# Create venv with Python 3.12
+python3.12 -m venv venv-312
+source venv-312/bin/activate
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+```
+
+See [INSTALL-ARCH.md](INSTALL-ARCH.md) for detailed platform-specific instructions.
+
 ### Dependencies
 
 - **textual** (>=0.38.0) - Modern Python TUI framework
@@ -216,6 +267,7 @@ python scrapetui.py
 - **scikit-learn** (>=1.3.0) - TF-IDF vectorization for keywords (v1.8.0)
 - **scipy** (>=1.11.0) - Scientific computing for cosine distance (v1.8.0)
 - **gensim** (>=4.3.0) - LDA and NMF topic modeling algorithms (v1.9.0)
+  - ⚠️ **Python 3.13 incompatible** - requires Python 3.12 or earlier
 - **networkx** (>=3.0) - Knowledge graph construction and entity relationships (v1.9.0)
 - **rouge-score** (>=0.1.2) - ROUGE metrics for summary quality evaluation (v1.9.0)
 - **fuzzywuzzy** (>=0.18.0) - Fuzzy string matching for duplicate detection (v1.9.0)
@@ -619,6 +671,45 @@ WebScrape-TUI includes comprehensive documentation in the `docs/` directory:
 See [docs/README.md](docs/README.md) for a complete documentation index and reading paths.
 
 ## 🔍 Troubleshooting
+
+### Python Version Compatibility
+
+**Python 3.13 Compatibility Issue**
+
+The gensim library (required for v1.9.0 topic modeling features) is not yet compatible with Python 3.13 due to C API changes. You have three options:
+
+**Option 1: Use Python 3.12 (Recommended)**
+- Install Python 3.12 alongside Python 3.13
+- Create a virtual environment with Python 3.12
+- All features work (100% compatibility)
+- See [INSTALL-ARCH.md](INSTALL-ARCH.md) for platform-specific instructions
+
+**Option 2: Use Python 3.13 Without Topic Modeling**
+- Run `./install-python313.sh` to install 20/21 dependencies
+- All features work except topic modeling (Ctrl+Alt+T)
+- 99% feature compatibility
+- Can upgrade to Python 3.12 later
+
+**Option 3: Wait for gensim 4.4.0+**
+- Monitor https://pypi.org/project/gensim/ for updates
+- Once Python 3.13 support is added, reinstall gensim
+
+**What Works on Python 3.13**:
+- ✅ All v1.0-v1.8 features (scraping, AI, export, analytics, scheduling, visualization)
+- ✅ 16/17 v1.9.0 features (Q&A, entity recognition, duplicates, clustering, summary quality, etc.)
+
+**What Doesn't Work on Python 3.13**:
+- ❌ Topic Modeling (Ctrl+Alt+T) - LDA/NMF algorithms
+
+**Error Messages You Might See**:
+
+If you try to install on Python 3.13:
+```
+error: command '/usr/bin/gcc' failed with exit code 1
+ERROR: Failed building wheel for gensim
+```
+
+**Solution**: Use Python 3.12 or run `./install-python313.sh`
 
 ### Common Issues
 
