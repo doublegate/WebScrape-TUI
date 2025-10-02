@@ -109,6 +109,7 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - [API Integration](#-api-integration)
 - [Database Schema](#-database-schema)
 - [Keyboard Shortcuts](#-keyboard-shortcuts)
+- [Documentation](#-documentation)
 - [Troubleshooting](#-troubleshooting)
 - [Contributing](#-contributing)
 - [Changelog](#-changelog)
@@ -508,6 +509,32 @@ CREATE TABLE filter_presets (
 | `Ctrl+Shift+D` | **Bulk delete selected articles** (v1.2.0) |
 | `Ctrl+T` | Manage tags for selected |
 | `R` | Refresh view |
+
+## 📚 Documentation
+
+WebScrape-TUI includes comprehensive documentation in the `docs/` directory:
+
+### Core Documentation
+
+- **[Architecture Guide](docs/ARCHITECTURE.md)** - System design, components, data flow, and extension points
+- **[Development Guide](docs/DEVELOPMENT.md)** - Setup, workflows, testing, code style, and contribution guidelines
+- **[API Documentation](docs/API.md)** - Manager classes, AI providers, database functions, and data structures
+- **[Roadmap](docs/ROADMAP.md)** - Future features, milestones, and contribution opportunities
+- **[Project Status](docs/PROJECT-STATUS.md)** - Current health, metrics, and progress tracking
+- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Comprehensive problem-solving guide with solutions
+
+### Quick Links
+
+| Need | Document |
+|------|----------|
+| Understanding the codebase | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
+| Contributing code | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) |
+| Using APIs programmatically | [docs/API.md](docs/API.md) |
+| Solving problems | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) |
+| Planning contributions | [docs/ROADMAP.md](docs/ROADMAP.md) |
+| Checking project health | [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md) |
+
+See [docs/README.md](docs/README.md) for a complete documentation index and reading paths.
 
 ## 🔍 Troubleshooting
 
