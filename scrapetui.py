@@ -7481,7 +7481,11 @@ class WebScraperApp(App[None]):
             self.notify("CRITICAL: DB init failed!", title="DB Error", severity="error", timeout=0)
             return
 
-        # v2.0.0: Show login modal before initializing app
+        # v2.0.0: Show login modal before initializing app (use worker to avoid NoActiveWorker error)
+        self.run_worker(self._handle_login_and_init(), exclusive=True)
+
+    async def _handle_login_and_init(self) -> None:
+        """Handle login flow and app initialization in a worker context."""
         user_id = await self.push_screen_wait(LoginModal())
         if user_id is None:
             # User cancelled login - exit app
@@ -7494,6 +7498,7 @@ class WebScraperApp(App[None]):
 
         tbl = self.query_one(DataTable)
         tbl.add_columns("ID", "S", "Sentiment", "Title", "Source URL", "Tags", "Scraped At")
+        sbar = self.query_one(StatusBar)
         sbar.sort_status = self.SORT_OPTIONS[self.current_sort_index][1]
         await self.refresh_article_table()
         tbl.focus()
