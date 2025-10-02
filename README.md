@@ -1,9 +1,9 @@
-# WebScrape-TUI v1.5.0
+# WebScrape-TUI v1.6.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
-[![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
@@ -78,6 +78,27 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Article Preview**: Quick preview before full content view
 - **Content Deduplication**: Smart handling of duplicate articles
 
+### 📊 Data Visualization & Analytics (v1.6.0)
+
+- **Comprehensive Statistics**: Real-time analytics dashboard accessible via Ctrl+Shift+V
+- **Sentiment Analysis Visualization**: Pie chart showing positive/negative/neutral sentiment distribution
+- **Timeline Charts**: Line graph of articles scraped over last 30 days with trend analysis
+- **Top Sources Analysis**: Horizontal bar chart showing top 10 most-scraped sources
+- **Tag Analytics**: Tag cloud data with usage frequency and top 20 tags display
+- **Professional Chart Export**: PNG charts with timestamps for reports and presentations
+- **Statistics Reports**: Comprehensive text reports with all metrics in formatted sections
+- **Real-time Data**: All analytics reflect current database state instantly
+- **Export Capabilities**: One-click export of all charts and detailed text reports
+
+### 📅 Scheduled Scraping & Automation (v1.5.0)
+
+- **Background Scheduler**: APScheduler-powered automated scraping system
+- **Multiple Schedule Types**: Hourly, daily, weekly, interval, and cron-style scheduling
+- **Schedule Management**: Create, enable/disable, update, and delete schedules via Ctrl+Shift+A
+- **Execution Tracking**: Monitor last run, next run, run count, and success/failure status
+- **Error Logging**: Comprehensive error tracking for failed scheduled scrapes
+- **Profile Integration**: Schedule any saved scraper profile for automatic execution
+
 ## 📋 Table of Contents
 
 - [Installation](#-installation)
@@ -133,6 +154,8 @@ python scrapetui.py
 - **lxml** (>=4.9.0) - Fast XML/HTML parser backend
 - **PyYAML** (>=6.0.0) - YAML configuration file parser (v1.4.0)
 - **APScheduler** (>=3.10.0) - Background task scheduling for automation (v1.5.0)
+- **matplotlib** (>=3.7.0) - Chart generation and data visualization (v1.6.0)
+- **pandas** (>=2.0.0) - Data analysis and statistics (v1.6.0)
 
 ## 🚀 Quick Start
 
@@ -449,6 +472,7 @@ CREATE TABLE filter_presets (
 | `Ctrl+P` | **Select AI Provider** (v1.3.0) |
 | `Ctrl+period` | **Settings** (v1.4.0) |
 | `Ctrl+Shift+A` | **Manage Schedules** (v1.5.0) |
+| `Ctrl+Shift+V` | **View Analytics** (v1.6.0) |
 | `Ctrl+T` | Manage tags for selected article |
 | `Ctrl+F` | Open advanced filter dialog |
 | `Ctrl+Shift+F` | **Manage Filter Presets** (v1.4.0) |
@@ -655,7 +679,16 @@ pytest tests/ --cov=scrapetui --cov-report=html
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
 
-### Recent Updates (v1.5.0)
+### Recent Updates (v1.6.0)
+- **Data Visualization**: Pie charts, line graphs, and bar charts for analytics
+- **Statistics Dashboard**: Comprehensive analytics accessible via Ctrl+Shift+V
+- **Chart Export**: Professional PNG charts with timestamps for reports
+- **Analytics Reports**: Detailed text reports with all metrics and statistics
+- **Real-time Metrics**: Sentiment distribution, top sources, tag frequencies, timeline trends
+- **Comprehensive Testing**: 142 tests with 16 new tests for analytics features
+- **New Dependencies**: matplotlib and pandas for data visualization and analysis
+
+### Previous Updates (v1.5.0)
 - **Scheduled Scraping**: Automated background scraping with APScheduler
 - **Schedule Management**: Create, edit, enable/disable, and delete schedules
 - **Multiple Schedule Types**: Hourly, daily, weekly, and custom interval scheduling

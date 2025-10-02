@@ -119,6 +119,15 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.date import DateTrigger
 
+# Data visualization and analytics imports (v1.6.0)
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend for headless chart generation
+import matplotlib.pyplot as plt
+import pandas as pd
+from collections import Counter
+from io import BytesIO
+import base64
+
 # Textual imports
 from textual.app import App, ComposeResult
 from textual.widgets import (
@@ -1652,6 +1661,302 @@ class ScheduleManager:
             return (now + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S')
 
 
+class AnalyticsManager:
+    """Manages data analytics and visualization (v1.6.0)."""
+
+    @staticmethod
+    def get_statistics() -> Dict[str, Any]:
+        """
+        Get comprehensive statistics about scraped data.
+
+        Returns:
+            Dictionary containing various statistics
+        """
+        try:
+            with get_db_connection() as conn:
+                stats = {}
+
+                # Total articles
+                cursor = conn.execute("SELECT COUNT(*) as total FROM scraped_data")
+                stats['total_articles'] = cursor.fetchone()['total']
+
+                # Articles with summaries
+                cursor = conn.execute("SELECT COUNT(*) as total FROM scraped_data WHERE summary IS NOT NULL")
+                stats['articles_with_summaries'] = cursor.fetchone()['total']
+
+                # Articles with sentiment
+                cursor = conn.execute("SELECT COUNT(*) as total FROM scraped_data WHERE sentiment IS NOT NULL")
+                stats['articles_with_sentiment'] = cursor.fetchone()['total']
+
+                # Sentiment distribution
+                cursor = conn.execute("""
+                    SELECT sentiment, COUNT(*) as count
+                    FROM scraped_data
+                    WHERE sentiment IS NOT NULL
+                    GROUP BY sentiment
+                """)
+                sentiment_dist = {row['sentiment']: row['count'] for row in cursor.fetchall()}
+                stats['sentiment_distribution'] = sentiment_dist
+
+                # Top sources
+                cursor = conn.execute("""
+                    SELECT url, COUNT(*) as count
+                    FROM scraped_data
+                    GROUP BY url
+                    ORDER BY count DESC
+                    LIMIT 10
+                """)
+                stats['top_sources'] = [(row['url'], row['count']) for row in cursor.fetchall()]
+
+                # Top tags
+                cursor = conn.execute("""
+                    SELECT t.name, COUNT(*) as count
+                    FROM tags t
+                    JOIN article_tags at ON t.id = at.tag_id
+                    GROUP BY t.id, t.name
+                    ORDER BY count DESC
+                    LIMIT 20
+                """)
+                stats['top_tags'] = [(row['name'], row['count']) for row in cursor.fetchall()]
+
+                # Articles per day (last 30 days)
+                cursor = conn.execute("""
+                    SELECT DATE(timestamp) as date, COUNT(*) as count
+                    FROM scraped_data
+                    WHERE timestamp >= datetime('now', '-30 days')
+                    GROUP BY DATE(timestamp)
+                    ORDER BY date
+                """)
+                stats['articles_per_day'] = [(row['date'], row['count']) for row in cursor.fetchall()]
+
+                # Summary statistics
+                stats['summary_percentage'] = (
+                    (stats['articles_with_summaries'] / stats['total_articles'] * 100)
+                    if stats['total_articles'] > 0 else 0
+                )
+                stats['sentiment_percentage'] = (
+                    (stats['articles_with_sentiment'] / stats['total_articles'] * 100)
+                    if stats['total_articles'] > 0 else 0
+                )
+
+                return stats
+        except Exception as e:
+            logger.error(f"Error getting statistics: {e}")
+            return {}
+
+    @staticmethod
+    def generate_sentiment_chart(output_path: Optional[str] = None) -> Optional[str]:
+        """
+        Generate a pie chart showing sentiment distribution.
+
+        Args:
+            output_path: Optional file path to save chart. If None, returns base64 encoded image.
+
+        Returns:
+            File path if saved, or base64 encoded image string
+        """
+        try:
+            stats = AnalyticsManager.get_statistics()
+            sentiment_dist = stats.get('sentiment_distribution', {})
+
+            if not sentiment_dist:
+                logger.warning("No sentiment data available for chart")
+                return None
+
+            # Create pie chart
+            plt.figure(figsize=(10, 6))
+            labels = list(sentiment_dist.keys())
+            sizes = list(sentiment_dist.values())
+            colors = []
+            for label in labels:
+                if 'positive' in label.lower():
+                    colors.append('#4CAF50')
+                elif 'negative' in label.lower():
+                    colors.append('#F44336')
+                else:
+                    colors.append('#FFC107')
+
+            plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+            plt.axis('equal')
+            plt.title('Sentiment Distribution', fontsize=16, fontweight='bold')
+
+            if output_path:
+                plt.savefig(output_path, dpi=150, bbox_inches='tight')
+                plt.close()
+                return output_path
+            else:
+                # Return base64 encoded image
+                buffer = BytesIO()
+                plt.savefig(buffer, format='png', dpi=150, bbox_inches='tight')
+                plt.close()
+                buffer.seek(0)
+                img_base64 = base64.b64encode(buffer.read()).decode()
+                return f"data:image/png;base64,{img_base64}"
+        except Exception as e:
+            logger.error(f"Error generating sentiment chart: {e}")
+            return None
+
+    @staticmethod
+    def generate_timeline_chart(output_path: Optional[str] = None) -> Optional[str]:
+        """
+        Generate a line chart showing articles scraped over time.
+
+        Args:
+            output_path: Optional file path to save chart. If None, returns base64 encoded image.
+
+        Returns:
+            File path if saved, or base64 encoded image string
+        """
+        try:
+            stats = AnalyticsManager.get_statistics()
+            articles_per_day = stats.get('articles_per_day', [])
+
+            if not articles_per_day:
+                logger.warning("No timeline data available for chart")
+                return None
+
+            # Create line chart
+            dates = [item[0] for item in articles_per_day]
+            counts = [item[1] for item in articles_per_day]
+
+            plt.figure(figsize=(12, 6))
+            plt.plot(dates, counts, marker='o', linestyle='-', linewidth=2, markersize=6, color='#2196F3')
+            plt.xlabel('Date', fontsize=12)
+            plt.ylabel('Number of Articles', fontsize=12)
+            plt.title('Articles Scraped Over Time (Last 30 Days)', fontsize=16, fontweight='bold')
+            plt.grid(True, alpha=0.3)
+            plt.xticks(rotation=45, ha='right')
+            plt.tight_layout()
+
+            if output_path:
+                plt.savefig(output_path, dpi=150, bbox_inches='tight')
+                plt.close()
+                return output_path
+            else:
+                buffer = BytesIO()
+                plt.savefig(buffer, format='png', dpi=150, bbox_inches='tight')
+                plt.close()
+                buffer.seek(0)
+                img_base64 = base64.b64encode(buffer.read()).decode()
+                return f"data:image/png;base64,{img_base64}"
+        except Exception as e:
+            logger.error(f"Error generating timeline chart: {e}")
+            return None
+
+    @staticmethod
+    def generate_top_sources_chart(output_path: Optional[str] = None) -> Optional[str]:
+        """
+        Generate a horizontal bar chart showing top sources.
+
+        Args:
+            output_path: Optional file path to save chart. If None, returns base64 encoded image.
+
+        Returns:
+            File path if saved, or base64 encoded image string
+        """
+        try:
+            stats = AnalyticsManager.get_statistics()
+            top_sources = stats.get('top_sources', [])
+
+            if not top_sources:
+                logger.warning("No source data available for chart")
+                return None
+
+            # Create horizontal bar chart
+            sources = [item[0][:50] + '...' if len(item[0]) > 50 else item[0] for item in top_sources]
+            counts = [item[1] for item in top_sources]
+
+            plt.figure(figsize=(12, 8))
+            plt.barh(sources, counts, color='#9C27B0')
+            plt.xlabel('Number of Articles', fontsize=12)
+            plt.ylabel('Source', fontsize=12)
+            plt.title('Top 10 Sources by Article Count', fontsize=16, fontweight='bold')
+            plt.gca().invert_yaxis()  # Highest at top
+            plt.tight_layout()
+
+            if output_path:
+                plt.savefig(output_path, dpi=150, bbox_inches='tight')
+                plt.close()
+                return output_path
+            else:
+                buffer = BytesIO()
+                plt.savefig(buffer, format='png', dpi=150, bbox_inches='tight')
+                plt.close()
+                buffer.seek(0)
+                img_base64 = base64.b64encode(buffer.read()).decode()
+                return f"data:image/png;base64,{img_base64}"
+        except Exception as e:
+            logger.error(f"Error generating top sources chart: {e}")
+            return None
+
+    @staticmethod
+    def generate_tag_cloud_data() -> List[Tuple[str, int]]:
+        """
+        Generate tag cloud data (tag frequencies).
+
+        Returns:
+            List of (tag_name, count) tuples sorted by count descending
+        """
+        try:
+            stats = AnalyticsManager.get_statistics()
+            return stats.get('top_tags', [])
+        except Exception as e:
+            logger.error(f"Error generating tag cloud data: {e}")
+            return []
+
+    @staticmethod
+    def export_statistics_report(output_path: str) -> bool:
+        """
+        Export a comprehensive statistics report to a text file.
+
+        Args:
+            output_path: Path to save the report
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            stats = AnalyticsManager.get_statistics()
+
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write("=" * 80 + "\n")
+                f.write("WebScrape-TUI Analytics Report\n")
+                f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write("=" * 80 + "\n\n")
+
+                f.write("OVERVIEW\n")
+                f.write("-" * 80 + "\n")
+                f.write(f"Total Articles: {stats.get('total_articles', 0)}\n")
+                f.write(f"Articles with Summaries: {stats.get('articles_with_summaries', 0)} ({stats.get('summary_percentage', 0):.1f}%)\n")
+                f.write(f"Articles with Sentiment: {stats.get('articles_with_sentiment', 0)} ({stats.get('sentiment_percentage', 0):.1f}%)\n\n")
+
+                f.write("SENTIMENT DISTRIBUTION\n")
+                f.write("-" * 80 + "\n")
+                for sentiment, count in stats.get('sentiment_distribution', {}).items():
+                    f.write(f"  {sentiment}: {count}\n")
+                f.write("\n")
+
+                f.write("TOP 10 SOURCES\n")
+                f.write("-" * 80 + "\n")
+                for i, (source, count) in enumerate(stats.get('top_sources', []), 1):
+                    f.write(f"{i:2d}. {source[:70]:<70} ({count} articles)\n")
+                f.write("\n")
+
+                f.write("TOP 20 TAGS\n")
+                f.write("-" * 80 + "\n")
+                for i, (tag, count) in enumerate(stats.get('top_tags', []), 1):
+                    f.write(f"{i:2d}. {tag:<30} ({count} uses)\n")
+                f.write("\n")
+
+                f.write("=" * 80 + "\n")
+
+            logger.info(f"Statistics report exported to {output_path}")
+            return True
+        except Exception as e:
+            logger.error(f"Error exporting statistics report: {e}")
+            return False
+
+
 # Legacy function wrappers for backward compatibility
 def get_summary_from_llm(text_content: str, summary_style: str = "overview", max_length: int = 15000, template: Optional[str] = None) -> str | None:
     """Legacy wrapper that uses the current AI provider."""
@@ -3065,6 +3370,135 @@ class AddScheduleModal(ModalScreen[bool]):
         self.dismiss(False)
 
 
+class AnalyticsModal(ModalScreen):
+    """Modal for viewing analytics and statistics (v1.6.0)."""
+
+    DEFAULT_CSS = """
+    AnalyticsModal {
+        align: center middle;
+        background: $surface-darken-1;
+    }
+    AnalyticsModal > VerticalScroll {
+        width: 90%;
+        max-width: 120;
+        height: 90%;
+        max-height: 40;
+        border: thick $primary-lighten-1;
+        padding: 1 2;
+        background: $surface;
+    }
+    AnalyticsModal Button {
+        margin: 1 2;
+    }
+    """
+
+    BINDINGS = [Binding("escape", "dismiss_screen", "Close")]
+
+    def compose(self) -> ComposeResult:
+        stats = AnalyticsManager.get_statistics()
+
+        # Build markdown content with statistics
+        content = "# 📊 Data Analytics & Statistics\n\n"
+        content += "## Overview\n\n"
+        content += f"- **Total Articles**: {stats.get('total_articles', 0)}\n"
+        content += f"- **With Summaries**: {stats.get('articles_with_summaries', 0)} ({stats.get('summary_percentage', 0):.1f}%)\n"
+        content += f"- **With Sentiment**: {stats.get('articles_with_sentiment', 0)} ({stats.get('sentiment_percentage', 0):.1f}%)\n\n"
+
+        # Sentiment distribution
+        content += "## Sentiment Distribution\n\n"
+        sentiment_dist = stats.get('sentiment_distribution', {})
+        if sentiment_dist:
+            for sentiment, count in sentiment_dist.items():
+                content += f"- **{sentiment}**: {count}\n"
+        else:
+            content += "*No sentiment data available*\n"
+        content += "\n"
+
+        # Top sources
+        content += "## Top 10 Sources\n\n"
+        top_sources = stats.get('top_sources', [])
+        if top_sources:
+            for i, (source, count) in enumerate(top_sources, 1):
+                source_display = source[:60] + "..." if len(source) > 60 else source
+                content += f"{i}. **{source_display}** ({count} articles)\n"
+        else:
+            content += "*No source data available*\n"
+        content += "\n"
+
+        # Top tags
+        content += "## Top 20 Tags\n\n"
+        top_tags = stats.get('top_tags', [])
+        if top_tags:
+            # Display tags in a more compact format
+            tag_list = ", ".join([f"**{tag}** ({count})" for tag, count in top_tags[:10]])
+            content += tag_list + "\n\n"
+            if len(top_tags) > 10:
+                tag_list2 = ", ".join([f"**{tag}** ({count})" for tag, count in top_tags[10:20]])
+                content += tag_list2 + "\n"
+        else:
+            content += "*No tag data available*\n"
+        content += "\n"
+
+        # Timeline info
+        content += "## Recent Activity\n\n"
+        articles_per_day = stats.get('articles_per_day', [])
+        if articles_per_day:
+            content += f"Data collected over **{len(articles_per_day)} days** (last 30 days)\n"
+            total_recent = sum(count for _, count in articles_per_day)
+            avg_per_day = total_recent / len(articles_per_day) if articles_per_day else 0
+            content += f"Average: **{avg_per_day:.1f} articles/day**\n"
+        else:
+            content += "*No recent activity data*\n"
+
+        with VerticalScroll():
+            yield Markdown(content)
+            with Horizontal(classes="modal-buttons"):
+                yield Button("Export Charts", id="export_charts", variant="primary")
+                yield Button("Export Report", id="export_report")
+                yield Button("Close", id="close_btn")
+
+    async def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Handle button presses."""
+        if event.button.id == "close_btn":
+            self.dismiss()
+        elif event.button.id == "export_charts":
+            # Export all charts
+            def export_worker():
+                try:
+                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    AnalyticsManager.generate_sentiment_chart(f"sentiment_chart_{timestamp}.png")
+                    AnalyticsManager.generate_timeline_chart(f"timeline_chart_{timestamp}.png")
+                    AnalyticsManager.generate_top_sources_chart(f"sources_chart_{timestamp}.png")
+                    return True
+                except Exception as e:
+                    logger.error(f"Error exporting charts: {e}")
+                    return False
+
+            success = await self.app.run_in_thread(export_worker)
+            if success:
+                self.app.notify("Charts exported successfully", severity="information")
+            else:
+                self.app.notify("Failed to export charts", severity="error")
+        elif event.button.id == "export_report":
+            # Export text report
+            def export_report_worker():
+                try:
+                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                    return AnalyticsManager.export_statistics_report(f"analytics_report_{timestamp}.txt")
+                except Exception as e:
+                    logger.error(f"Error exporting report: {e}")
+                    return False
+
+            success = await self.app.run_in_thread(export_report_worker)
+            if success:
+                self.app.notify("Report exported successfully", severity="information")
+            else:
+                self.app.notify("Failed to export report", severity="error")
+
+    def action_dismiss_screen(self) -> None:
+        self.dismiss()
+
+
 class HelpModal(ModalScreen):
     DEFAULT_CSS = """
     HelpModal {
@@ -3186,6 +3620,7 @@ class WebScraperApp(App[None]):
         Binding("ctrl+shift+f", "manage_filter_presets", "Filter Presets"),
         Binding("ctrl+shift+s", "save_filter_preset", "Save Preset"),
         Binding("ctrl+shift+a", "manage_schedules", "Schedules"),
+        Binding("ctrl+shift+v", "view_analytics", "Analytics"),
         Binding("f1,ctrl+h", "toggle_help", "Help")
     ]
     dark = reactive(True, layout=True)
@@ -4024,6 +4459,10 @@ class WebScraperApp(App[None]):
             if result:
                 self.notify("Schedule management complete", severity="info")
         self.push_screen(ScheduleManagementModal(), handle_schedule_result)
+
+    async def action_view_analytics(self) -> None:
+        """Open analytics modal (Ctrl+Shift+V)."""
+        self.push_screen(AnalyticsModal())
 
     async def action_toggle_help(self)->None:await self.app.push_screen(HelpModal())
     async def action_cycle_sort_order(self)->None:self.current_sort_index=(self.current_sort_index+1)%len(self.SORT_OPTIONS);await self.refresh_article_table();self.notify(f"Sorted by: {self.SORT_OPTIONS[self.current_sort_index][1]}",title="Sort Changed",severity="info",timeout=2)

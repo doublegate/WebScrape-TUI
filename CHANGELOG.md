@@ -5,6 +5,113 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-10-01
+
+### 📊 Major Feature Release: Data Visualization & Advanced Analytics
+
+This release introduces comprehensive data analytics and visualization capabilities, allowing users to gain insights from their scraped data through statistical analysis, charts, and reports.
+
+### Added
+
+- **AnalyticsManager Class**
+  - Comprehensive statistics generation from scraped data
+  - Sentiment distribution analysis
+  - Top sources and tags identification
+  - Timeline analysis (last 30 days)
+  - Tag cloud data generation
+  - Text report export functionality
+
+- **Chart Generation (Matplotlib)**
+  - **Sentiment Distribution Pie Chart**: Visual breakdown of positive/negative/neutral sentiment
+  - **Timeline Line Chart**: Articles scraped over time (last 30 days) with trend visualization
+  - **Top Sources Bar Chart**: Horizontal bar chart showing top 10 most-scraped sources
+  - PNG export with timestamps for all charts
+  - Base64 encoding support for potential web display
+  - Non-interactive backend (Agg) for headless operation
+
+- **Analytics Modal (`Ctrl+Shift+V`)**
+  - Real-time statistics overview
+    - Total articles, summaries, sentiment percentages
+    - Sentiment distribution breakdown
+    - Top 10 sources with article counts
+    - Top 20 tags with usage counts (compact 4-column display)
+    - Recent activity (30-day summary with daily average)
+  - Export Charts button: Generates all 3 charts with timestamped filenames
+  - Export Report button: Creates comprehensive text report with all statistics
+  - Scrollable Markdown-based interface for clean presentation
+
+- **Statistics Reporting**
+  - Comprehensive text reports with formatted sections
+  - Export path with timestamp: `analytics_report_YYYYMMDD_HHMMSS.txt`
+  - Sections include: Overview, Sentiment Distribution, Top Sources, Top Tags
+  - Professional formatting with separator lines and alignment
+
+### Technical Implementation
+
+- **New Dependencies**
+  - `matplotlib>=3.7.0`: Chart generation and visualization
+  - `pandas>=2.0.0`: Data analysis and statistics
+  - Additional libraries: numpy, pillow, contourpy, cycler, fonttools, kiwisolver
+
+- **AnalyticsManager Methods**
+  - `get_statistics()`: Returns dict with comprehensive stats (7 metrics)
+  - `generate_sentiment_chart()`: Creates pie chart, returns path or base64
+  - `generate_timeline_chart()`: Creates line chart with date range
+  - `generate_top_sources_chart()`: Creates horizontal bar chart
+  - `generate_tag_cloud_data()`: Returns list of (tag, count) tuples
+  - `export_statistics_report()`: Writes formatted text report to file
+
+- **Data Processing**
+  - SQL aggregation for efficient statistics calculation
+  - Date range filtering (30-day window for timeline)
+  - Null handling for sentiment and timestamp data
+  - Proper error handling for edge cases (empty database, no sentiment data)
+
+- **UI Integration**
+  - New keyboard binding: `Ctrl+Shift+V` for Analytics modal
+  - AnalyticsModal with VerticalScroll container
+  - Markdown rendering for formatted statistics display
+  - Action handler: `action_view_analytics()`
+
+### Testing
+
+- **Comprehensive Test Suite** (16 new tests)
+  - `TestAnalyticsManager`: 11 tests for core functionality
+    - Statistics generation (populated and empty databases)
+    - Chart generation (all 3 types with mocking)
+    - Base64 encoding for charts without file path
+    - Tag cloud data structure
+    - Report export (text file format)
+    - Edge cases (no sentiment data, empty database)
+  - `TestAnalyticsIntegration`: 2 tests for integration scenarios
+    - Multiple sources handling
+    - Many tags handling
+  - `TestAnalyticsEdgeCases`: 3 tests for error handling
+    - Null timestamps
+    - Very old dates (>30 days)
+    - Invalid export paths
+  - All tests passing (142 total tests in full suite)
+
+### Files Modified
+
+- `requirements.txt`: Added matplotlib and pandas dependencies
+- `scrapetui.py`:
+  - Added imports for visualization libraries (lines 122-129)
+  - Implemented AnalyticsManager class (295 lines, lines 1664-1957)
+  - Implemented AnalyticsModal class (127 lines, lines 3373-3499)
+  - Added keyboard binding and action handler (lines 3623, 4463-4465)
+- `tests/test_analytics.py`: New test file (410 lines, 16 tests)
+
+### User Experience Improvements
+
+- One-click access to comprehensive analytics via `Ctrl+Shift+V`
+- Visual understanding of scraped data patterns
+- Export capabilities for sharing and archiving statistics
+- Professional chart generation suitable for reports
+- Real-time statistics always reflect current database state
+
+---
+
 ## [1.5.0] - 2025-10-01
 
 ### 📅 Major Feature Release: Scheduled Scraping & Automation

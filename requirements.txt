@@ -26,6 +26,12 @@ PyYAML>=6.0.0
 # Advanced Python Scheduler for background tasks and cron-like scheduling
 APScheduler>=3.10.0
 
+# Data Visualization and Analytics
+# Matplotlib for chart generation and data visualization
+matplotlib>=3.7.0
+# Pandas for data analysis and statistics
+pandas>=2.0.0
+
 # Optional Development Dependencies (uncomment for development)
 # pytest>=7.0.0                    # Testing framework
 # pytest-cov>=4.0.0                # Coverage reporting
