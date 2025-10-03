@@ -4,6 +4,7 @@
 import spacy
 import numpy as np
 from typing import List, Dict, Any, Optional
+from difflib import SequenceMatcher
 from sklearn.feature_extraction.text import TfidfVectorizer
 from ..utils.logging import get_logger
 
@@ -200,3 +201,118 @@ def extract_keywords_from_articles(
             results[article_id] = keywords
 
     return results
+
+
+def detect_duplicates(
+    articles: List[Dict[str, Any]],
+    threshold: float = 0.85
+) -> List[Dict[str, Any]]:
+    """
+    Detect duplicate articles using fuzzy text matching.
+
+    Args:
+        articles: List of article dicts with 'id', 'title', 'content' keys
+        threshold: Similarity threshold (0.0-1.0), default 0.85
+
+    Returns:
+        List of duplicate pairs with similarity scores
+
+    Example:
+        >>> articles = [
+        ...     {'id': 1, 'title': 'News A', 'content': 'Content here...'},
+        ...     {'id': 2, 'title': 'News A', 'content': 'Content here...'}
+        ... ]
+        >>> duplicates = detect_duplicates(articles, threshold=0.9)
+        >>> duplicates[0]
+        {'article1_id': 1, 'article2_id': 2, 'similarity': 0.95}
+    """
+    if not articles:
+        return []
+
+    duplicates = []
+    n = len(articles)
+
+    try:
+        for i in range(n):
+            for j in range(i + 1, n):
+                # Get article data
+                article1 = articles[i]
+                article2 = articles[j]
+
+                # Extract fields with fallbacks
+                title1 = article1.get('title', '') or ''
+                title2 = article2.get('title', '') or ''
+                content1 = article1.get('content', '') or ''
+                content2 = article2.get('content', '') or ''
+
+                # Skip if both articles have no content
+                if not (title1 or content1) or not (title2 or content2):
+                    continue
+
+                # Calculate similarity for titles
+                title_sim = SequenceMatcher(None, title1, title2).ratio()
+
+                # Calculate similarity for content
+                content_sim = SequenceMatcher(None, content1, content2).ratio()
+
+                # Weighted average (title more important than content)
+                # If no content, use title only
+                if content1 and content2:
+                    similarity = 0.6 * title_sim + 0.4 * content_sim
+                else:
+                    similarity = title_sim
+
+                # Check threshold
+                if similarity >= threshold:
+                    duplicates.append({
+                        'article1_id': article1['id'],
+                        'article2_id': article2['id'],
+                        'similarity': similarity
+                    })
+
+        return duplicates
+    except Exception as e:
+        logger.error(f"Duplicate detection failed: {e}")
+        return []
+
+
+def detect_duplicates_from_db(
+    threshold: float = 0.85,
+    limit: Optional[int] = None
+) -> List[Dict[str, Any]]:
+    """
+    Detect duplicate articles in database.
+
+    Args:
+        threshold: Similarity threshold (0.0-1.0)
+        limit: Optional limit on number of articles to check
+
+    Returns:
+        List of duplicate pairs with article IDs and similarity scores
+    """
+    from ..core.database import get_db_connection
+
+    try:
+        with get_db_connection() as conn:
+            # Fetch articles
+            query = "SELECT id, title, content FROM scraped_data"
+            if limit:
+                query += f" LIMIT {limit}"
+
+            rows = conn.execute(query).fetchall()
+
+            # Convert to list of dicts
+            articles = [
+                {
+                    'id': row['id'],
+                    'title': row['title'] or '',
+                    'content': row['content'] or ''
+                }
+                for row in rows
+            ]
+
+        # Detect duplicates
+        return detect_duplicates(articles, threshold=threshold)
+    except Exception as e:
+        logger.error(f"Database duplicate detection failed: {e}")
+        return []
