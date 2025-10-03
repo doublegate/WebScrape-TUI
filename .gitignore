@@ -241,6 +241,7 @@ $RECYCLE.BIN/
 *.backup
 *.old
 *.orig
+backups/
 
 # Archive files (excluding intentional releases)
 *.zip
