@@ -214,6 +214,23 @@ CREATE TABLE IF NOT EXISTS article_clusters (
     FOREIGN KEY (article_id) REFERENCES scraped_data(id) ON DELETE CASCADE
 );
 
+-- JWT token blacklist table (v2.1.0)
+CREATE TABLE IF NOT EXISTS token_blacklist (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token TEXT NOT NULL UNIQUE,
+    blacklisted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- JWT refresh tokens table (v2.1.0)
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token TEXT NOT NULL UNIQUE,
+    user_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Schema version tracking table
 CREATE TABLE IF NOT EXISTS schema_version (
     version TEXT PRIMARY KEY,
@@ -260,6 +277,11 @@ CREATE INDEX IF NOT EXISTS idx_qa_history_created ON qa_history (created_at);
 CREATE INDEX IF NOT EXISTS idx_summary_feedback_article ON summary_feedback (article_id);
 CREATE INDEX IF NOT EXISTS idx_article_clusters_cluster ON article_clusters (cluster_id);
 CREATE INDEX IF NOT EXISTS idx_article_clusters_article ON article_clusters (article_id);
+
+-- API token indexes (v2.1.0)
+CREATE INDEX IF NOT EXISTS idx_token_blacklist_token ON token_blacklist (token);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens (token);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens (user_id);
 """
 
 

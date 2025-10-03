@@ -32,6 +32,7 @@ class Config:
     api_jwt_algorithm: str = "HS256"
     api_jwt_expiration_minutes: int = 30
     api_cors_origins: list = field(default_factory=lambda: ["*"])
+    api_rate_limit_per_minute: int = 60
 
     # Cache settings (v2.1.0)
     cache_enabled: bool = True
@@ -103,10 +104,11 @@ def get_config() -> Config:
         # API
         api_host=os.getenv('API_HOST', '127.0.0.1'),
         api_port=int(os.getenv('API_PORT', '8000')),
-        api_jwt_secret=os.getenv('API_JWT_SECRET'),
+        api_jwt_secret=os.getenv('API_JWT_SECRET', 'dev-secret-key-change-in-production'),
         api_jwt_algorithm=os.getenv('API_JWT_ALGORITHM', 'HS256'),
         api_jwt_expiration_minutes=int(os.getenv('API_JWT_EXPIRATION_MINUTES', '30')),
         api_cors_origins=os.getenv('API_CORS_ORIGINS', '*').split(','),
+        api_rate_limit_per_minute=int(os.getenv('API_RATE_LIMIT_PER_MINUTE', '60')),
 
         # Cache
         cache_enabled=os.getenv('CACHE_ENABLED', 'true').lower() == 'true',
