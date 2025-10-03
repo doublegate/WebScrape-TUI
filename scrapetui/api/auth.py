@@ -45,9 +45,9 @@ async def login(credentials: UserLogin):
     if user_id is None:
         raise UnauthorizedException(detail="Invalid username or password")
 
-    # Create JWT tokens
-    access_token = create_access_token(data={"sub": user_id})
-    refresh_token = create_refresh_token(data={"sub": user_id})
+    # Create JWT tokens (sub must be string for JWT spec compliance)
+    access_token = create_access_token(data={"sub": str(user_id)})
+    refresh_token = create_refresh_token(data={"sub": str(user_id)})
 
     # Store refresh token in database
     try:
@@ -128,10 +128,15 @@ async def refresh_token(token_request: TokenRefresh):
     if payload.get("type") != "refresh":
         raise UnauthorizedException(detail="Invalid token type")
 
-    # Get user ID
-    user_id: int = payload.get("sub")
-    if user_id is None:
+    # Get user ID (sub is string in JWT, convert to int)
+    user_id_str = payload.get("sub")
+    if user_id_str is None:
         raise UnauthorizedException(detail="Invalid token payload")
+
+    try:
+        user_id = int(user_id_str)
+    except (ValueError, TypeError):
+        raise UnauthorizedException(detail="Invalid user ID in token")
 
     # Verify refresh token exists in database
     try:
@@ -170,9 +175,9 @@ async def refresh_token(token_request: TokenRefresh):
         logger.error(f"Error validating refresh token: {e}")
         raise UnauthorizedException(detail="Token validation failed")
 
-    # Create new tokens
-    new_access_token = create_access_token(data={"sub": user_id})
-    new_refresh_token = create_refresh_token(data={"sub": user_id})
+    # Create new tokens (sub must be string for JWT spec compliance)
+    new_access_token = create_access_token(data={"sub": str(user_id)})
+    new_refresh_token = create_refresh_token(data={"sub": str(user_id)})
 
     # Store new refresh token and invalidate old one
     try:

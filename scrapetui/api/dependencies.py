@@ -157,10 +157,15 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     if payload.get("type") != "access":
         raise UnauthorizedException(detail="Invalid token type")
 
-    # Get user ID
-    user_id: int = payload.get("sub")
-    if user_id is None:
+    # Get user ID (sub is string in JWT, convert to int)
+    user_id_str = payload.get("sub")
+    if user_id_str is None:
         raise UnauthorizedException(detail="Invalid token payload")
+
+    try:
+        user_id = int(user_id_str)
+    except (ValueError, TypeError):
+        raise UnauthorizedException(detail="Invalid user ID in token")
 
     # Get user from database
     try:

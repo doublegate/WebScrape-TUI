@@ -34,10 +34,8 @@ def test_db() -> Generator[Path, None, None]:
 
     # Create schema
     conn.executescript(get_schema_v2_0_0())
-    conn.executescript(get_indexes())
-    conn.executescript(get_builtin_data())
 
-    # Add API tables (v2.1.0)
+    # Add API tables (v2.1.0) - BEFORE builtin data
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS token_blacklist (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -59,6 +57,9 @@ def test_db() -> Generator[Path, None, None]:
         CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens (user_id);
     """)
 
+    conn.executescript(get_indexes())
+    conn.executescript(get_builtin_data())
+
     conn.commit()
     conn.close()
 
@@ -71,8 +72,10 @@ def test_db() -> Generator[Path, None, None]:
 
 @pytest.fixture(scope="function")
 def client(test_db: Path) -> TestClient:
-    """Create FastAPI test client."""
-    return TestClient(app)
+    """Create FastAPI test client with test database."""
+    # Disable startup/shutdown events for testing
+    app.router.lifespan_context = None
+    return TestClient(app, raise_server_exceptions=True)
 
 
 @pytest.fixture(scope="function")
@@ -89,8 +92,9 @@ def admin_token(client: TestClient) -> str:
 @pytest.fixture(scope="function")
 def user_token(client: TestClient, test_db: Path) -> str:
     """Create regular user and get JWT token."""
-    # Create user
+    # Create user (delete if exists first)
     with get_db_connection() as conn:
+        conn.execute("DELETE FROM users WHERE username = ?", ("testuser",))
         conn.execute("""
             INSERT INTO users (username, password_hash, email, role, created_at)
             VALUES (?, ?, ?, ?, datetime('now'))
@@ -109,8 +113,9 @@ def user_token(client: TestClient, test_db: Path) -> str:
 @pytest.fixture(scope="function")
 def viewer_token(client: TestClient, test_db: Path) -> str:
     """Create viewer user and get JWT token."""
-    # Create viewer
+    # Create viewer (delete if exists first)
     with get_db_connection() as conn:
+        conn.execute("DELETE FROM users WHERE username = ?", ("viewer",))
         conn.execute("""
             INSERT INTO users (username, password_hash, email, role, created_at)
             VALUES (?, ?, ?, ?, datetime('now'))
