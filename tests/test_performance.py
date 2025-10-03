@@ -40,19 +40,20 @@ from scrapetui import (
 @pytest.fixture
 def perf_test_db(tmp_path):
     """Create a temporary database for performance testing."""
+    from pathlib import Path
     db_path = tmp_path / "perf_test.db"
 
     # Initialize database
     import scrapetui
-    original_db = scrapetui.DB_FILE
-    scrapetui.DB_FILE = str(db_path)
+    original_db = scrapetui.DB_PATH
+    scrapetui.DB_PATH = Path(db_path)
 
     init_db()
 
     yield str(db_path)
 
     # Restore original
-    scrapetui.DB_FILE = original_db
+    scrapetui.DB_PATH = original_db
 
 
 def create_test_users(count: int = 10) -> List[int]:
