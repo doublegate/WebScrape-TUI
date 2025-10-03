@@ -75,7 +75,6 @@ def extract_entities_spacy(text: str) -> List[Dict[str, Any]]:
 def extract_keywords_tfidf(text: str, max_keywords: int = 10) -> List[Dict[str, Any]]:
     """
     Extract keywords using TF-IDF.
-    Placeholder for actual keyword extraction.
 
     Args:
         text: Text to analyze
@@ -84,11 +83,10 @@ def extract_keywords_tfidf(text: str, max_keywords: int = 10) -> List[Dict[str, 
     Returns:
         List of keywords with scores
     """
-    # This would use existing keyword extraction code
-    return [
-        {"keyword": "example", "score": 0.95},
-        {"keyword": "keyword", "score": 0.87}
-    ]
+    from ...ai.processors import extract_keywords
+
+    # Extract keywords using real TF-IDF implementation
+    return extract_keywords(text, top_n=max_keywords)
 
 
 @router.post("/summarize", response_model=SummarizeResponse)
