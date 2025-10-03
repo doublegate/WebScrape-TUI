@@ -4,7 +4,7 @@
 
 Transform WebScrape-TUI into the premier open-source terminal-based web scraping and data analysis platform, combining powerful scraping capabilities with advanced AI analysis, data visualization, and automation features.
 
-## Current Status: v1.9.5 (Q1 2026)
+## Current Status: v2.0.0 - Multi-User Foundation (October 2025)
 
 ### ✅ Completed Features
 
@@ -121,64 +121,51 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
 
 - ✅ Comprehensive test suite (92 new tests)
 
+#### Multi-User Foundation (v2.0.0) - RELEASED October 2025
+- ✅ **User Authentication & Session Management**
+  - bcrypt password hashing (cost factor 12)
+  - Cryptographically secure 256-bit session tokens
+  - 24-hour session expiration
+  - Session validation and cleanup
+
+- ✅ **Role-Based Access Control (RBAC)**
+  - Three-tier permission system (Admin/User/Viewer)
+  - Hierarchical permission checks
+  - can_edit(), can_delete() functions
+  - Permission enforcement on all CRUD operations
+
+- ✅ **User Management**
+  - User CRUD operations (create, read, update, delete)
+  - User profiles (email, role, status, timestamps)
+  - User management modal (Ctrl+Alt+U - admin only)
+  - User profile modal (Ctrl+U)
+  - Password change functionality
+
+- ✅ **Data Ownership & Sharing**
+  - user_id tracking on all articles
+  - Scraper profile sharing (is_shared flag)
+  - User-specific data filtering
+  - Permission-based data access
+
+- ✅ **Database Migration**
+  - Automatic v1.x to v2.0.0 migration
+  - Backup creation before migration
+  - Schema version tracking
+  - Foreign key constraints
+
+- ✅ **Testing & CI/CD**
+  - 374 comprehensive tests (100% pass rate)
+  - Phase 1: Authentication tests (114 tests)
+  - Phase 2: UI/RBAC tests (118 tests)
+  - Phase 3: Data isolation tests (23 tests)
+  - Performance tests (6 tests)
+  - GitHub Actions CI/CD (Python 3.11 & 3.12)
+
 ---
 
 ## Upcoming Releases
 
-### v2.0.0 - Multi-User & Collaboration (Q2 2026)
-
-**Goal:** Team-based scraping and data sharing capabilities
-
-**Features:**
-
-#### User Management
-- [ ] **User Accounts**
-  - Local user database
-  - Password hashing (bcrypt)
-  - Session management
-  - Role-based access control (Admin, User, Viewer)
-
-- [ ] **User Profiles**
-  - Personal scraper profiles
-  - Custom filter presets per user
-  - Individual settings
-  - Activity tracking
-
-#### Collaboration Features
-- [ ] **Shared Collections**
-  - Team scraper profiles
-  - Shared filter presets
-  - Collaborative tagging
-  - Comment system on articles
-
-- [ ] **Permissions System**
-  - Read/write/delete permissions
-  - Profile ownership
-  - Data export restrictions
-  - Audit logging
-
-#### Data Synchronization
-- [ ] **Cloud Sync** (optional)
-  - Remote database sync
-  - Conflict resolution
-  - Offline mode support
-  - Dependencies: Custom backend or Firebase
-
-- [ ] **Import/Export**
-  - Bulk data import from JSON/CSV
-  - Database backup/restore
-  - Profile sharing via files
-
-**Testing:**
-- 30+ new tests for multi-user features
-- Permission validation tests
-- Sync conflict tests
-
-**Estimated Effort:** 5-7 weeks
-
----
-
-### v2.1.0 - Major Architecture Refactor (Q3 2026)
+### v2.1.0 - Major Architecture Refactor (Q1 2026)
 
 **Goal:** Production-ready architecture with plugin system and API
 
@@ -245,9 +232,9 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
 
 ---
 
-## Future Features (v2.1+)
+## Future Features (v2.2+)
 
-### Advanced Scraping (v2.1.0)
+### Advanced Scraping (v2.2.0)
 - [ ] **JavaScript Rendering**
   - Selenium/Playwright integration
   - SPA scraping support
@@ -266,7 +253,7 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
   - Visual selector picker
   - Regex-based extraction
 
-### Data Processing (v2.2.0)
+### Data Processing (v2.3.0)
 - [ ] **Data Transformation**
   - Custom Python scripts for processing
   - Data cleaning pipelines
@@ -279,7 +266,7 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
   - Anomaly detection
   - Missing data handling
 
-### Integrations (v2.3.0)
+### Integrations (v2.4.0)
 - [ ] **Third-Party Integrations**
   - Zapier/IFTTT webhooks
   - Slack notifications
@@ -292,7 +279,7 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
   - MongoDB export
   - BigQuery integration
 
-### Machine Learning (v2.4.0)
+### Machine Learning (v2.5.0)
 - [ ] **Custom ML Models**
   - Train sentiment models on user data
   - Custom classification models
@@ -305,7 +292,7 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
   - Performance metrics
   - Model retraining
 
-### Web Interface (v2.5.0)
+### Web Interface (v2.6.0)
 - [ ] **Web Dashboard**
   - React/Vue.js frontend
   - Real-time updates (WebSockets)
@@ -397,16 +384,16 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
 ## Contribution Opportunities
 
 ### High Priority
-1. **Excel/PDF Export** - High user demand
-2. **JavaScript Rendering** - Enables SPA scraping
-3. **Plugin System** - Community extensibility
-4. **API Development** - Programmatic access
+1. **Plugin System** - Community extensibility
+2. **API Development** - Programmatic access
+3. **JavaScript Rendering** - Enables SPA scraping
+4. **Performance Optimization** - Multi-user scalability
 
 ### Medium Priority
 1. **Advanced Charts** - Enhanced visualizations
-2. **Entity Recognition** - Better content understanding
-3. **Multi-User Support** - Team collaboration
-4. **Web Interface** - Broader accessibility
+2. **Web Interface** - Broader accessibility
+3. **Cloud Sync** - Optional remote backup
+4. **Advanced Permissions** - Fine-grained access control
 
 ### Good First Issues
 1. **New Scraper Profiles** - Easy contribution
@@ -423,9 +410,10 @@ Transform WebScrape-TUI into the premier open-source terminal-based web scraping
 | v1.7.0  | Q4 2025     | ✅ Complete | Export & Reporting |
 | v1.8.0  | Q1 2026     | ✅ Complete | Advanced AI |
 | v1.9.0  | Q1 2026     | ✅ Complete | Smart Categorization & Topic Modeling |
-| v2.0.0  | Q2 2026     | 📅 Planned | Multi-User & Collaboration |
-| v2.1.0  | Q3 2026     | 📅 Planned | Architecture Refactor |
-| v2.2.0+ | Q4 2026+    | 📅 Planned | Feature releases |
+| v2.0.0  | Oct 2025    | ✅ Complete | Multi-User Foundation |
+| v2.1.0  | Q1 2026     | 📅 Planned | Architecture Refactor |
+| v2.2.0  | Q2 2026     | 📅 Planned | Advanced Scraping |
+| v2.3.0+ | Q3 2026+    | 📅 Planned | Feature releases |
 
 **Note:** Dates are estimates and subject to change based on community feedback and development resources.
 
@@ -466,4 +454,4 @@ We welcome input on our roadmap! Please:
 
 ---
 
-This roadmap is a living document and will be updated based on user feedback, technological advances, and community contributions. Last updated: **October 1, 2025** (v1.9.0)
+This roadmap is a living document and will be updated based on user feedback, technological advances, and community contributions. Last updated: **October 3, 2025** (v2.0.0)
