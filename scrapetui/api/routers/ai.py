@@ -53,7 +53,6 @@ def call_ai_provider(provider: str, prompt: str, content: str) -> str:
 def extract_entities_spacy(text: str) -> List[Dict[str, Any]]:
     """
     Extract entities using spaCy.
-    Placeholder for actual NLP integration.
 
     Args:
         text: Text to analyze
@@ -61,10 +60,15 @@ def extract_entities_spacy(text: str) -> List[Dict[str, Any]]:
     Returns:
         List of entities with type and text
     """
-    # This would use spaCy integration from existing code
+    from ...ai.processors import extract_named_entities
+
+    # Extract entities using real spaCy implementation
+    entities = extract_named_entities(text)
+
+    # Convert format from {'text', 'label', 'start', 'end'} to {'text', 'type'}
     return [
-        {"text": "Example Entity", "type": "ORG"},
-        {"text": "Another Entity", "type": "PERSON"}
+        {"text": ent['text'], "type": ent['label']}
+        for ent in entities
     ]
 
 
