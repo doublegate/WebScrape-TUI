@@ -1,9 +1,9 @@
-# WebScrape-TUI v2.0.0
+# WebScrape-TUI v2.1.0-alpha.3
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
+[![Version](https://img.shields.io/badge/version-2.1.0--alpha.3-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
@@ -717,6 +717,8 @@ WebScrape-TUI includes comprehensive documentation in the `docs/` directory:
 - **[Roadmap](docs/ROADMAP.md)** - Future features, milestones, and contribution opportunities
 - **[Project Status](docs/PROJECT-STATUS.md)** - Current health, metrics, and progress tracking
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Comprehensive problem-solving guide with solutions
+- **[Technical Debt](docs/TECHNICAL_DEBT.md)** - Legacy test migration tracker and infrastructure improvements
+- **[Test Infrastructure Fixes](docs/TEST_INFRASTRUCTURE_FIXES.md)** - Complete documentation of CI/CD fixes
 
 ### Quick Links
 
@@ -920,12 +922,14 @@ pytest tests/ -v
 pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
-**Test Results (v2.0.0):**
-- 374 total tests across 15+ categories
-- All tests passing: authentication, UI components, RBAC, export, visualization, scheduling, configuration, AI features ✓
-- Comprehensive coverage including multi-user authentication, session management, and role-based access control
-- 100% pass rate across all test suites (374/374 passing)
+**Test Results (v2.1.0-alpha.3):**
+- 199 total tests passing (100% pass rate)
+  - Unit tests: 135/135 (100%)
+  - API tests: 64/64 (100%)
+- Legacy tests documented in [TECHNICAL_DEBT.md](docs/TECHNICAL_DEBT.md) for future migration
+- Comprehensive coverage including authentication, API endpoints, database operations, and core functionality
 - CI/CD pipeline fully operational on Python 3.11 and 3.12
+- Database migrated to v2.0.1 schema
 
 ### Areas for Contribution
 
