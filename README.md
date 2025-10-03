@@ -1,15 +1,27 @@
-# WebScrape-TUI v1.9.5
+# WebScrape-TUI v2.0.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
-[![Version](https://img.shields.io/badge/version-1.9.5-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
 ![WebScrape-TUI Banner](WebScrape-TUI.png)
 
 ## 🚀 Features
+
+### 👥 Multi-User Authentication & Access Control (v2.0.0)
+
+- **User Authentication**: Secure login system with bcrypt password hashing
+- **Session Management**: 24-hour session tokens with automatic expiration
+- **Role-Based Access Control (RBAC)**: Admin, User, and Viewer roles with hierarchical permissions
+- **User Profile Management**: View and edit user profiles, change passwords (Ctrl+U)
+- **User Administration**: Admin-only user management interface (Ctrl+Alt+U)
+- **Data Ownership Tracking**: All articles and scrapers tagged with creator user_id
+- **Secure Session Handling**: Cryptographically secure session tokens (256-bit)
+- **Database Migration**: Automatic migration from v1.x with backup creation
+- **Default Admin Account**: Initial admin user (username: admin, password: Ch4ng3M3)
 
 ### 🖥️ Interactive Terminal Interface
 
@@ -182,6 +194,9 @@ python scrapetui.py
 # Core dependencies (required)
 pip install textual requests beautifulsoup4 lxml PyYAML APScheduler
 
+# Multi-user authentication (v2.0.0+)
+pip install bcrypt
+
 # Data visualization and export (v1.6.0+)
 pip install matplotlib pandas openpyxl reportlab wordcloud
 
@@ -253,6 +268,7 @@ See [INSTALL-ARCH.md](INSTALL-ARCH.md) for detailed platform-specific instructio
 - **requests** (>=2.28.0) - HTTP library for web requests
 - **beautifulsoup4** (>=4.11.0) - HTML parsing library
 - **lxml** (>=4.9.0) - Fast XML/HTML parser backend
+- **bcrypt** (>=4.0.0) - Secure password hashing for multi-user authentication (v2.0.0)
 - **PyYAML** (>=6.0.0) - YAML configuration file parser (v1.4.0)
 - **APScheduler** (>=3.10.0) - Background task scheduling for automation (v1.5.0)
 - **matplotlib** (>=3.7.0) - Chart generation and data visualization (v1.6.0)
@@ -280,10 +296,14 @@ See [INSTALL-ARCH.md](INSTALL-ARCH.md) for detailed platform-specific instructio
    python scrapetui.py
    ```
 
-2. **First time setup:**
+2. **First time setup (v2.0.0+):**
    - The application creates a SQLite database automatically
    - CSS styling file is generated if not present
-   - No additional configuration required to start
+   - **Login with default admin credentials:**
+     - Username: `admin`
+     - Password: `Ch4ng3M3`
+   - **Important**: Change the admin password immediately after first login (Ctrl+U → Change Password)
+   - Create additional user accounts if needed (Ctrl+Alt+U)
 
 3. **Basic scraping:**
    - Press `Ctrl+S` to open the scraping dialog
@@ -392,6 +412,34 @@ Logs are written to `scraper_tui_v1.0.log` with configurable levels (configurabl
 Customize the appearance by editing `web_scraper_tui_v1.0.tcss`.
 
 ## 📖 Usage Guide
+
+### Authentication & User Management (v2.0.0)
+
+**First Login:**
+- Launch the application with `python scrapetui.py`
+- Login with default admin credentials (username: `admin`, password: `Ch4ng3M3`)
+- **Change password immediately** via Ctrl+U → Change Password
+
+**User Management (Admin Only):**
+- Press `Ctrl+Alt+U` to open User Management
+- Create new users with specific roles:
+  - **Admin**: Full access to all data and user management
+  - **User**: Create and manage own articles and scrapers
+  - **Viewer**: Read-only access to shared content
+- Edit existing users (email, role)
+- Toggle user active/inactive status
+- View all user accounts and login history
+
+**User Profile:**
+- Press `Ctrl+U` to view/edit your profile
+- Update email address
+- Change password
+- View account details (created date, last login)
+
+**Session Management:**
+- Sessions expire after 24 hours
+- Press `Ctrl+Shift+L` to logout
+- Automatic session validation on all operations
 
 ### Starting Your First Scrape
 
@@ -588,6 +636,9 @@ CREATE TABLE filter_presets (
 |:----|:-------|
 | `q` / `Ctrl+C` | Quit application |
 | `F1` / `Ctrl+H` | Show help dialog |
+| `Ctrl+U` | **User Profile** (v2.0.0) |
+| `Ctrl+Alt+U` | **User Management (Admin Only)** (v2.0.0) |
+| `Ctrl+Shift+L` | **Logout** (v2.0.0) |
 | `Ctrl+N` | New scrape dialog |
 | `Ctrl+M` | Saved scrapers / Manage profiles |
 | `Ctrl+P` | **Select AI Provider** (v1.3.0) |
@@ -859,11 +910,12 @@ pytest tests/ -v
 pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
-**Test Results (v1.8.0):**
-- 194 total tests across 13 categories
-- All export, visualization, scheduling, configuration, filter presets, AI provider, and advanced AI tests passing ✓
-- Comprehensive coverage of v1.8.0 features including auto-tagging, entity recognition, keyword extraction, and similarity matching
-- 100% pass rate across all test suites
+**Test Results (v2.0.0):**
+- 345 total tests across 15+ categories
+- All tests passing: authentication, UI components, RBAC, export, visualization, scheduling, configuration, AI features ✓
+- Comprehensive coverage including multi-user authentication, session management, and role-based access control
+- 100% pass rate across all test suites (345/345 passing)
+- CI/CD pipeline fully operational on Python 3.11 and 3.12
 
 ### Areas for Contribution
 
@@ -878,74 +930,6 @@ pytest tests/ --cov=scrapetui --cov-report=html
 ## 📝 Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
-
-### Recent Updates (v1.8.0)
-- **AI Auto-Tagging**: Automatic tag generation using AI content analysis
-- **Named Entity Recognition**: Extract people, organizations, locations, dates with spaCy
-- **Keyword Extraction**: TF-IDF-based keyword extraction with title boosting
-- **Content Similarity**: Find similar articles using semantic embeddings
-- **Multi-Level Summarization**: Brief, detailed, and comprehensive summary levels
-- **5 New AI Manager Classes**: Complete AI-powered content analysis pipeline
-- **Comprehensive Testing**: 194 tests with 28 new tests for advanced AI features
-- **New Dependencies**: spacy, sentence-transformers, nltk, scikit-learn, scipy
-
-### Previous Updates (v1.5.0)
-- **Scheduled Scraping**: Automated background scraping with APScheduler
-- **Schedule Management**: Create, edit, enable/disable, and delete schedules
-- **Multiple Schedule Types**: Hourly, daily, weekly, and custom interval scheduling
-- **Execution Tracking**: Monitor last run, next run, run count, and status
-- **Background Automation**: Hands-free data collection without manual intervention
-- **Comprehensive Testing**: 127 tests with 16 new tests for scheduling features
-
-### Previous Updates (v1.4.0)
-- **YAML Configuration**: Human-readable config files with automatic creation and deep merge
-- **Settings Modal**: In-app configuration editor with live updates (Ctrl+G)
-- **Filter Presets**: Save and load filter combinations with database persistence
-- **Enhanced Database**: New filter_presets table with full parameter support
-- **Comprehensive Testing**: 111 tests with 14 new tests for v1.4.0 features
-- **Keyboard Shortcuts**: Ctrl+comma (Settings), Ctrl+Shift+F (Presets), Ctrl+Shift+S (Save)
-
-### Previous Updates (v1.3.0)
-- **Multi-Provider AI**: Google Gemini, OpenAI GPT, and Anthropic Claude integration
-- **Custom Templates**: 7 built-in templates with custom template management
-- **Advanced Filtering**: Regex support, date ranges, AND/OR tag logic
-- **Enhanced Testing**: 100+ tests across 6 categories
-- **Improved UX**: Quick provider selection (Ctrl+P) and enhanced filter UI
-- **Database Updates**: New tables for templates and filter presets
-
-### Previous Updates (v1.0.1)
-- **Code Quality & Performance**: Comprehensive code optimization and formatting improvements
-- **Import Optimization**: Removed unused imports reducing memory footprint (math, json, os, etc.)
-- **Database Performance**: Enhanced SQL query formatting and connection management
-- **Logic Improvements**: Fixed unused variables and improved error handling patterns
-- **Code Readability**: Improved multi-line string formatting and parameter organization
-- **Stability Enhancements**: Better exception handling and resource management
-- **Developer Experience**: Cleaner code structure following PEP 8 standards
-
-### Previous Updates (v1.0RC-patch3)
-- **Fixed Confirmation Dialogs**: Resolved elongated blue box issue - buttons now display properly
-- **Enhanced Modal Layout**: Improved ConfirmModal CSS with proper Horizontal container sizing
-- **Better Delete Operations**: All confirmation dialogs now work correctly for delete actions
-- **Visual Improvements**: Proper button layout and spacing in confirmation modals
-
-### Previous Updates (v1.0RC-patch2)
-- **Visual Selection Indicators**: Selected rows show asterisk prefix (*ID) for clear feedback
-- **Fixed Summarization**: Resolved worker context errors with callback-based modal workflows
-- **Enhanced Row Selection**: Spacebar selection with immediate visual feedback
-- **Sequential Modal Dialogs**: Callback chains for complex interactions (confirm → style selection)
-- **Improved User Experience**: Real-time table updates showing selection state
-- **Worker Context Compatibility**: All modal dialogs now use callback patterns
-- **UI Restructure**: Separated main screen (DataTable) from filter screen (Ctrl+F modal)
-- **Enhanced Row Selection**: Intelligent cursor-based selection with fallback detection
-- **Textual API Compatibility**: Fixed DataTable metadata and cursor positioning issues
-- **Improved Filtering**: Dedicated filter dialog with state preservation
-- **SQL Optimization**: Added table aliases to prevent ambiguous column errors
-- **Better Navigation**: Full-screen DataTable for optimal article viewing
-- **Version Update**: Renamed from v5 to v1.0RC with consistent file references
-- **Enhanced UI**: Beautiful startup and shutdown banners
-- **Documentation**: Comprehensive README and documentation
-- **Code Quality**: Detailed inline documentation and type hints
-- **Stability**: Improved error handling and logging
 
 ## 📄 License
 

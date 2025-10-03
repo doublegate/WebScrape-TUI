@@ -145,11 +145,13 @@ python --version
 
 # Verify key dependencies
 python -c "import textual; print('textual:', textual.__version__)"
+python -c "import bcrypt; print('bcrypt:', bcrypt.__version__)"  # v2.0.0+
 python -c "import gensim; print('gensim:', gensim.__version__)"  # Will fail on Python 3.13
 python -c "import spacy; print('spacy:', spacy.__version__)"
 
-# Run application
+# Run application (v2.0.0+: login required)
 python scrapetui.py
+# Default credentials: admin / Ch4ng3M3 (change immediately!)
 ```
 
 ## Troubleshooting
