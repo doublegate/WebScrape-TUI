@@ -82,18 +82,25 @@ class Session:
         Create Session from database row.
 
         Args:
-            row: SQLite row object
+            row: SQLite row object or dict (for testing)
 
         Returns:
             Session instance
         """
+        # Handle both sqlite3.Row and dict (for tests)
+        # sqlite3.Row supports .get() only in Python 3.11+, use conditional access
+        try:
+            ip_address = row['ip_address']
+        except (KeyError, IndexError):
+            ip_address = None
+
         return cls(
             id=row['id'],
             session_token=row['session_token'],
             user_id=row['user_id'],
             created_at=row['created_at'],
             expires_at=row['expires_at'],
-            ip_address=row.get('ip_address')
+            ip_address=ip_address
         )
 
     def __repr__(self) -> str:

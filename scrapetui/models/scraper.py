@@ -87,17 +87,18 @@ class ScraperProfile:
         Returns:
             ScraperProfile instance
         """
+        # sqlite3.Row uses [] not .get(), use conditional expressions for defaults
         return cls(
             id=row['id'],
             name=row['name'],
             url=row['url'],
             selector=row['selector'],
-            default_limit=row.get('default_limit', 0),
-            default_tags_csv=row.get('default_tags_csv'),
-            description=row.get('description'),
-            is_preinstalled=bool(row.get('is_preinstalled', 0)),
-            user_id=row.get('user_id', 1),
-            is_shared=bool(row.get('is_shared', 0))
+            default_limit=row['default_limit'] if row['default_limit'] is not None else 0,
+            default_tags_csv=row['default_tags_csv'],
+            description=row['description'],
+            is_preinstalled=bool(row['is_preinstalled'] if row['is_preinstalled'] is not None else 0),
+            user_id=row['user_id'] if row['user_id'] is not None else 1,
+            is_shared=bool(row['is_shared'] if row['is_shared'] is not None else 0)
         )
 
     def __repr__(self) -> str:

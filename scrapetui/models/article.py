@@ -110,16 +110,17 @@ class Article:
         Returns:
             Article instance
         """
+        # sqlite3.Row uses [] not .get(), nullable fields can still be None
         return cls(
             id=row['id'],
             url=row['url'],
-            title=row.get('title'),
-            content=row.get('content'),
-            summary=row.get('summary'),
+            title=row['title'],
+            content=row['content'],
+            summary=row['summary'],
             link=row['link'],
             timestamp=row['timestamp'],
-            sentiment=row.get('sentiment'),
-            user_id=row.get('user_id', 1)
+            sentiment=row['sentiment'],
+            user_id=row['user_id'] if row['user_id'] is not None else 1
         )
 
     def __repr__(self) -> str:

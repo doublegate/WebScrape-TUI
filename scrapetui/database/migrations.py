@@ -226,6 +226,56 @@ def migrate_v1_to_v2_0_0(conn: sqlite3.Connection) -> bool:
         return False
 
 
+def migrate_v2_0_0_add_content_column(conn: sqlite3.Connection) -> bool:
+    """
+    Migrate v2.0.0 schema to add missing 'content' column to scraped_data table.
+
+    This migration:
+    - Checks if content column exists in scraped_data table
+    - Adds content column if missing (TEXT, nullable)
+    - Updates schema_version to mark this migration as applied
+
+    Args:
+        conn: SQLite database connection
+
+    Returns:
+        True if migration successful, False otherwise
+    """
+    try:
+        logger.info("Checking for content column in scraped_data table...")
+
+        # Check if content column exists
+        cursor = conn.execute("PRAGMA table_info(scraped_data)")
+        columns = [col[1] for col in cursor.fetchall()]
+
+        if 'content' in columns:
+            logger.info("Content column already exists, skipping migration")
+            return True
+
+        logger.info("Adding content column to scraped_data table...")
+
+        # Add content column (nullable, no default needed)
+        conn.execute("ALTER TABLE scraped_data ADD COLUMN content TEXT")
+
+        # Record migration in schema_version
+        conn.execute("""
+            INSERT OR REPLACE INTO schema_version (version, description)
+            VALUES (?, ?)
+        """, (
+            '2.0.1',
+            'Add content column to scraped_data table'
+        ))
+
+        conn.commit()
+        logger.info("Content column migration complete")
+        return True
+
+    except sqlite3.Error as e:
+        logger.error(f"Failed to add content column: {e}", exc_info=True)
+        conn.rollback()
+        return False
+
+
 def run_migrations(conn: sqlite3.Connection) -> bool:
     """
     Run all necessary database migrations.
@@ -245,11 +295,19 @@ def run_migrations(conn: sqlite3.Connection) -> bool:
         if not migrate_v1_to_v2_0_0(conn):
             logger.error("Failed to migrate to v2.0.0")
             return False
-    elif current_version == '2.0.0':
-        logger.info("Database already at v2.0.0")
+        current_version = '2.0.0'
+
+    # Apply v2.0.1 migration if on v2.0.0
+    if current_version == '2.0.0':
+        logger.info("Applying v2.0.1 migration (add content column)...")
+        if not migrate_v2_0_0_add_content_column(conn):
+            logger.error("Failed to migrate to v2.0.1")
+            return False
+    elif current_version == '2.0.1':
+        logger.info("Database already at v2.0.1")
     else:
         logger.warning(f"Unknown database version: {current_version}")
-        return False
+        # Don't fail - might be a newer version
 
     return True
 

@@ -93,7 +93,7 @@ class User:
             email=row['email'],
             role=row['role'],
             created_at=row['created_at'],
-            last_login=row.get('last_login'),
+            last_login=row['last_login'],  # sqlite3.Row uses [] not .get()
             is_active=bool(row['is_active'])
         )
 

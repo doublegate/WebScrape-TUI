@@ -294,7 +294,7 @@ INSERT OR IGNORE INTO users (id, username, password_hash, email, role, is_active
 VALUES (
     1,
     'admin',
-    '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5eiE0gW5VG8Gy',
+    '$2b$12$FC/M9djTPYmHg0JHCGS1DOUaf2fhy7WULk7dMXEWpkvjMldnrWndW',
     'admin@localhost',
     'admin',
     1
