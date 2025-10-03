@@ -261,11 +261,11 @@ Want to help? Here are documentation tasks:
 
 ## Documentation Versions
 
-This documentation is for **WebScrape-TUI v1.6.0** (October 2025)
+This documentation is for **WebScrape-TUI v2.0.0** (October 2025)
 
-- **v1.0-v1.5:** See git history for older versions
-- **v1.6.0:** Current version (with Analytics & Visualization)
-- **v1.7.0+:** See [ROADMAP.md](ROADMAP.md) for planned features
+- **v1.0-v1.9:** See git history for older versions
+- **v2.0.0:** Current version (Multi-User Foundation with Authentication & RBAC)
+- **v2.1.0+:** See [ROADMAP.md](ROADMAP.md) for planned features
 
 ---
 
@@ -303,7 +303,7 @@ This documentation was created with the help of:
 ---
 
 **Documentation Maintained By:** WebScrape-TUI Development Team
-**Last Updated:** October 2025 (v1.6.0)
+**Last Updated:** October 2025 (v2.0.0)
 **License:** MIT (same as project)
 
 Happy documenting! 📝
