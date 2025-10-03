@@ -4,8 +4,24 @@
 from pathlib import Path
 from datetime import datetime
 import tempfile
+import sys
 
 import pytest
+
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Import from monolithic scrapetui.py file directly
+# We need to import the .py file, not the package directory
+import importlib.util
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import needed components from the monolithic module
+load_env_file = _scrapetui_module.load_env_file
+PREINSTALLED_SCRAPERS = _scrapetui_module.PREINSTALLED_SCRAPERS
 
 
 class TestEnvironmentLoading:
@@ -13,10 +29,6 @@ class TestEnvironmentLoading:
 
     def test_load_env_file_basic(self):
         """Test loading basic environment file."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import load_env_file
-
         # Create temporary .env file
         with tempfile.NamedTemporaryFile(
             mode='w', suffix='.env', delete=False
@@ -36,10 +48,6 @@ class TestEnvironmentLoading:
 
     def test_load_env_file_with_comments(self):
         """Test loading env file with comments."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import load_env_file
-
         # Create temporary .env file with comments
         with tempfile.NamedTemporaryFile(
             mode='w', suffix='.env', delete=False
@@ -60,10 +68,6 @@ class TestEnvironmentLoading:
 
     def test_load_env_file_with_empty_lines(self):
         """Test loading env file with empty lines."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import load_env_file
-
         # Create temporary .env file with empty lines
         with tempfile.NamedTemporaryFile(
             mode='w', suffix='.env', delete=False
@@ -82,10 +86,6 @@ class TestEnvironmentLoading:
 
     def test_load_nonexistent_env_file(self):
         """Test loading nonexistent env file."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import load_env_file
-
         env_vars = load_env_file(Path('/nonexistent/.env'))
         assert env_vars == {}  # Should return empty dict
 
@@ -305,10 +305,6 @@ class TestPreinstalledScrapers:
 
     def test_scraper_profile_structure(self):
         """Test that all preinstalled scrapers have required fields."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import PREINSTALLED_SCRAPERS
-
         required_fields = ['name', 'url', 'selector', 'default_limit']
 
         for scraper in PREINSTALLED_SCRAPERS:
@@ -320,19 +316,11 @@ class TestPreinstalledScrapers:
 
     def test_scraper_names_unique(self):
         """Test that scraper names are unique."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import PREINSTALLED_SCRAPERS
-
         names = [s['name'] for s in PREINSTALLED_SCRAPERS]
         assert len(names) == len(set(names)), "Duplicate scraper names found"
 
     def test_scraper_selectors_valid(self):
         """Test that selectors are non-empty strings."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import PREINSTALLED_SCRAPERS
-
         for scraper in PREINSTALLED_SCRAPERS:
             selector = scraper.get('selector', '')
             assert isinstance(selector, str)
