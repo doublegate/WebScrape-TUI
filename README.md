@@ -23,6 +23,16 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Database Migration**: Automatic migration from v1.x with backup creation
 - **Default Admin Account**: Initial admin user (username: admin, password: Ch4ng3M3)
 
+### 🔒 Data Isolation & Sharing (v2.0.0 Phase 3)
+
+- **Data Privacy**: Users see only their own articles (admins see all)
+- **Scraper Isolation**: Users see own scrapers + shared scrapers
+- **Sharing Toggle**: Share scraper profiles with all users via checkbox
+- **Visual Indicators**: [P] for preinstalled, [S] for shared scrapers
+- **Permission Enforcement**: Users can only edit/delete own scrapers (admin override)
+- **Filter Presets**: Save and load filter configurations (Ctrl+Shift+F/S)
+- **Ownership Tracking**: All content tagged with creator user_id
+
 ### 🖥️ Interactive Terminal Interface
 
 - **Modern TUI**: Built with Textual framework for responsive terminal-based interaction
@@ -911,10 +921,10 @@ pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
 **Test Results (v2.0.0):**
-- 345 total tests across 15+ categories
+- 366 total tests across 15+ categories
 - All tests passing: authentication, UI components, RBAC, export, visualization, scheduling, configuration, AI features ✓
 - Comprehensive coverage including multi-user authentication, session management, and role-based access control
-- 100% pass rate across all test suites (345/345 passing)
+- 100% pass rate across all test suites (366/366 passing)
 - CI/CD pipeline fully operational on Python 3.11 and 3.12
 
 ### Areas for Contribution
