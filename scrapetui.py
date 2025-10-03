@@ -5913,7 +5913,13 @@ class SavedScraperItem(ListItem):
     def __init__(self, scraper_data: sqlite3.Row):
         super().__init__()
         self.scraper_data = scraper_data
-        self.prefix = "[P] " if scraper_data['is_preinstalled'] else ""
+        # v2.0.0 Phase 3: Visual indicators for scraper types
+        prefix_parts = []
+        if scraper_data['is_preinstalled']:
+            prefix_parts.append("[P]")
+        if scraper_data.get('is_shared'):
+            prefix_parts.append("[S]")
+        self.prefix = " ".join(prefix_parts) + " " if prefix_parts else ""
 
     def compose(self) -> ComposeResult:
         display_name = f"{self.prefix}{self.scraper_data['name']}"
@@ -5983,10 +5989,22 @@ class ManageScrapersModal(ModalScreen[Optional[Tuple[str, Any]]]):
         lv.clear()
         try:
             with get_db_connection() as conn:
-                scrapers = conn.execute(
-                    "SELECT id,name,url,selector,default_limit,default_tags_csv,description,is_preinstalled "
-                    "FROM saved_scrapers ORDER BY is_preinstalled DESC, name COLLATE NOCASE"
-                ).fetchall()
+                # v2.0.0 Phase 3: Data isolation - users see own + shared scrapers, admins see all
+                if self.app.is_admin():
+                    # Admin sees all scrapers
+                    scrapers = conn.execute(
+                        "SELECT id,name,url,selector,default_limit,default_tags_csv,description,is_preinstalled,user_id,is_shared "
+                        "FROM saved_scrapers ORDER BY is_preinstalled DESC, name COLLATE NOCASE"
+                    ).fetchall()
+                else:
+                    # Regular users see own scrapers + shared scrapers
+                    scrapers = conn.execute(
+                        "SELECT id,name,url,selector,default_limit,default_tags_csv,description,is_preinstalled,user_id,is_shared "
+                        "FROM saved_scrapers "
+                        "WHERE user_id = ? OR is_shared = 1 "
+                        "ORDER BY is_preinstalled DESC, name COLLATE NOCASE",
+                        (self.app.current_user_id,)
+                    ).fetchall()
             for sd in scrapers:
                 lv.append(SavedScraperItem(sd))
         except Exception as e:
@@ -6085,12 +6103,17 @@ class AddEditScraperModal(ModalScreen[Optional[Dict[str, Any]]]):
                 value=self.sd['description'] if self.is_edit and self.sd['description'] else "",
                 id="scraper_description_input"
             )
+            # v2.0.0 Phase 3: Add sharing checkbox
+            from textual.widgets import Checkbox
+            shared_value = bool(self.sd.get('is_shared', 0)) if self.is_edit and self.sd else False
+            yield Checkbox("Share with all users", id="scraper_is_shared", value=shared_value)
             with Horizontal(classes="modal-buttons"):
                 yield Button("Save", variant="primary", id="save_s_cfg")
                 yield Button("Cancel", id="cancel_s_cfg")
 
     def on_button_pressed(self, e: Button.Pressed) -> None:
         if e.button.id == "save_s_cfg":
+            from textual.widgets import Checkbox
             data = {
                 "name": self.query_one("#scraper_name", Input).value.strip(),
                 "url": self.query_one("#scraper_url", Input).value.strip(),
@@ -6098,7 +6121,9 @@ class AddEditScraperModal(ModalScreen[Optional[Dict[str, Any]]]):
                 "default_limit": 0,
                 "default_tags_csv": self.query_one("#scraper_tags", Input).value.strip(),
                 "description": self.query_one("#scraper_description_input", Input).value.strip(),
-                "is_preinstalled": self.sd['is_preinstalled'] if self.is_edit and self.sd else 0
+                "is_preinstalled": self.sd['is_preinstalled'] if self.is_edit and self.sd else 0,
+                # v2.0.0 Phase 3: Include is_shared flag
+                "is_shared": 1 if self.query_one("#scraper_is_shared", Checkbox).value else 0
             }
             try:
                 data["default_limit"] = int(self.query_one("#scraper_limit", Input).value.strip() or "0")
@@ -7707,6 +7732,13 @@ class WebScraperApp(App[None]):
                 fdesc.append(f"Sentiment='{sval}'")
             elif sval:
                 self.notify("Sentiment filter: Positive, Negative, or Neutral.", title="Filter Info", severity="info")
+
+        # v2.0.0 Phase 3: Data isolation - non-admin users only see own articles
+        if not self.is_admin():
+            conds.append("sd.user_id = :current_user_id")
+            params["current_user_id"] = self.current_user_id
+            fdesc.append(f"User='{self.current_username}'")
+
         if conds:
             bq += " WHERE " + " AND ".join(conds)
         bq += " GROUP BY sd.id ORDER BY " + s_col
@@ -8204,6 +8236,26 @@ class WebScraperApp(App[None]):
             return
         self.selected_row_id = current_id
 
+        # v2.0.0 Phase 3: Check ownership permission before deletion
+        try:
+            def _check_owner():
+                with get_db_connection() as conn:
+                    row = conn.execute("SELECT user_id FROM scraped_data WHERE id=?", (self.selected_row_id,)).fetchone()
+                    return row['user_id'] if row else None
+
+            owner_user_id = _check_owner()
+            if owner_user_id is None:
+                self.notify(f"Article ID {self.selected_row_id} not found.", title="Error", severity="error")
+                return
+
+            if not self.can_delete(owner_user_id):
+                self.notify("Permission denied. You can only delete your own articles.", title="Error", severity="error")
+                return
+        except Exception as e:
+            logger.error(f"Error checking ownership for ID {self.selected_row_id}: {e}", exc_info=True)
+            self.notify(f"Error checking permissions: {e}", title="Error", severity="error")
+            return
+
         def handle_delete_confirmation(confirmed):
             if confirmed:
                 try:
@@ -8270,6 +8322,38 @@ class WebScraperApp(App[None]):
 
         count = len(self.selected_row_ids)
         selected_ids = list(self.selected_row_ids)
+
+        # v2.0.0 Phase 3: Filter out articles user doesn't own (unless admin)
+        if not self.is_admin():
+            try:
+                def _filter_owned():
+                    with get_db_connection() as conn:
+                        placeholders = ','.join('?' * len(selected_ids))
+                        rows = conn.execute(
+                            f"SELECT id FROM scraped_data WHERE id IN ({placeholders}) AND user_id = ?",
+                            selected_ids + [self.current_user_id]
+                        ).fetchall()
+                        return [row['id'] for row in rows]
+
+                owned_ids = _filter_owned()
+                denied_count = len(selected_ids) - len(owned_ids)
+
+                if denied_count > 0:
+                    self.notify(
+                        f"Permission denied for {denied_count} article(s). You can only delete your own articles.",
+                        title="Warning",
+                        severity="warning"
+                    )
+
+                if not owned_ids:
+                    self.notify("No articles to delete. All selected articles belong to other users.", title="Error", severity="error")
+                    return
+
+                selected_ids = owned_ids
+            except Exception as e:
+                logger.error(f"Error filtering owned articles: {e}", exc_info=True)
+                self.notify(f"Error checking permissions: {e}", title="Error", severity="error")
+                return
 
         def handle_bulk_delete_confirmation(confirmed):
             if confirmed:
@@ -9522,41 +9606,50 @@ class WebScraperApp(App[None]):
                 if sd:
                     try:
                         def _add_scraper_blocking():
-                            # v2.0.0: Add user_id tracking
+                            # v2.0.0: Add user_id tracking and is_shared
                             sd['user_id'] = self.current_user_id
-                            with get_db_connection() as conn_blocking:conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled,user_id) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0,:user_id)",sd);conn_blocking.commit()
+                            with get_db_connection() as conn_blocking:conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled,user_id,is_shared) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0,:user_id,:is_shared)",sd);conn_blocking.commit()
                         _add_scraper_blocking()
                         self.notify(f"Scraper '{sd['name']}' added.",title="Success",severity="info")
                     except sqlite3.IntegrityError:self.notify(f"Scraper name '{sd['name']}' already exists.",title="Error",severity="error")
                     except Exception as e:logger.error(f"Err adding scraper: {e}",exc_info=True);self.notify(f"Error adding scraper: {e}",severity="error")
             self.push_screen(AddEditScraperModal(), handle_add_scraper_result)
         elif action=="edit" and data:
+            # v2.0.0 Phase 3: Permission check - only owner or admin can edit
+            if 'user_id' in data and not self.can_edit(data['user_id']):
+                self.notify("Permission denied: You can only edit your own scrapers.", severity="error")
+                return
             def handle_edit_scraper_result(sd):
                 if sd:
                     try:
                         def _edit_scraper_blocking():
                             with get_db_connection() as conn_blocking:
                                 if 'id' in sd:
-                                     conn_blocking.execute("UPDATE saved_scrapers SET name=:name,url=:url,selector=:selector,default_limit=:default_limit,default_tags_csv=:default_tags_csv,description=:description,is_preinstalled=:is_preinstalled WHERE id=:id",sd)
+                                     # v2.0.0 Phase 3: Include is_shared in UPDATE
+                                     conn_blocking.execute("UPDATE saved_scrapers SET name=:name,url=:url,selector=:selector,default_limit=:default_limit,default_tags_csv=:default_tags_csv,description=:description,is_preinstalled=:is_preinstalled,is_shared=:is_shared WHERE id=:id",sd)
                                 else:
-                                     # v2.0.0: Add user_id tracking
+                                     # v2.0.0: Add user_id tracking and is_shared
                                      sd['user_id'] = self.current_user_id
-                                     conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled,user_id) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0,:user_id)",sd)
+                                     conn_blocking.execute("INSERT INTO saved_scrapers (name,url,selector,default_limit,default_tags_csv,description,is_preinstalled,user_id,is_shared) VALUES (:name,:url,:selector,:default_limit,:default_tags_csv,:description,0,:user_id,:is_shared)",sd)
                                 conn_blocking.commit()
                         _edit_scraper_blocking()
                         self.notify(f"Scraper '{sd['name']}' saved.",title="Success",severity="info")
                     except sqlite3.IntegrityError:self.notify(f"Scraper name '{sd['name']}' conflict.",title="Error",severity="error")
                     except Exception as e:logger.error(f"Err saving scraper: {e}",exc_info=True);self.notify(f"Error saving scraper: {e}",severity="error")
             self.push_screen(AddEditScraperModal(scraper_data=data), handle_edit_scraper_result)
-        elif action=="delete" and data: 
+        elif action=="delete" and data:
             sid_to_del=data
             try:
                 def _get_scraper_name_blocking():
                     with get_db_connection() as conn_blocking:
-                        return conn_blocking.execute("SELECT name,is_preinstalled FROM saved_scrapers WHERE id=?",(sid_to_del,)).fetchone()
+                        return conn_blocking.execute("SELECT name,is_preinstalled,user_id FROM saved_scrapers WHERE id=?",(sid_to_del,)).fetchone()
                 s_to_del = _get_scraper_name_blocking()
                 if not s_to_del:self.notify("Scraper not found.",severity="error");return
                 if s_to_del['is_preinstalled']: self.notify("Pre-installed profiles cannot be deleted. Edit them to create custom versions.", severity="warning"); return
+                # v2.0.0 Phase 3: Permission check - only owner or admin can delete
+                if not self.can_delete(s_to_del['user_id']):
+                    self.notify("Permission denied: You can only delete your own scrapers.", severity="error")
+                    return
                 def handle_delete_scraper_confirmation(confirmed):
                     if confirmed:
                         def _delete_scraper_blocking():

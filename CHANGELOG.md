@@ -5,11 +5,11 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2025-10-02
+## [2.0.0] - 2025-10-03
 
 ### 🎉 Major Release: Multi-User Foundation
 
-This release transforms WebScrape-TUI from a single-user application into a comprehensive multi-user platform with secure authentication, role-based access control, and data ownership tracking. This is a foundational release for collaborative content management workflows.
+This release transforms WebScrape-TUI from a single-user application into a comprehensive multi-user platform with secure authentication, role-based access control, data isolation, and sharing capabilities. This is a foundational release for collaborative content management workflows.
 
 ### Added
 
@@ -63,12 +63,29 @@ This release transforms WebScrape-TUI from a single-user application into a comp
     - Role modification
     - Pre-populated with existing data
 
-- **Data Ownership Tracking**
+- **Data Ownership Tracking & Isolation (Phase 3)**
   - New `user_id` column in `scraped_data` table
   - New `user_id` and `is_shared` columns in `saved_scrapers` table
   - All new articles tagged with creator `user_id`
   - All new scraper profiles tagged with creator `user_id`
   - Scheduled scrapes assigned to admin user (id=1)
+  - **Article isolation**: Non-admin users only see own articles
+  - **Scraper isolation**: Users see own + shared scrapers
+  - **Admin oversight**: Admins see all data without filters
+
+- **Sharing Capabilities (Phase 3)**
+  - **Share scrapers** via checkbox in AddEditScraperModal
+  - **Visual indicators**: `[P]` for preinstalled, `[S]` for shared scrapers
+  - **Dynamic visibility**: Shared scrapers visible to all users
+  - **SQL filtering**: `WHERE user_id = ? OR is_shared = 1`
+  - **Permission enforcement**: Only owner or admin can edit/delete scrapers
+
+- **Permission Checks (Phase 3)**
+  - **Delete protection**: `can_delete()` check before deletion
+  - **Edit protection**: `can_edit()` check before modification
+  - **Ownership validation**: User must own resource or be admin
+  - **Error messages**: Clear feedback for unauthorized attempts
+  - **Preinstalled safety**: Cannot delete preinstalled scrapers
 
 - **Enhanced Status Bar**
   - User information display: `👤 {username}`
@@ -109,7 +126,12 @@ This release transforms WebScrape-TUI from a single-user application into a comp
 
 ### Fixed
 
-- **Test Suite Achievement** (345/345 tests passing - 100%)
+- **Test Suite Achievement** (366/366 tests passing - 100%)
+  - **Phase 1 (Authentication)**: 20 tests for auth functions and session management
+  - **Phase 2 (UI/RBAC)**: 33 tests for user interface and permissions
+  - **Phase 3 (Isolation)**: 23 tests for data isolation and sharing
+  - **Advanced AI**: 65 tests for NLP and machine learning features
+  - **Other Modules**: 225+ tests for core functionality
   - Fixed 100+ test failures from v1.9.5
   - Resolved NoActiveWorker error in login flow (commit 4f3d44b)
   - Fixed comprehensive test suite issues for CI/CD (commit e3b4d49)
