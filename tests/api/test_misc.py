@@ -70,7 +70,8 @@ def test_request_logging_headers(client: TestClient, auth_headers: dict):
 
 def test_cors_headers(client: TestClient):
     """Test CORS headers are present."""
-    response = client.get("/")
+    # CORS middleware only adds headers when Origin header is present
+    response = client.get("/", headers={"Origin": "http://localhost:3000"})
 
     # CORS headers should be present
     assert "access-control-allow-origin" in response.headers.keys()
