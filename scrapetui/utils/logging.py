@@ -57,6 +57,6 @@ def get_logger(name: str) -> logging.Logger:
 
 def reset_logging():
     """Reset logging state (for testing)."""
-    global _loggers, _configured
+    global _configured
     _loggers.clear()
     _configured = False
