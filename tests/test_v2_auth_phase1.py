@@ -316,7 +316,7 @@ def test_initialize_admin_user(v2_db):
 
         assert row is not None
         assert row['username'] == 'admin'
-        assert row['email'] == 'admin@localhost'
+        assert row['email'] == 'admin@example.com'
         assert row['role'] == 'admin'
         assert row['is_active'] == 1
 

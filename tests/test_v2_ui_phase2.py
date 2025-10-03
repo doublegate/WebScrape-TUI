@@ -35,12 +35,21 @@ from scrapetui import (
 @pytest.fixture
 def clean_test_db():
     """Provide clean database for each test."""
+    from scrapetui.config import reset_config
+
     # Create temporary database file
     temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.db')
     temp_db_path = Path(temp_file.name)
     temp_file.close()
 
-    # Patch DB_PATH in scrapetui module
+    # Set DATABASE_PATH environment variable (required for config.py)
+    original_db_path_env = os.environ.get('DATABASE_PATH')
+    os.environ['DATABASE_PATH'] = str(temp_db_path)
+
+    # Reset config singleton to pick up new DATABASE_PATH
+    reset_config()
+
+    # Patch DB_PATH in scrapetui module (legacy support)
     import scrapetui
     original_db_path = scrapetui.DB_PATH
     scrapetui.DB_PATH = temp_db_path
@@ -51,7 +60,13 @@ def clean_test_db():
 
     yield temp_db_path
 
-    # Cleanup
+    # Cleanup - restore environment and config
+    if original_db_path_env is None:
+        os.environ.pop('DATABASE_PATH', None)
+    else:
+        os.environ['DATABASE_PATH'] = original_db_path_env
+    reset_config()
+
     scrapetui.DB_PATH = original_db_path
     if temp_db_path.exists():
         temp_db_path.unlink()
