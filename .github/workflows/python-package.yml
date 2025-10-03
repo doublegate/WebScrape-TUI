@@ -44,5 +44,5 @@ jobs:
       run: |
         # Run pytest with timeout to prevent hanging tests
         # Each test limited to 30 seconds, full suite limited to 10 minutes
-        # Only test unit/ and api/ directories (legacy tests have known issues)
-        pytest tests/unit/ tests/api/ --timeout=30 --timeout-method=thread --tb=short
+        # Test unit/, api/, and migrated legacy test files
+        pytest tests/unit/ tests/api/ tests/test_analytics.py tests/test_performance.py tests/test_scheduling.py tests/test_utils.py --timeout=30 --timeout-method=thread --tb=short
