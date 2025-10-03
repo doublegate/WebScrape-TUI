@@ -921,10 +921,10 @@ pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
 **Test Results (v2.0.0):**
-- 366 total tests across 15+ categories
+- 374 total tests across 15+ categories
 - All tests passing: authentication, UI components, RBAC, export, visualization, scheduling, configuration, AI features ✓
 - Comprehensive coverage including multi-user authentication, session management, and role-based access control
-- 100% pass rate across all test suites (366/366 passing)
+- 100% pass rate across all test suites (374/374 passing)
 - CI/CD pipeline fully operational on Python 3.11 and 3.12
 
 ### Areas for Contribution

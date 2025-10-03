@@ -126,12 +126,13 @@ This release transforms WebScrape-TUI from a single-user application into a comp
 
 ### Fixed
 
-- **Test Suite Achievement** (366/366 tests passing - 100%)
+- **Test Suite Achievement** (374/374 tests passing - 100%)
   - **Phase 1 (Authentication)**: 20 tests for auth functions and session management
   - **Phase 2 (UI/RBAC)**: 33 tests for user interface and permissions
   - **Phase 3 (Isolation)**: 23 tests for data isolation and sharing
+  - **Performance Tests**: 6 tests for multi-user and large dataset scenarios
   - **Advanced AI**: 65 tests for NLP and machine learning features
-  - **Other Modules**: 225+ tests for core functionality
+  - **Other Modules**: 227+ tests for core functionality
   - Fixed 100+ test failures from v1.9.5
   - Resolved NoActiveWorker error in login flow (commit 4f3d44b)
   - Fixed comprehensive test suite issues for CI/CD (commit e3b4d49)
@@ -139,6 +140,21 @@ This release transforms WebScrape-TUI from a single-user application into a comp
   - Made entity extraction test robust to spaCy tokenization (commit 1d8201c)
   - Achieved 100% test pass rate (commit 0dd6b7f)
   - CI/CD pipeline fully operational on Python 3.11 and 3.12
+
+### Fixed - Performance Test Suite (Post-Release)
+- **commit ae670be**: Updated performance tests to use DB_PATH instead of deprecated DB_FILE
+- **commit 8de1133**: Aligned performance test database schema with actual table structure
+- **commit 53c0ddc**: Resolved all performance test column and UNIQUE constraint issues
+  - Fixed `scraped_at` → `timestamp` column name mismatch
+  - Fixed `base_url` → `url` column name mismatch
+  - Resolved UNIQUE constraint violations in test data generation
+  - Added time-based + random uniqueness to prevent duplicates
+
+### Test Coverage Update
+- **Total Tests:** 374 (increased from 366 due to performance tests now passing)
+- **Pass Rate:** 100% (374/374)
+- **CI/CD:** Fully operational on Python 3.11 & 3.12
+- **Performance Tests:** 6 comprehensive tests now integrated
 
 - **Python 3.12+ Compatibility**
   - Removed deprecated SQLite datetime adapters/converters
