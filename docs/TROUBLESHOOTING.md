@@ -6,6 +6,7 @@ This guide covers common issues, error messages, and solutions for WebScrape-TUI
 
 - [Python Version Compatibility Issues](#python-version-compatibility-issues)
 - [Installation Issues](#installation-issues)
+- [Authentication & User Management Issues (v2.0.0)](#authentication--user-management-issues-v200)
 - [Runtime Errors](#runtime-errors)
 - [Database Issues](#database-issues)
 - [Scraping Problems](#scraping-problems)
@@ -198,6 +199,221 @@ pip install matplotlib pandas
 
 # Or reinstall all dependencies
 pip install -r requirements.txt
+```
+
+---
+
+## Authentication & User Management Issues (v2.0.0)
+
+### Issue: Cannot login with default credentials
+
+**Problem:** Default admin password not working
+
+**Symptoms:**
+- "Invalid username or password" error on startup
+- Cannot access application
+
+**Solution:**
+```bash
+# Verify you're using correct default credentials
+# Username: admin
+# Password: Ch4ng3M3 (exact case, includes numbers)
+
+# If still failing, check database for user account:
+sqlite3 scraped_data_tui_v1.0.db "SELECT username, role, is_active FROM users WHERE username='admin';"
+
+# If admin doesn't exist (corrupted DB), recreate:
+# Stop app, backup DB, delete DB, restart app (creates new admin)
+```
+
+---
+
+### Issue: "ModuleNotFoundError: No module named 'bcrypt'"
+
+**Problem:** Missing bcrypt dependency (required for v2.0.0)
+
+**Solution:**
+```bash
+# Install bcrypt
+pip install bcrypt
+
+# Or reinstall all dependencies
+pip install -r requirements.txt
+
+# Verify installation
+python -c "import bcrypt; print('bcrypt installed:', bcrypt.__version__)"
+```
+
+---
+
+### Issue: Session expired constantly
+
+**Problem:** Sessions expire too quickly
+
+**Symptoms:**
+- Logged out after short period
+- "Session expired" messages
+
+**Solution:**
+```bash
+# Sessions expire after 24 hours (normal behavior)
+# If expiring faster, check system time:
+date
+
+# If time is wrong, fix system clock:
+sudo timedatectl set-time "YYYY-MM-DD HH:MM:SS"
+
+# Or adjust timezone:
+sudo timedatectl set-timezone America/New_York
+```
+
+---
+
+### Issue: Cannot change password
+
+**Problem:** Password change fails validation
+
+**Symptoms:**
+- "Password must be at least 8 characters" error
+- "Passwords do not match" error
+- "Current password incorrect" error
+
+**Solution:**
+```bash
+# Password requirements (v2.0.0):
+# - Minimum 8 characters
+# - No maximum (reasonable limits apply)
+# - No complexity requirements (yet)
+
+# Steps:
+# 1. Press Ctrl+U (User Profile)
+# 2. Click "Change Password"
+# 3. Enter current password correctly
+# 4. Enter new password (8+ chars)
+# 5. Re-enter new password (must match exactly)
+
+# If current password forgotten:
+# Admin can reset via database (not recommended) or
+# Backup DB, delete DB, start fresh with new admin
+```
+
+---
+
+### Issue: Cannot access User Management (Ctrl+Alt+U)
+
+**Problem:** User Management modal doesn't open
+
+**Symptoms:**
+- Ctrl+Alt+U does nothing
+- "Permission denied" notification
+
+**Solution:**
+```bash
+# User Management is admin-only
+
+# Check your role:
+# 1. Press Ctrl+U (User Profile)
+# 2. Look at "Role" field
+# 3. Must be "admin" to access User Management
+
+# If you're not admin:
+# - Ask admin to promote you
+# - Or login as admin to change roles
+
+# If you ARE admin and it still doesn't work:
+# Check logs for errors:
+tail -f scraper_tui_v1.0.log
+```
+
+---
+
+### Issue: Database migration from v1.x failed
+
+**Problem:** Error during automatic migration to v2.0.0
+
+**Symptoms:**
+- "Migration failed" error on startup
+- Database corruption
+- Missing tables
+
+**Solution:**
+```bash
+# Check if backup was created:
+ls -lh scraped_data_tui_v1.0.db.backup-v1
+
+# If backup exists, restore and retry:
+cp scraped_data_tui_v1.0.db.backup-v1 scraped_data_tui_v1.0.db
+python scrapetui.py
+
+# If migration still fails:
+# 1. Export data from v1.x (CSV/JSON)
+# 2. Delete database
+# 3. Start v2.0.0 (creates new DB)
+# 4. Import data manually
+
+# Check migration logs:
+tail -100 scraper_tui_v1.0.log | grep -i migration
+```
+
+---
+
+### Issue: "Permission denied" when editing/deleting content
+
+**Problem:** User lacks permission for operation
+
+**Symptoms:**
+- Cannot edit/delete articles
+- Cannot edit/delete scraper profiles
+- "Permission denied" notifications
+
+**Solution:**
+```bash
+# v2.0.0 Permission System:
+# - Admin: Can edit/delete EVERYTHING
+# - User: Can edit/delete OWN content only
+# - Viewer: Cannot edit/delete ANYTHING (read-only)
+
+# Check your role and content ownership:
+# 1. Press Ctrl+U to see your role
+# 2. Check who created the content (user_id column)
+
+# To edit content you don't own:
+# - Must be admin, OR
+# - Ask content owner to share/transfer ownership
+
+# If you're admin and still can't edit:
+# This is a bug - check logs and report issue
+```
+
+---
+
+### Issue: Cannot create new users
+
+**Problem:** User creation fails
+
+**Symptoms:**
+- "Username already exists" error
+- Empty username/password error
+- Role selection not working
+
+**Solution:**
+```bash
+# Requirements for creating users:
+# 1. Must be logged in as admin
+# 2. Username must be unique (check existing users)
+# 3. Password must be 8+ characters
+# 4. Role must be selected
+
+# Check existing users:
+# Press Ctrl+Alt+U (if admin)
+# View all usernames in table
+
+# If duplicate username:
+# Choose different username
+
+# If all fields correct but still fails:
+# Check logs for database errors:
+tail -f scraper_tui_v1.0.log
 ```
 
 ---
@@ -872,5 +1088,5 @@ python scrapetui.py
 
 ---
 
-**Last Updated:** October 2025 (v1.6.0)
+**Last Updated:** October 2025 (v2.0.0)
 **Contributions:** Please submit issues or PRs for additional troubleshooting topics!
