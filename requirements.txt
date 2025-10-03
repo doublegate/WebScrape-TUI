@@ -72,6 +72,16 @@ python-Levenshtein>=0.20.0
 # bcrypt for secure password hashing
 bcrypt>=4.0.0,<5.0.0
 
+# REST API Support (v2.1.0)
+# FastAPI framework for building REST APIs
+fastapi>=0.104.0
+# ASGI server for running FastAPI applications
+uvicorn[standard]>=0.24.0
+# JWT token handling for API authentication
+python-jose[cryptography]>=3.3.0
+# Form data handling for FastAPI
+python-multipart>=0.0.6
+
 # Optional Development Dependencies (uncomment for development)
 # pytest>=7.0.0                    # Testing framework
 # pytest-cov>=4.0.0                # Coverage reporting
