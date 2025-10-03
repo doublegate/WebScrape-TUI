@@ -26,49 +26,63 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scrapetui import (
-    get_db_connection,
-    init_db,
-    hash_password,
-    create_user_session,
-    validate_session,
-    db_datetime_now,
-    db_datetime_future,
-)
+# Import from monolithic scrapetui.py file directly
+# We need to import the .py file, not the package directory
+import importlib.util
+from pathlib import Path
+
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import needed components from the monolithic module
+get_db_connection = _scrapetui_module.get_db_connection
+init_db = _scrapetui_module.init_db
+hash_password = _scrapetui_module.hash_password
+create_user_session = _scrapetui_module.create_user_session
+validate_session = _scrapetui_module.validate_session
+db_datetime_now = _scrapetui_module.db_datetime_now
+db_datetime_future = _scrapetui_module.db_datetime_future
 
 
 @pytest.fixture
 def perf_test_db(tmp_path):
     """Create a temporary database for performance testing."""
-    from pathlib import Path
     db_path = tmp_path / "perf_test.db"
 
-    # Initialize database
-    import scrapetui
-    original_db = scrapetui.DB_PATH
-    scrapetui.DB_PATH = Path(db_path)
+    # Patch the monolithic module's DB_PATH to use temp database
+    global _scrapetui_module
+    original_db = _scrapetui_module.DB_PATH
+    _scrapetui_module.DB_PATH = Path(db_path)
 
     init_db()
 
     yield str(db_path)
 
     # Restore original
-    scrapetui.DB_PATH = original_db
+    _scrapetui_module.DB_PATH = original_db
 
 
 def create_test_users(count: int = 10) -> List[int]:
     """Create multiple test users and return their IDs."""
+    import random
     user_ids = []
+    # Generate unique base ID for this test run
+    base_unique_id = int(time.time() * 1000000)
+
     with get_db_connection() as conn:
         cursor = conn.cursor()
         for i in range(count):
+            # Make usernames and emails unique to avoid UNIQUE constraint failures
+            unique_id = f"{base_unique_id}_{random.randint(1000, 9999)}_{i}"
             cursor.execute(
                 """INSERT INTO users (username, password_hash, email, role, created_at, is_active)
                    VALUES (?, ?, ?, ?, ?, 1)""",
                 (
-                    f"testuser{i}",
+                    f"testuser_{unique_id}",
                     hash_password(f"password{i}"),
-                    f"user{i}@test.com",
+                    f"user_{unique_id}@test.com",
                     "user",
                     db_datetime_now(),
                 ),
@@ -80,18 +94,24 @@ def create_test_users(count: int = 10) -> List[int]:
 
 def create_test_articles(user_id: int, count: int = 100) -> List[int]:
     """Create multiple test articles for a user."""
+    import random
     article_ids = []
+    # Generate unique base ID for this test run
+    base_unique_id = int(time.time() * 1000000)
+
     with get_db_connection() as conn:
         cursor = conn.cursor()
         for i in range(count):
+            # Make links unique to avoid UNIQUE constraint failures
+            unique_id = f"{user_id}_{i}_{base_unique_id}_{random.randint(1000, 9999)}"
             cursor.execute(
                 """INSERT INTO scraped_data
                    (url, title, link, timestamp, user_id)
                    VALUES (?, ?, ?, ?, ?)""",
                 (
-                    f"http://example.com/article{user_id}_{i}",
+                    f"http://example.com/article_{unique_id}",
                     f"Test Article {i} by User {user_id}",
-                    f"http://example.com/article{user_id}_{i}",
+                    f"http://example.com/article_{unique_id}",
                     db_datetime_now(),
                     user_id,
                 ),
@@ -158,7 +178,8 @@ class TestArticleQueryPerformance:
 
         # Verify results
         assert len(results) == 50  # Should get 50 most recent
-        assert all(row[1].startswith(f"http://example.com/article{test_user_id}_") for row in results)
+        # Check that all articles belong to test_user_id (link format: article_{user_id}_{i}_{timestamp}_{random})
+        assert all(row[1].startswith(f"http://example.com/article_{test_user_id}_") for row in results)
 
         # Performance assertion: < 100ms for filtered query
         assert elapsed_ms < 100, f"Query took {elapsed_ms:.2f}ms (target: <100ms)"

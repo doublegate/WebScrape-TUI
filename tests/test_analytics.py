@@ -15,13 +15,29 @@ import random
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scrapetui import AnalyticsManager, init_db, get_db_connection, DB_PATH
+# Import from monolithic scrapetui.py file directly
+# We need to import the .py file, not the package directory which has AnalyticsManager=None
+import importlib.util
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import needed components from the monolithic module
+AnalyticsManager = _scrapetui_module.AnalyticsManager
+init_db = _scrapetui_module.init_db
+get_db_connection = _scrapetui_module.get_db_connection
+DB_PATH = _scrapetui_module.DB_PATH
 
 
 @pytest.fixture
 def analytics_test_db(temp_db):
     """Create a temporary database for analytics testing with unique data."""
     # temp_db fixture from conftest.py already provides isolated database
+    # IMPORTANT: Must patch the monolithic module's DB_PATH to use temp database
+    global _scrapetui_module
+    _scrapetui_module.DB_PATH = temp_db
+
     # Just add test data to it
     from scrapetui.core.database import get_db_connection as get_conn
 

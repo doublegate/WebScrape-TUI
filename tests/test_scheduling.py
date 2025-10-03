@@ -4,6 +4,8 @@
 import pytest
 import tempfile
 import sqlite3
+import time
+import random
 from pathlib import Path
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
@@ -12,7 +14,19 @@ from unittest.mock import Mock, patch
 import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scrapetui import ScheduleManager, init_db, get_db_connection, DB_PATH
+# Import from monolithic scrapetui.py file directly
+# We need to import the .py file, not the package directory which has ScheduleManager=None
+import importlib.util
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import needed components from the monolithic module
+ScheduleManager = _scrapetui_module.ScheduleManager
+init_db = _scrapetui_module.init_db
+get_db_connection = _scrapetui_module.get_db_connection
+DB_PATH = _scrapetui_module.DB_PATH
 
 
 @pytest.fixture
@@ -21,23 +35,27 @@ def temp_db(monkeypatch):
     with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
         temp_db_path = f.name
 
-    # Monkeypatch the DB_PATH to use our temp database
-    monkeypatch.setattr('scrapetui.DB_PATH', Path(temp_db_path))
+    # Patch the monolithic module's DB_PATH to use temp database
+    global _scrapetui_module
+    original_db = _scrapetui_module.DB_PATH
+    _scrapetui_module.DB_PATH = Path(temp_db_path)
 
     # Initialize the database
     init_db()
 
-    # Add a test scraper profile
+    # Add a test scraper profile with unique name to avoid UNIQUE constraints
+    unique_id = f"{int(time.time() * 1000000)}-{random.randint(1000, 9999)}"
     with get_db_connection() as conn:
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, default_limit)
-            VALUES ('Test Scraper', 'https://example.com', 'h2 a', 10)
-        """)
+            INSERT INTO saved_scrapers (name, url, selector, default_limit, user_id)
+            VALUES (?, 'https://example.com', 'h2 a', 10, 1)
+        """, (f'Test Scraper {unique_id}',))
         conn.commit()
 
     yield temp_db_path
 
     # Cleanup
+    _scrapetui_module.DB_PATH = original_db
     Path(temp_db_path).unlink(missing_ok=True)
 
 
