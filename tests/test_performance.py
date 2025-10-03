@@ -86,11 +86,12 @@ def create_test_articles(user_id: int, count: int = 100) -> List[int]:
         for i in range(count):
             cursor.execute(
                 """INSERT INTO scraped_data
-                   (link, title, scraped_at, user_id)
-                   VALUES (?, ?, ?, ?)""",
+                   (url, title, link, timestamp, user_id)
+                   VALUES (?, ?, ?, ?, ?)""",
                 (
                     f"http://example.com/article{user_id}_{i}",
                     f"Test Article {i} by User {user_id}",
+                    f"http://example.com/article{user_id}_{i}",
                     db_datetime_now(),
                     user_id,
                 ),
@@ -108,14 +109,12 @@ def create_test_scrapers(user_id: int, count: int = 10, shared: bool = False) ->
         for i in range(count):
             cursor.execute(
                 """INSERT INTO saved_scrapers
-                   (name, base_url, title_selector, content_selector,
-                    is_preinstalled, user_id, is_shared)
-                   VALUES (?, ?, ?, ?, 0, ?, ?)""",
+                   (name, url, selector, is_preinstalled, user_id, is_shared)
+                   VALUES (?, ?, ?, 0, ?, ?)""",
                 (
                     f"TestScraper_{user_id}_{i}",
                     f"http://example{i}.com",
-                    "h1.title",
-                    "div.content",
+                    "article, div.content",
                     user_id,
                     1 if shared else 0,
                 ),
