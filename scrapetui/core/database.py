@@ -42,8 +42,13 @@ def get_db_connection() -> Generator[sqlite3.Connection, None, None]:
         conn.close()
 
 
-def init_db() -> None:
-    """Initialize database with schema."""
+def init_db() -> bool:
+    """
+    Initialize database with schema.
+
+    Returns:
+        True on successful initialization, False on failure
+    """
     from ..database.schema import get_schema, SCHEMA_VERSION
     from ..database.migrations import run_migrations
 
@@ -51,16 +56,21 @@ def init_db() -> None:
     db_path = get_db_path()
     logger.info(f"Initializing database at {db_path}")
 
-    with get_db_connection() as conn:
-        # Create schema
-        schema_sql = get_schema()
-        conn.executescript(schema_sql)
-        conn.commit()
+    try:
+        with get_db_connection() as conn:
+            # Create schema
+            schema_sql = get_schema()
+            conn.executescript(schema_sql)
+            conn.commit()
 
-        # Run migrations
-        run_migrations(conn)
+            # Run migrations
+            run_migrations(conn)
 
-        logger.info(f"Database initialization complete (schema v{SCHEMA_VERSION})")
+            logger.info(f"Database initialization complete (schema v{SCHEMA_VERSION})")
+            return True
+    except Exception as e:
+        logger.error(f"Database initialization failed: {e}", exc_info=True)
+        return False
 
 
 def check_database_exists() -> bool:
