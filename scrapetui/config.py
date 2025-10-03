@@ -157,8 +157,8 @@ def init_config() -> Config:
     return _config
 
 
-def reset_config():
-    """Reset config singleton (for testing)."""
+def reset_config() -> None:
+    """Reset global config instance (useful for testing)."""
     global _config, _env_loaded
     _config = None
     _env_loaded = False

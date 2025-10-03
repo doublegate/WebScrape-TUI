@@ -295,7 +295,7 @@ VALUES (
     1,
     'admin',
     '$2b$12$FC/M9djTPYmHg0JHCGS1DOUaf2fhy7WULk7dMXEWpkvjMldnrWndW',
-    'admin@example.com',
+    'admin@localhost',
     'admin',
     1
 );

@@ -83,8 +83,13 @@ def db_connection():
     temp_db_path = Path(temp_file.name)
     temp_file.close()
 
-    # Patch DB_PATH in scrapetui module
-    original_db_path = scrapetui.DB_PATH
+    # Set DATABASE_PATH environment variable and reset config
+    original_db_path = os.environ.get('DATABASE_PATH')
+    os.environ['DATABASE_PATH'] = str(temp_db_path)
+    scrapetui.reset_config()  # Force config reload with new DATABASE_PATH
+
+    # Also patch the legacy scrapetui.DB_PATH for backward compatibility
+    original_legacy_db = scrapetui.DB_PATH
     scrapetui.DB_PATH = temp_db_path
 
     # Initialize full database schema
@@ -98,6 +103,14 @@ def db_connection():
 
     # Cleanup
     conn.__exit__(None, None, None)  # Exit context manager
-    scrapetui.DB_PATH = original_db_path
+
+    # Restore environment and config
+    if original_db_path is not None:
+        os.environ['DATABASE_PATH'] = original_db_path
+    else:
+        os.environ.pop('DATABASE_PATH', None)
+    scrapetui.DB_PATH = original_legacy_db
+    scrapetui.reset_config()  # Reset config back
+
     if temp_db_path.exists():
         temp_db_path.unlink()

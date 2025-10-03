@@ -41,20 +41,32 @@ from scrapetui import (
 @pytest.fixture
 def temp_db():
     """Create a temporary database for testing."""
+    import os
+    from scrapetui import reset_config
     # Create temporary database file
     temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.db')
     temp_db_path = Path(temp_file.name)
     temp_file.close()
 
-    # Patch DB_PATH in scrapetui module
+    # Set DATABASE_PATH environment variable and reset config
+    original_env_db = os.environ.get('DATABASE_PATH')
+    os.environ['DATABASE_PATH'] = str(temp_db_path)
+    reset_config()  # Force config reload
+
+    # Also patch legacy DB_PATH for backward compatibility
     import scrapetui
     original_db_path = scrapetui.DB_PATH
     scrapetui.DB_PATH = temp_db_path
 
     yield temp_db_path
 
-    # Cleanup
+    # Cleanup - restore environment and config
     scrapetui.DB_PATH = original_db_path
+    if original_env_db is not None:
+        os.environ['DATABASE_PATH'] = original_env_db
+    else:
+        os.environ.pop('DATABASE_PATH', None)
+    reset_config()
     if temp_db_path.exists():
         temp_db_path.unlink()
 
@@ -62,9 +74,9 @@ def temp_db():
 @pytest.fixture
 def v2_db(temp_db):
     """Create a v2.0 database with schema."""
-    # Run migration to create v2.0 schema
-    result = migrate_database_to_v2()
-    assert result is True, "Migration should succeed"
+    # Initialize v2.0 schema directly (init_db creates latest schema)
+    from scrapetui import init_db
+    init_db()
     return temp_db
 
 
@@ -403,22 +415,27 @@ def test_migrate_v1_to_v2_user_id_assignment(v1_db):
 def test_migrate_v1_to_v2_creates_backup(v1_db):
     """Test that migration creates a backup file."""
     import scrapetui
-    backup_path = scrapetui.DB_PATH.with_suffix('.db.backup-v1')
+    import glob
 
-    # Ensure no existing backup
-    if backup_path.exists():
-        backup_path.unlink()
+    # Get the database directory and filename
+    db_path = scrapetui.DB_PATH
+    backup_pattern = str(db_path.parent / f"{db_path.name}.backup-v1-*")
+
+    # Clean up any existing backups
+    for backup_file in glob.glob(backup_pattern):
+        Path(backup_file).unlink()
 
     # Run migration
     result = migrate_database_to_v2()
     assert result is True
 
-    # Verify backup was created
-    assert backup_path.exists()
+    # Verify at least one backup was created with the right pattern
+    backup_files = glob.glob(backup_pattern)
+    assert len(backup_files) > 0, f"Expected backup file matching {backup_pattern}"
 
     # Cleanup
-    if backup_path.exists():
-        backup_path.unlink()
+    for backup_file in backup_files:
+        Path(backup_file).unlink()
 
 
 def test_migrate_v2_to_v2_idempotent(v2_db):

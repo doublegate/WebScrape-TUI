@@ -41,8 +41,27 @@ from .core.auth import (
     db_datetime_now,
     db_datetime_future
 )
-from .database.migrations import run_migrations as migrate_database_to_v2
-from .config import Config, get_config
+from .database.migrations import run_migrations
+from .config import Config, get_config, reset_config
+
+
+# Backward-compatible wrapper for migrate_database_to_v2()
+# Tests expect this to work without arguments
+def migrate_database_to_v2() -> bool:
+    """
+    Migrate v1.x database to v2.0 schema.
+
+    This is a wrapper that maintains backward compatibility with tests.
+    Returns:
+        True if migration successful, False otherwise
+    """
+    try:
+        with get_db_connection() as conn:
+            return run_migrations(conn)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Migration failed: {e}")
+        return False
 
 # Placeholder exports for items not yet migrated - tests may need updates
 # These will return None/empty to avoid breaking imports while we complete migration
@@ -100,6 +119,9 @@ __all__ = [
     # Configuration
     "load_env_file",
     "ConfigManager",
+    "Config",
+    "get_config",
+    "reset_config",
 
     # AI Providers
     "AIProvider",
