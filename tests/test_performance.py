@@ -103,16 +103,21 @@ def create_test_articles(user_id: int, count: int = 100) -> List[int]:
 
 def create_test_scrapers(user_id: int, count: int = 10, shared: bool = False) -> List[int]:
     """Create test scraper profiles for a user."""
+    import random
+    import time
     scraper_ids = []
     with get_db_connection() as conn:
         cursor = conn.cursor()
         for i in range(count):
+            # Make unique names to avoid UNIQUE constraint failures
+            # Include timestamp and random component for uniqueness
+            unique_id = f"{user_id}_{i}_{int(time.time()*1000)}_{random.randint(1000,9999)}"
             cursor.execute(
                 """INSERT INTO saved_scrapers
                    (name, url, selector, is_preinstalled, user_id, is_shared)
                    VALUES (?, ?, ?, 0, ?, ?)""",
                 (
-                    f"TestScraper_{user_id}_{i}",
+                    f"TestScraper_{unique_id}",
                     f"http://example{i}.com",
                     "article, div.content",
                     user_id,
@@ -141,10 +146,10 @@ class TestArticleQueryPerformance:
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                """SELECT id, link, title, scraped_at
+                """SELECT id, link, title, timestamp
                    FROM scraped_data
                    WHERE user_id = ?
-                   ORDER BY scraped_at DESC
+                   ORDER BY timestamp DESC
                    LIMIT 50""",
                 (test_user_id,),
             )
@@ -170,9 +175,9 @@ class TestArticleQueryPerformance:
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                """SELECT id, link, title, scraped_at
+                """SELECT id, link, title, timestamp
                    FROM scraped_data
-                   ORDER BY scraped_at DESC
+                   ORDER BY timestamp DESC
                    LIMIT 50"""
             )
             results = cursor.fetchall()
@@ -209,7 +214,7 @@ class TestScraperLoadPerformance:
         with get_db_connection() as conn:
             cursor = conn.cursor()
             cursor.execute(
-                """SELECT id, name, base_url, is_shared, is_preinstalled
+                """SELECT id, name, url, is_shared, is_preinstalled
                    FROM saved_scrapers
                    WHERE user_id = ? OR is_shared = 1
                    ORDER BY name""",
@@ -284,10 +289,14 @@ class TestComplexQueryPerformance:
         # Add tags to articles
         with get_db_connection() as conn:
             cursor = conn.cursor()
-            for i, article_id in enumerate(article_ids[:50]):
-                # Add "important" tag to first 50 articles
-                cursor.execute("INSERT INTO tags (name) VALUES (?)", ("important",))
-                tag_id = cursor.lastrowid
+            # Create the tag once (use INSERT OR IGNORE to handle if it already exists)
+            cursor.execute("INSERT OR IGNORE INTO tags (name) VALUES (?)", ("important",))
+            # Get the tag_id
+            cursor.execute("SELECT id FROM tags WHERE name = ?", ("important",))
+            tag_id = cursor.fetchone()[0]
+
+            # Add tag to first 50 articles
+            for article_id in article_ids[:50]:
                 cursor.execute(
                     "INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)",
                     (article_id, tag_id),
@@ -304,7 +313,7 @@ class TestComplexQueryPerformance:
                    JOIN article_tags at ON sd.id = at.article_id
                    JOIN tags t ON at.tag_id = t.id
                    WHERE t.name = ? AND sd.user_id = ?
-                   ORDER BY sd.scraped_at DESC""",
+                   ORDER BY sd.timestamp DESC""",
                 ("important", user_id),
             )
             results = cursor.fetchall()
