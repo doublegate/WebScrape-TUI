@@ -114,3 +114,91 @@ def db_connection():
 
     if temp_db_path.exists():
         temp_db_path.unlink()
+
+
+@pytest.fixture
+def temp_db():
+    """
+    Create temporary test database with proper isolation.
+
+    This fixture provides a complete isolated database for each test,
+    with automatic cleanup after the test completes.
+    """
+    from scrapetui.config import reset_config
+    from scrapetui.database.schema import get_schema_v2_0_0, get_indexes, get_builtin_data
+
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.db', delete=False) as f:
+        db_path = Path(f.name)
+
+    # Override database path via environment variable
+    original_db_path = os.environ.get('DATABASE_PATH')
+    os.environ['DATABASE_PATH'] = str(db_path)
+
+    # Reset config singleton to pick up new DATABASE_PATH
+    reset_config()
+
+    # Initialize database schema
+    conn = sqlite3.connect(str(db_path))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+
+    # Create schema
+    conn.executescript(get_schema_v2_0_0())
+
+    # Add API tables (v2.1.0)
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS token_blacklist (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            token TEXT NOT NULL UNIQUE,
+            blacklisted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS refresh_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            token TEXT NOT NULL UNIQUE,
+            user_id INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            expires_at TIMESTAMP NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_token_blacklist_token ON token_blacklist (token);
+        CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token ON refresh_tokens (token);
+        CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user ON refresh_tokens (user_id);
+    """)
+
+    conn.executescript(get_indexes())
+    conn.executescript(get_builtin_data())
+
+    conn.commit()
+    conn.close()
+
+    yield db_path
+
+    # Cleanup - restore original DATABASE_PATH and reset config singleton
+    if original_db_path is None:
+        os.environ.pop('DATABASE_PATH', None)
+    else:
+        os.environ['DATABASE_PATH'] = original_db_path
+    reset_config()
+
+    if db_path.exists():
+        db_path.unlink()
+
+
+@pytest.fixture
+def unique_link():
+    """Generate unique article link to avoid UNIQUE constraint violations."""
+    import time
+    import random
+    unique_id = f"{int(time.time() * 1000000)}-{random.randint(1000, 9999)}"
+    return f"https://example.com/article-{unique_id}"
+
+
+@pytest.fixture
+def unique_scraper_name():
+    """Generate unique scraper name to avoid UNIQUE constraint violations."""
+    import time
+    import random
+    unique_id = f"{int(time.time() * 1000000)}-{random.randint(1000, 9999)}"
+    return f"Test Scraper {unique_id}"

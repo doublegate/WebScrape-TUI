@@ -8,6 +8,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, MagicMock
 import os
+import time
+import random
 
 # Import the application components
 import sys
@@ -17,67 +19,80 @@ from scrapetui import AnalyticsManager, init_db, get_db_connection, DB_PATH
 
 
 @pytest.fixture
-def temp_db(monkeypatch):
-    """Create a temporary database for testing."""
-    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
-        temp_db_path = f.name
+def analytics_test_db(temp_db):
+    """Create a temporary database for analytics testing with unique data."""
+    # temp_db fixture from conftest.py already provides isolated database
+    # Just add test data to it
+    from scrapetui.core.database import get_db_connection as get_conn
 
-    # Monkeypatch the DB_PATH to use our temp database
-    monkeypatch.setattr('scrapetui.DB_PATH', Path(temp_db_path))
-
-    # Initialize the database
-    init_db()
-
-    # Add test data
-    with get_db_connection() as conn:
+    with get_conn() as conn:
         # Insert articles with various sentiments and timestamps
         now = datetime.now()
-        test_articles = [
-            # Positive sentiment articles
-            ('Test Article 1', 'https://example.com/1', 'Content 1', 'Summary 1', 'positive', now),
-            ('Test Article 2', 'https://example.com/2', 'Content 2', 'Summary 2', 'positive', now - timedelta(days=1)),
-            ('Test Article 3', 'https://example.com/3', 'Content 3', 'Summary 3', 'positive', now - timedelta(days=2)),
-            # Negative sentiment articles
-            ('Test Article 4', 'https://example.com/4', 'Content 4', 'Summary 4', 'negative', now - timedelta(days=3)),
-            ('Test Article 5', 'https://example.com/5', 'Content 5', 'Summary 5', 'negative', now - timedelta(days=4)),
-            # Neutral sentiment articles
-            ('Test Article 6', 'https://example.com/6', 'Content 6', 'Summary 6', 'neutral', now - timedelta(days=5)),
-            ('Test Article 7', 'https://example.com/7', 'Content 7', 'Summary 7', 'neutral', now - timedelta(days=6)),
-            # Articles without summaries or sentiment
-            ('Test Article 8', 'https://example.com/8', 'Content 8', None, None, now - timedelta(days=7)),
-            ('Test Article 9', 'https://example.com/9', 'Content 9', None, None, now - timedelta(days=8)),
-            ('Test Article 10', 'https://example.com/10', 'Content 10', None, None, now - timedelta(days=9)),
-        ]
+        base_unique_id = int(time.time() * 1000000)
 
-        for title, url, link, summary, sentiment, timestamp in test_articles:
-            conn.execute("""
-                INSERT INTO scraped_data (title, url, link, summary, sentiment, timestamp)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (title, url, link, summary, sentiment, timestamp.strftime('%Y-%m-%d %H:%M:%S')))
+        # Generate unique links for each article and collect article IDs
+        article_ids = []
+        for i in range(1, 11):
+            unique_id = f"{base_unique_id}-{random.randint(1000, 9999)}-{i}"
+            link = f"https://example.com/article-{unique_id}"
+            url = f"https://example.com/{i}"
 
-        # Add tags
-        conn.execute("INSERT INTO tags (name) VALUES ('tech')")
-        conn.execute("INSERT INTO tags (name) VALUES ('news')")
-        conn.execute("INSERT INTO tags (name) VALUES ('science')")
+            # Determine sentiment based on article number
+            if i <= 3:
+                sentiment = 'positive'
+                summary = f'Summary {i}'
+            elif i <= 5:
+                sentiment = 'negative'
+                summary = f'Summary {i}'
+            elif i <= 7:
+                sentiment = 'neutral'
+                summary = f'Summary {i}'
+            else:
+                sentiment = None
+                summary = None
 
-        # Link tags to articles
-        conn.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (1, 1)")
-        conn.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (1, 2)")
-        conn.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (2, 1)")
-        conn.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (3, 3)")
+            timestamp = now - timedelta(days=i-1)
+
+            cursor = conn.execute("""
+                INSERT INTO scraped_data (title, url, link, summary, sentiment, timestamp, user_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                f'Test Article {i}',
+                url,
+                link,
+                summary,
+                sentiment,
+                timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+                1  # admin user
+            ))
+            article_ids.append(cursor.lastrowid)
+
+        # Add tags and get their IDs
+        cursor = conn.execute("INSERT OR IGNORE INTO tags (name) VALUES ('tech')")
+        tech_tag_id = cursor.lastrowid or conn.execute("SELECT id FROM tags WHERE name='tech'").fetchone()[0]
+
+        cursor = conn.execute("INSERT OR IGNORE INTO tags (name) VALUES ('news')")
+        news_tag_id = cursor.lastrowid or conn.execute("SELECT id FROM tags WHERE name='news'").fetchone()[0]
+
+        cursor = conn.execute("INSERT OR IGNORE INTO tags (name) VALUES ('science')")
+        science_tag_id = cursor.lastrowid or conn.execute("SELECT id FROM tags WHERE name='science'").fetchone()[0]
+
+        # Link tags to articles (using actual article and tag IDs)
+        # article_ids[0] is first article, article_ids[1] is second, etc.
+        conn.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", (article_ids[0], tech_tag_id))
+        conn.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", (article_ids[0], news_tag_id))
+        conn.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", (article_ids[1], tech_tag_id))
+        conn.execute("INSERT INTO article_tags (article_id, tag_id) VALUES (?, ?)", (article_ids[2], science_tag_id))
 
         conn.commit()
 
-    yield temp_db_path
-
-    # Cleanup
-    Path(temp_db_path).unlink(missing_ok=True)
+    yield temp_db  # Return the temp_db Path object
 
 
 class TestAnalyticsManager:
     """Test AnalyticsManager class for statistics and visualization."""
 
-    def test_get_statistics(self, temp_db):
+    def test_get_statistics(self, analytics_test_db):
         """Test getting comprehensive statistics."""
         stats = AnalyticsManager.get_statistics()
 
@@ -137,7 +152,7 @@ class TestAnalyticsManager:
 
     @patch('matplotlib.pyplot.savefig')
     @patch('matplotlib.pyplot.close')
-    def test_generate_sentiment_chart(self, mock_close, mock_savefig, temp_db):
+    def test_generate_sentiment_chart(self, mock_close, mock_savefig, analytics_test_db):
         """Test sentiment pie chart generation."""
         output_path = '/tmp/test_sentiment.png'
 
@@ -149,7 +164,7 @@ class TestAnalyticsManager:
 
     @patch('matplotlib.pyplot.savefig')
     @patch('matplotlib.pyplot.close')
-    def test_generate_timeline_chart(self, mock_close, mock_savefig, temp_db):
+    def test_generate_timeline_chart(self, mock_close, mock_savefig, analytics_test_db):
         """Test timeline line chart generation."""
         output_path = '/tmp/test_timeline.png'
 
@@ -161,7 +176,7 @@ class TestAnalyticsManager:
 
     @patch('matplotlib.pyplot.savefig')
     @patch('matplotlib.pyplot.close')
-    def test_generate_top_sources_chart(self, mock_close, mock_savefig, temp_db):
+    def test_generate_top_sources_chart(self, mock_close, mock_savefig, analytics_test_db):
         """Test top sources bar chart generation."""
         output_path = '/tmp/test_sources.png'
 
@@ -173,7 +188,7 @@ class TestAnalyticsManager:
 
     @patch('matplotlib.pyplot.savefig')
     @patch('matplotlib.pyplot.close')
-    def test_generate_charts_without_path(self, mock_close, mock_savefig, temp_db):
+    def test_generate_charts_without_path(self, mock_close, mock_savefig, analytics_test_db):
         """Test chart generation returns base64 encoded data when no path provided."""
         # Test sentiment chart
         result = AnalyticsManager.generate_sentiment_chart()
@@ -193,7 +208,7 @@ class TestAnalyticsManager:
         assert isinstance(result, str)
         assert result.startswith('data:image/png;base64,')
 
-    def test_generate_tag_cloud_data(self, temp_db):
+    def test_generate_tag_cloud_data(self, analytics_test_db):
         """Test tag cloud data generation."""
         tag_data = AnalyticsManager.generate_tag_cloud_data()
 
@@ -210,7 +225,7 @@ class TestAnalyticsManager:
         assert tag_data[0][0] == 'tech'
         assert tag_data[0][1] == 2
 
-    def test_export_statistics_report(self, temp_db):
+    def test_export_statistics_report(self, analytics_test_db):
         """Test exporting statistics to a text file."""
         output_path = '/tmp/test_statistics_report.txt'
 
@@ -270,10 +285,11 @@ class TestAnalyticsManager:
         init_db()
 
         with get_db_connection() as conn:
+            unique_id = f"{int(time.time() * 1000000)}-{random.randint(1000, 9999)}"
             conn.execute("""
-                INSERT INTO scraped_data (title, url, link, summary, sentiment, timestamp)
-                VALUES ('Test', 'https://example.com', 'https://example.com/test', NULL, NULL, ?)
-            """, (datetime.now().strftime('%Y-%m-%d %H:%M:%S'),))
+                INSERT INTO scraped_data (title, url, link, summary, sentiment, timestamp, user_id)
+                VALUES ('Test', 'https://example.com', ?, NULL, NULL, ?, ?)
+            """, (f'https://example.com/test-{unique_id}', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 1))
             conn.commit()
 
         result = AnalyticsManager.generate_sentiment_chart('/tmp/test.png')
@@ -283,7 +299,7 @@ class TestAnalyticsManager:
 
         Path(temp_db_path).unlink(missing_ok=True)
 
-    def test_timeline_chart_data_structure(self, temp_db):
+    def test_timeline_chart_data_structure(self, analytics_test_db):
         """Test timeline chart includes all days in range."""
         stats = AnalyticsManager.get_statistics()
         articles_per_day = stats['articles_per_day']
@@ -301,22 +317,25 @@ class TestAnalyticsManager:
 class TestAnalyticsIntegration:
     """Test analytics integration with existing data."""
 
-    def test_statistics_with_multiple_sources(self, temp_db):
+    def test_statistics_with_multiple_sources(self, analytics_test_db):
         """Test statistics correctly count articles from multiple sources."""
         # Get initial stats
         initial_stats = AnalyticsManager.get_statistics()
         initial_count = initial_stats['total_articles']
 
         with get_db_connection() as conn:
-            # Add articles from different domains
+            # Add articles from different domains with unique links
+            unique_id1 = f"{int(time.time() * 1000000)}-{random.randint(1000, 9999)}-a"
+            unique_id2 = f"{int(time.time() * 1000000)}-{random.randint(1000, 9999)}-b"
+
             conn.execute("""
-                INSERT INTO scraped_data (title, url, link, timestamp)
-                VALUES ('Article from site1', 'https://site1.com/page', 'https://site1.com/article1', ?)
-            """, (datetime.now().strftime('%Y-%m-%d %H:%M:%S'),))
+                INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+                VALUES ('Article from site1', 'https://site1.com/page', ?, ?, ?)
+            """, (f'https://site1.com/article-{unique_id1}', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 1))
             conn.execute("""
-                INSERT INTO scraped_data (title, url, link, timestamp)
-                VALUES ('Article from site2', 'https://site2.com/page', 'https://site2.com/article2', ?)
-            """, (datetime.now().strftime('%Y-%m-%d %H:%M:%S'),))
+                INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+                VALUES ('Article from site2', 'https://site2.com/page', ?, ?, ?)
+            """, (f'https://site2.com/article-{unique_id2}', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 1))
             conn.commit()
 
         stats = AnalyticsManager.get_statistics()
@@ -331,7 +350,7 @@ class TestAnalyticsIntegration:
         # Verify counts are positive
         assert all(count >= 1 for url, count in top_sources)
 
-    def test_tag_statistics_with_many_tags(self, temp_db):
+    def test_tag_statistics_with_many_tags(self, analytics_test_db):
         """Test tag statistics handle many tags correctly."""
         with get_db_connection() as conn:
             # Add more tags
@@ -357,27 +376,29 @@ class TestAnalyticsIntegration:
 class TestAnalyticsEdgeCases:
     """Test analytics edge cases and error handling."""
 
-    def test_statistics_with_null_timestamps(self, temp_db):
+    def test_statistics_with_null_timestamps(self, analytics_test_db):
         """Test statistics handle null timestamps gracefully."""
         with get_db_connection() as conn:
+            unique_id = f"{int(time.time() * 1000000)}-{random.randint(1000, 9999)}"
             conn.execute("""
-                INSERT INTO scraped_data (title, url, link, timestamp)
-                VALUES ('No timestamp', 'https://example.com/null', 'https://example.com/null', NULL)
-            """)
+                INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+                VALUES ('No timestamp', 'https://example.com/null', ?, NULL, ?)
+            """, (f'https://example.com/null-{unique_id}', 1))
             conn.commit()
 
         # Should not crash
         stats = AnalyticsManager.get_statistics()
         assert stats is not None
 
-    def test_statistics_with_very_old_dates(self, temp_db):
+    def test_statistics_with_very_old_dates(self, analytics_test_db):
         """Test statistics with articles older than 30 days."""
         with get_db_connection() as conn:
             old_date = datetime.now() - timedelta(days=60)
+            unique_id = f"{int(time.time() * 1000000)}-{random.randint(1000, 9999)}"
             conn.execute("""
-                INSERT INTO scraped_data (title, url, link, timestamp)
-                VALUES ('Old article', 'https://example.com/old', 'https://example.com/old', ?)
-            """, (old_date.strftime('%Y-%m-%d %H:%M:%S'),))
+                INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+                VALUES ('Old article', 'https://example.com/old', ?, ?, ?)
+            """, (f'https://example.com/old-{unique_id}', old_date.strftime('%Y-%m-%d %H:%M:%S'), 1))
             conn.commit()
 
         stats = AnalyticsManager.get_statistics()
@@ -389,7 +410,7 @@ class TestAnalyticsEdgeCases:
         articles_per_day = stats['articles_per_day']
         # Old article should not appear in per-day breakdown (only last 30 days)
 
-    def test_export_report_with_invalid_path(self, temp_db):
+    def test_export_report_with_invalid_path(self, analytics_test_db):
         """Test export report handles invalid paths."""
         # Try to export to a directory that doesn't exist
         invalid_path = '/nonexistent/directory/report.txt'
