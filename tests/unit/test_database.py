@@ -72,7 +72,9 @@ class TestSchema:
         assert 'users' in tables
         assert 'scraped_data' in tables
         assert 'schema_version' in tables
-        assert len(tables) == 19  # Total tables in schema
+        assert 'token_blacklist' in tables  # v2.1.0 API tables
+        assert 'refresh_tokens' in tables   # v2.1.0 API tables
+        assert len(tables) == 21  # Total tables in schema (v2.1.0)
 
 
 class TestMigrations:
@@ -183,7 +185,7 @@ class TestMigrations:
         conn = sqlite3.connect(str(temp_db))
         conn.row_factory = sqlite3.Row
 
-        # Create v1.x database
+        # Create v1.x database (minimal schema that existed in v1.x)
         conn.execute("""
             CREATE TABLE scraped_data (
                 id INTEGER PRIMARY KEY,
@@ -191,6 +193,29 @@ class TestMigrations:
                 title TEXT,
                 link TEXT,
                 timestamp TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE tags (
+                id INTEGER PRIMARY KEY,
+                name TEXT UNIQUE
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE article_tags (
+                article_id INTEGER,
+                tag_id INTEGER,
+                PRIMARY KEY (article_id, tag_id)
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE saved_scrapers (
+                id INTEGER PRIMARY KEY,
+                name TEXT UNIQUE,
+                url TEXT,
+                selector TEXT,
+                default_limit INTEGER DEFAULT 0,
+                is_preinstalled INTEGER DEFAULT 0
             )
         """)
         conn.commit()

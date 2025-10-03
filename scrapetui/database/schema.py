@@ -392,5 +392,7 @@ def get_table_names() -> List[str]:
         'summary_feedback',
         'summary_quality',
         'article_clusters',
+        'token_blacklist',      # v2.1.0 API tables
+        'refresh_tokens',       # v2.1.0 API tables
         'schema_version'
     ]
