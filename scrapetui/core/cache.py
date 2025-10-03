@@ -15,8 +15,8 @@ except ImportError:
 from ..config import get_config
 from ..utils.logging import get_logger
 
-logger = get_logger(__name__)
-config = get_config()
+# Lazy initialization - do not create logger/config at module level
+# to avoid import-time side effects that can cause test hangs
 
 
 class Cache:
@@ -93,7 +93,9 @@ class MemoryCache(Cache):
         with self._lock:
             # Check expiration
             if key in self._expiry and time.time() > self._expiry[key]:
-                self.delete(key)
+                # Delete inline to avoid nested lock acquisition
+                self._cache.pop(key, None)
+                self._expiry.pop(key, None)
                 return None
 
             return self._cache.get(key)
@@ -154,6 +156,10 @@ class RedisCache(Cache):
                 "redis package not installed. Install with: pip install redis"
             )
 
+        # Lazy initialization - get config and logger when needed
+        config = get_config()
+        logger = get_logger(__name__)
+
         try:
             self.client = redis.Redis(
                 host=config.redis_host,
@@ -187,6 +193,7 @@ class RedisCache(Cache):
                 return json.loads(value)
             return None
         except Exception as e:
+            logger = get_logger(__name__)
             logger.error(f"Redis GET error: {e}")
             return None
 
@@ -203,6 +210,7 @@ class RedisCache(Cache):
             serialized = json.dumps(value)
             self.client.setex(key, ttl, serialized)
         except Exception as e:
+            logger = get_logger(__name__)
             logger.error(f"Redis SET error: {e}")
 
     def delete(self, key: str):
@@ -215,6 +223,7 @@ class RedisCache(Cache):
         try:
             self.client.delete(key)
         except Exception as e:
+            logger = get_logger(__name__)
             logger.error(f"Redis DELETE error: {e}")
 
     def clear(self):
@@ -222,6 +231,7 @@ class RedisCache(Cache):
         try:
             self.client.flushdb()
         except Exception as e:
+            logger = get_logger(__name__)
             logger.error(f"Redis CLEAR error: {e}")
 
 
@@ -242,6 +252,10 @@ def get_cache() -> Cache:
     if _cache_instance is None:
         with _cache_lock:
             if _cache_instance is None:  # Double-check locking
+                # Lazy initialization - get config and logger only when creating cache
+                config = get_config()
+                logger = get_logger(__name__)
+
                 if not config.cache_enabled:
                     logger.info("Caching disabled, using MemoryCache")
                     _cache_instance = MemoryCache()
@@ -291,10 +305,12 @@ def cached(ttl: int = 3600, key_prefix: str = ""):
             cache = get_cache()
             cached_value = cache.get(cache_key)
             if cached_value is not None:
+                logger = get_logger(__name__)
                 logger.debug(f"Cache HIT: {cache_key}")
                 return cached_value
 
             # Execute function
+            logger = get_logger(__name__)
             logger.debug(f"Cache MISS: {cache_key}")
             result = func(*args, **kwargs)
 
@@ -320,6 +336,7 @@ def invalidate_cache(pattern: str = None):
         For RedisCache with pattern support, could use SCAN.
     """
     cache = get_cache()
+    logger = get_logger(__name__)
     if pattern is None:
         cache.clear()
         logger.info("Cache cleared")

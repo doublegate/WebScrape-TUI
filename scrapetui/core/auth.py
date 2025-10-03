@@ -10,7 +10,15 @@ from ..utils.logging import get_logger
 from ..utils.errors import AuthenticationError, DatabaseError
 from ..constants import DEFAULT_ADMIN_USERNAME, DEFAULT_ADMIN_PASSWORD
 
-logger = get_logger(__name__)
+# Lazy logger initialization to avoid import-time side effects
+_logger = None
+
+def _get_lazy_logger():
+    """Get logger lazily."""
+    global _logger
+    if _logger is None:
+        _logger = get_logger(__name__)
+    return _logger
 
 
 def db_datetime_now() -> str:
@@ -59,7 +67,7 @@ def verify_password(password: str, password_hash: str) -> bool:
             password_hash.encode('utf-8')
         )
     except Exception as e:
-        logger.error(f"Password verification error: {e}")
+        _get_lazy_logger().error(f"Password verification error: {e}")
         return False
 
 
@@ -99,7 +107,7 @@ def create_user_session(
         """, (user_id, token, expires_at, ip_address))
         conn.commit()
 
-        logger.info(f"Created session for user_id={user_id}, expires at {expires_at}")
+        _get_lazy_logger().info(f"Created session for user_id={user_id}, expires at {expires_at}")
         return token
 
 
@@ -125,13 +133,13 @@ def validate_session(session_token: str) -> Optional[int]:
             """, (session_token, db_datetime_now())).fetchone()
 
             if row:
-                logger.debug(f"Session validated for user_id={row['user_id']}")
+                _get_lazy_logger().debug(f"Session validated for user_id={row['user_id']}")
                 return row['user_id']
             else:
-                logger.debug("Session invalid or expired")
+                _get_lazy_logger().debug("Session invalid or expired")
                 return None
     except Exception as e:
-        logger.error(f"Session validation error: {e}", exc_info=True)
+        _get_lazy_logger().error(f"Session validation error: {e}", exc_info=True)
         return None
 
 
@@ -149,9 +157,9 @@ def logout_session(session_token: str) -> None:
                 (session_token,)
             )
             conn.commit()
-            logger.info("Session logged out successfully")
+            _get_lazy_logger().info("Session logged out successfully")
     except Exception as e:
-        logger.error(f"Session logout error: {e}", exc_info=True)
+        _get_lazy_logger().error(f"Session logout error: {e}", exc_info=True)
 
 
 def authenticate_user(username: str, password: str) -> Optional[int]:
@@ -182,13 +190,13 @@ def authenticate_user(username: str, password: str) -> Optional[int]:
                     (db_datetime_now(), row['id'])
                 )
                 conn.commit()
-                logger.info(f"User authenticated: {username}")
+                _get_lazy_logger().info(f"User authenticated: {username}")
                 return row['id']
             else:
-                logger.warning(f"Authentication failed for username: {username}")
+                _get_lazy_logger().warning(f"Authentication failed for username: {username}")
                 return None
     except Exception as e:
-        logger.error(f"Authentication error: {e}", exc_info=True)
+        _get_lazy_logger().error(f"Authentication error: {e}", exc_info=True)
         return None
 
 
@@ -212,11 +220,11 @@ def change_password(user_id: int, old_password: str, new_password: str) -> bool:
             ).fetchone()
 
             if not row:
-                logger.error(f"User not found: {user_id}")
+                _get_lazy_logger().error(f"User not found: {user_id}")
                 return False
 
             if not verify_password(old_password, row['password_hash']):
-                logger.warning(f"Old password verification failed for user_id={user_id}")
+                _get_lazy_logger().warning(f"Old password verification failed for user_id={user_id}")
                 return False
 
             new_hash = hash_password(new_password)
@@ -225,10 +233,10 @@ def change_password(user_id: int, old_password: str, new_password: str) -> bool:
                 (new_hash, user_id)
             )
             conn.commit()
-            logger.info(f"Password changed for user_id={user_id}")
+            _get_lazy_logger().info(f"Password changed for user_id={user_id}")
             return True
     except Exception as e:
-        logger.error(f"Password change error: {e}", exc_info=True)
+        _get_lazy_logger().error(f"Password change error: {e}", exc_info=True)
         return False
 
 
@@ -258,12 +266,12 @@ def initialize_admin_user() -> None:
                     db_datetime_now()
                 ))
                 conn.commit()
-                logger.info(
+                _get_lazy_logger().info(
                     f"Default admin user created: username='{DEFAULT_ADMIN_USERNAME}', "
                     f"password='{DEFAULT_ADMIN_PASSWORD}' (please change after first login)"
                 )
     except Exception as e:
-        logger.error(f"Admin user initialization error: {e}", exc_info=True)
+        _get_lazy_logger().error(f"Admin user initialization error: {e}", exc_info=True)
 
 
 def cleanup_expired_sessions() -> int:
@@ -282,8 +290,8 @@ def cleanup_expired_sessions() -> int:
             conn.commit()
             count = cursor.rowcount
             if count > 0:
-                logger.info(f"Cleaned up {count} expired sessions")
+                _get_lazy_logger().info(f"Cleaned up {count} expired sessions")
             return count
     except Exception as e:
-        logger.error(f"Session cleanup error: {e}", exc_info=True)
+        _get_lazy_logger().error(f"Session cleanup error: {e}", exc_info=True)
         return 0

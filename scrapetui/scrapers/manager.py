@@ -10,8 +10,23 @@ from .base import BaseScraper, ScraperResult, ScraperMetadata
 from ..utils.logging import get_logger
 from ..config import get_config
 
-logger = get_logger(__name__)
-config = get_config()
+# Lazy initialization - do not create logger/config at module level
+_logger = None
+_config = None
+
+def _get_lazy_logger():
+    """Get logger lazily."""
+    global _logger
+    if _logger is None:
+        _logger = get_logger(__name__)
+    return _logger
+
+def _get_lazy_config():
+    """Get config lazily."""
+    global _config
+    if _config is None:
+        _config = get_config()
+    return _config
 
 
 class ScraperManager:
@@ -26,7 +41,7 @@ class ScraperManager:
         self.load_builtin_scrapers()
         self.load_plugin_scrapers()
 
-        logger.info(f"Loaded {len(self.scrapers)} scrapers")
+        _get_lazy_logger().info(f"Loaded {len(self.scrapers)} scrapers")
 
     def load_builtin_scrapers(self):
         """Load built-in scrapers from scrapetui/scrapers/builtin/."""
@@ -45,14 +60,14 @@ class ScraperManager:
                 module = importlib.import_module(module_name)
                 self._load_scrapers_from_module(module, is_builtin=True)
             except Exception as e:
-                logger.error(f"Failed to load builtin scraper {module_name}: {e}")
+                _get_lazy_logger().error(f"Failed to load builtin scraper {module_name}: {e}")
 
     def load_plugin_scrapers(self):
         """Load user plugin scrapers from plugins/scrapers/."""
         plugin_dir = Path("plugins/scrapers")
 
         if not plugin_dir.exists():
-            logger.info("No plugins directory found")
+            _get_lazy_logger().info("No plugins directory found")
             return
 
         # Add plugins directory to Python path
@@ -75,7 +90,7 @@ class ScraperManager:
                     self._load_scrapers_from_module(module, is_builtin=False)
 
             except Exception as e:
-                logger.error(f"Failed to load plugin {plugin_file.name}: {e}")
+                _get_lazy_logger().error(f"Failed to load plugin {plugin_file.name}: {e}")
 
     def _load_scrapers_from_module(self, module, is_builtin: bool = False):
         """
@@ -99,10 +114,10 @@ class ScraperManager:
                     self.register_scraper(scraper)
 
                     source = "built-in" if is_builtin else "plugin"
-                    logger.info(f"Loaded {source} scraper: {scraper.metadata.name}")
+                    _get_lazy_logger().info(f"Loaded {source} scraper: {scraper.metadata.name}")
 
                 except Exception as e:
-                    logger.error(f"Failed to instantiate scraper {attr_name}: {e}")
+                    _get_lazy_logger().error(f"Failed to instantiate scraper {attr_name}: {e}")
 
     def register_scraper(self, scraper: BaseScraper):
         """
@@ -114,7 +129,7 @@ class ScraperManager:
         name = scraper.metadata.name
 
         if name in self.scrapers:
-            logger.warning(f"Scraper {name} already registered, replacing")
+            _get_lazy_logger().warning(f"Scraper {name} already registered, replacing")
 
         self.scrapers[name] = scraper
 
@@ -127,7 +142,7 @@ class ScraperManager:
         """
         if name in self.scrapers:
             del self.scrapers[name]
-            logger.info(f"Unregistered scraper: {name}")
+            _get_lazy_logger().info(f"Unregistered scraper: {name}")
 
     def get_scraper(self, name: str) -> Optional[BaseScraper]:
         """
@@ -211,18 +226,18 @@ class ScraperManager:
 
         # Scrape with error handling
         try:
-            logger.info(f"Scraping {url} with {scraper.metadata.name}")
+            _get_lazy_logger().info(f"Scraping {url} with {scraper.metadata.name}")
             result = scraper.scrape(url, **kwargs)
 
             if result.success:
-                logger.info(f"Successfully scraped {url} ({result.content_length} chars)")
+                _get_lazy_logger().info(f"Successfully scraped {url} ({result.content_length} chars)")
             else:
-                logger.warning(f"Scraping failed for {url}: {result.error}")
+                _get_lazy_logger().warning(f"Scraping failed for {url}: {result.error}")
 
             return result
 
         except Exception as e:
-            logger.error(f"Scraping error for {url}: {e}")
+            _get_lazy_logger().error(f"Scraping error for {url}: {e}")
             return ScraperResult(
                 url=url,
                 title="",

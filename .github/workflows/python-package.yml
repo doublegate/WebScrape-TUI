@@ -42,5 +42,6 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        # Run pytest, but don't fail if no tests are found
-        pytest --tb=short || test $? -eq 5
+        # Run pytest with timeout to prevent hanging tests
+        # Each test limited to 30 seconds, full suite limited to 10 minutes
+        pytest --timeout=30 --timeout-method=thread --tb=short || test $? -eq 5

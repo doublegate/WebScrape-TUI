@@ -8,7 +8,7 @@ from typing import Generator
 from ..utils.logging import get_logger
 from ..config import init_config
 
-logger = get_logger(__name__)
+# Lazy initialization - do not create logger at module level
 
 
 def get_db_path() -> Path:
@@ -35,6 +35,7 @@ def get_db_connection() -> Generator[sqlite3.Connection, None, None]:
         conn.execute("PRAGMA foreign_keys = ON")
         yield conn
     except sqlite3.Error as e:
+        logger = get_logger(__name__)
         logger.critical(f"DB connection error: {e}", exc_info=True)
         raise
     finally:
@@ -46,6 +47,7 @@ def init_db() -> None:
     from ..database.schema import get_schema, SCHEMA_VERSION
     from ..database.migrations import run_migrations
 
+    logger = get_logger(__name__)
     db_path = get_db_path()
     logger.info(f"Initializing database at {db_path}")
 
@@ -87,6 +89,7 @@ def backup_database(backup_suffix: str = "backup") -> Path:
     backup_path = db_path.with_suffix(f".{backup_suffix}-{timestamp}")
 
     shutil.copy2(db_path, backup_path)
+    logger = get_logger(__name__)
     logger.info(f"Database backed up to: {backup_path}")
 
     return backup_path

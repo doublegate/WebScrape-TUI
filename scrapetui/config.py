@@ -56,24 +56,37 @@ class Config:
 
 def load_env_file(env_path: str = ".env") -> None:
     """
-    Load environment variables from .env file.
+    Load environment variables from .env file (idempotent - loads only once).
 
     Args:
         env_path: Path to .env file
     """
-    env_file = Path(env_path)
-    if not env_file.exists():
+    global _env_loaded
+
+    # Only load once to avoid repeated file I/O during imports
+    if _env_loaded:
         return
 
-    with open(env_file) as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
+    env_file = Path(env_path)
+    if not env_file.exists():
+        _env_loaded = True
+        return
 
-            if '=' in line:
-                key, value = line.split('=', 1)
-                os.environ[key.strip()] = value.strip()
+    try:
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#'):
+                    continue
+
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key.strip()] = value.strip()
+        _env_loaded = True
+    except Exception:
+        # Silently fail if .env can't be read (will use defaults)
+        _env_loaded = True
+        pass
 
 
 def get_config() -> Config:
@@ -131,8 +144,9 @@ def get_config() -> Config:
     )
 
 
-# Global config instance
+# Global config instance for singleton pattern
 _config: Optional[Config] = None
+_env_loaded: bool = False
 
 
 def init_config() -> Config:
@@ -141,3 +155,10 @@ def init_config() -> Config:
     if _config is None:
         _config = get_config()
     return _config
+
+
+def reset_config():
+    """Reset config singleton (for testing)."""
+    global _config, _env_loaded
+    _config = None
+    _env_loaded = False

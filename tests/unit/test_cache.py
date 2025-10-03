@@ -252,13 +252,16 @@ class TestGetCache:
         cache2 = get_cache()
         assert cache1 is cache2
 
-    @patch('scrapetui.core.cache.config')
-    def test_get_cache_disabled(self, mock_config):
+    @patch('scrapetui.core.cache.get_config')
+    def test_get_cache_disabled(self, mock_get_config):
         """Test get_cache when caching is disabled."""
         import scrapetui.core.cache
+        from scrapetui.config import Config
         scrapetui.core.cache._cache_instance = None
 
-        mock_config.cache_enabled = False
+        # Mock config with cache disabled
+        mock_config = Config(cache_enabled=False)
+        mock_get_config.return_value = mock_config
 
         cache = get_cache()
         assert isinstance(cache, MemoryCache)
