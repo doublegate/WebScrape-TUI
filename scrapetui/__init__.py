@@ -43,6 +43,7 @@ from .core.auth import (
 )
 from .database.migrations import run_migrations
 from .config import Config, get_config, reset_config
+from .ai.topic_modeling import TopicModelingManager
 
 
 # Backward-compatible wrapper for migrate_database_to_v2()
@@ -85,7 +86,7 @@ EntityRecognitionManager = None
 ContentSimilarityManager = None
 KeywordExtractionManager = None
 MultiLevelSummarizationManager = None
-TopicModelingManager = None
+# TopicModelingManager imported from ai.topic_modeling
 EntityRelationshipManager = None
 DuplicateDetectionManager = None
 SummaryQualityManager = None
