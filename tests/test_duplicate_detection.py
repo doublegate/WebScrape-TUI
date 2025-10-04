@@ -6,7 +6,18 @@ clustering, and related article finding.
 """
 
 import pytest
-from scrapetui import DuplicateDetectionManager
+
+# Import from monolithic scrapetui.py using importlib.util
+import importlib.util
+from pathlib import Path
+
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import needed components from monolithic module
+DuplicateDetectionManager = _scrapetui_module.DuplicateDetectionManager
 
 
 @pytest.fixture
