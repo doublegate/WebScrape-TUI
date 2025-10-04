@@ -7,15 +7,26 @@ from pathlib import Path
 import yaml
 import json
 
+# Import from monolithic scrapetui.py using importlib.util
+import importlib.util
+
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import needed components from monolithic module
+ConfigManager = _scrapetui_module.ConfigManager
+FilterPresetManager = _scrapetui_module.FilterPresetManager
+get_db_connection = _scrapetui_module.get_db_connection
+init_db = _scrapetui_module.init_db
+
 
 class TestConfigManager:
     """Test configuration management with YAML/JSON persistence."""
 
     def test_config_manager_load_default(self):
         """Test loading default configuration."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import ConfigManager
 
         config = ConfigManager.load_config()
 
@@ -27,9 +38,6 @@ class TestConfigManager:
 
     def test_config_manager_save_load(self, tmp_path):
         """Test saving and loading configuration."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import ConfigManager
 
         # Override config path for testing
         original_path = ConfigManager.CONFIG_PATH
@@ -55,9 +63,6 @@ class TestConfigManager:
 
     def test_config_manager_merge_config(self):
         """Test configuration merging."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import ConfigManager
 
         base = {
             'ai': {'default_provider': 'gemini', 'default_model': None},
@@ -77,10 +82,7 @@ class TestConfigManager:
 
     def test_config_manager_save_as_json(self, tmp_path):
         """Test saving configuration as JSON."""
-        import sys
         import copy
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import ConfigManager
 
         test_json_path = tmp_path / "test_config.json"
         config = copy.deepcopy(ConfigManager.DEFAULT_CONFIG)
@@ -103,16 +105,13 @@ class TestFilterPresetManager:
     @pytest.fixture
     def temp_db(self, monkeypatch):
         """Create a temporary database with proper schema."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        import scrapetui
         import sqlite3
 
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             db_path = Path(f.name)
 
-        monkeypatch.setattr(scrapetui, 'DB_PATH', db_path)
-        scrapetui.init_db()
+        monkeypatch.setattr(_scrapetui_module, 'DB_PATH', db_path)
+        _scrapetui_module.init_db()
 
         yield db_path
 
@@ -121,9 +120,6 @@ class TestFilterPresetManager:
 
     def test_save_preset(self, temp_db):
         """Test saving a filter preset."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import FilterPresetManager
 
         result = FilterPresetManager.save_preset(
             name="Test Preset",
@@ -141,9 +137,6 @@ class TestFilterPresetManager:
 
     def test_load_preset(self, temp_db):
         """Test loading a filter preset."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import FilterPresetManager
 
         # Save preset first
         FilterPresetManager.save_preset(
@@ -173,18 +166,12 @@ class TestFilterPresetManager:
 
     def test_load_nonexistent_preset(self, temp_db):
         """Test loading a preset that doesn't exist."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import FilterPresetManager
 
         preset = FilterPresetManager.load_preset("Nonexistent")
         assert preset is None
 
     def test_list_presets(self, temp_db):
         """Test listing all presets."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import FilterPresetManager
 
         # Save multiple presets
         for i in range(3):
@@ -208,9 +195,6 @@ class TestFilterPresetManager:
 
     def test_delete_preset(self, temp_db):
         """Test deleting a preset."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import FilterPresetManager
 
         # Save preset
         FilterPresetManager.save_preset(
@@ -237,9 +221,6 @@ class TestFilterPresetManager:
 
     def test_update_existing_preset(self, temp_db):
         """Test updating an existing preset."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import FilterPresetManager
 
         # Save initial preset
         FilterPresetManager.save_preset(
@@ -278,9 +259,6 @@ class TestFilterPresetManager:
 
     def test_preset_with_empty_values(self, temp_db):
         """Test preset with empty/None values."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import FilterPresetManager
 
         FilterPresetManager.save_preset(
             name="Empty Preset",
@@ -307,9 +285,6 @@ class TestYAMLHandling:
 
     def test_yaml_structure(self, tmp_path):
         """Test YAML configuration structure."""
-        import sys
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import ConfigManager
 
         test_yaml = tmp_path / "test.yaml"
         config = {
@@ -351,16 +326,13 @@ class TestDatabaseSchema:
 
     def test_filter_presets_table_exists(self, monkeypatch):
         """Test that filter_presets table has all required columns."""
-        import sys
         import sqlite3
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        import scrapetui
 
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             db_path = Path(f.name)
 
-        monkeypatch.setattr(scrapetui, 'DB_PATH', db_path)
-        scrapetui.init_db()
+        monkeypatch.setattr(_scrapetui_module, 'DB_PATH', db_path)
+        _scrapetui_module.init_db()
 
         try:
             with sqlite3.connect(db_path) as conn:
