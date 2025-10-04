@@ -46,6 +46,7 @@ from .config import Config, get_config, reset_config
 from .ai.topic_modeling import TopicModelingManager
 from .ai.question_answering import QuestionAnsweringManager
 from .ai.entity_relationships import EntityRelationshipManager
+from .ai.summary_quality import SummaryQualityManager
 
 
 # Backward-compatible wrapper for migrate_database_to_v2()
@@ -91,7 +92,7 @@ MultiLevelSummarizationManager = None
 # TopicModelingManager imported from ai.topic_modeling
 # EntityRelationshipManager now imported from ai.entity_relationships
 DuplicateDetectionManager = None
-SummaryQualityManager = None
+# SummaryQualityManager now imported from ai.summary_quality
 # QuestionAnsweringManager now imported from ai.question_answering
 PREINSTALLED_SCRAPERS = []
 
