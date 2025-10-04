@@ -45,6 +45,7 @@ from .database.migrations import run_migrations
 from .config import Config, get_config, reset_config
 from .ai.topic_modeling import TopicModelingManager
 from .ai.question_answering import QuestionAnsweringManager
+from .ai.entity_relationships import EntityRelationshipManager
 
 
 # Backward-compatible wrapper for migrate_database_to_v2()
@@ -88,7 +89,7 @@ ContentSimilarityManager = None
 KeywordExtractionManager = None
 MultiLevelSummarizationManager = None
 # TopicModelingManager imported from ai.topic_modeling
-EntityRelationshipManager = None
+# EntityRelationshipManager now imported from ai.entity_relationships
 DuplicateDetectionManager = None
 SummaryQualityManager = None
 # QuestionAnsweringManager now imported from ai.question_answering
