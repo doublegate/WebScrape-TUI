@@ -7,6 +7,14 @@ from pathlib import Path
 
 import pytest
 
+# Import from monolithic scrapetui.py using importlib.util
+import importlib.util
+
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
 
 @pytest.fixture
 def temp_db_path():
@@ -22,16 +30,11 @@ def temp_db_path():
 @pytest.fixture
 def initialized_db(temp_db_path, monkeypatch):
     """Create and initialize a test database."""
-    # Import here to avoid circular dependencies
-    import sys
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-    import scrapetui
-
-    # Use monkeypatch to override DB_PATH (not DATABASE_PATH)
-    monkeypatch.setattr(scrapetui, 'DB_PATH', temp_db_path)
+    # Use monkeypatch to override DB_PATH in monolithic module
+    monkeypatch.setattr(_scrapetui_module, 'DB_PATH', temp_db_path)
 
     # Initialize database with the patched path
-    scrapetui.init_db()
+    _scrapetui_module.init_db()
 
     yield temp_db_path
 
