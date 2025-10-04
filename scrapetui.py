@@ -7265,7 +7265,7 @@ class HelpModal(ModalScreen):
                 f"`{ps_data['default_tags_csv'] or 'None'}`\n\n"
             )
         ht = f"""\
-## Keybindings & Help (v1.9.5)
+## Keybindings & Help (v2.1.0)
 
 ### Navigation & Display
 | Key           | Action              | Description                                        |
@@ -7333,6 +7333,13 @@ class HelpModal(ModalScreen):
 | `ctrl+shift+p`| Export PDF          | Generate professional PDF report.                  |
 | `ctrl+shift+w`| Word Cloud          | Generate word cloud visualization from tags.       |
 | `ctrl+shift+v`| View Analytics      | Open analytics dashboard with charts.              |
+
+### User Management & Authentication (v2.0.0)
+| Key           | Action              | Description                                        |
+|---------------|---------------------|----------------------------------------------------|
+| `ctrl+u`      | User Profile        | View/edit your profile and change password.        |
+| `ctrl+alt+u`  | Manage Users        | User administration interface (Admin only).        |
+| `ctrl+shift+l`| Logout              | Log out and return to login screen.                |
 
 ### Configuration & Help
 | Key           | Action              | Description                                        |

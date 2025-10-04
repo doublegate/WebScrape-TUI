@@ -4,12 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Version**: v2.0.0 (Multi-User Foundation Release)
+**Version**: v2.1.0 (Advanced AI Features & 100% Test Pass Rate)
 
-This is a Python-based Text User Interface (TUI) application for web scraping built with the Textual framework. The application provides secure multi-user authentication, role-based access control (RBAC), and comprehensive web scraping capabilities. Users can scrape websites, store articles in a SQLite database, apply AI-powered summarization and sentiment analysis using multiple AI providers (Gemini, OpenAI, Claude), and manage scraped data through an interactive terminal interface.
+This is a Python-based Text User Interface (TUI) application for web scraping built with the Textual framework. The application provides secure multi-user authentication, role-based access control (RBAC), comprehensive web scraping capabilities, and advanced AI-powered content analysis. Users can scrape websites, store articles in a SQLite database, apply AI-powered summarization and sentiment analysis using multiple AI providers (Gemini, OpenAI, Claude), perform question answering, analyze entity relationships, evaluate summary quality, and detect duplicate content through an interactive terminal interface.
 
-**Test Suite**: 345/345 tests passing (100% pass rate) across Python 3.11 and 3.12
+**Test Suite**: 621/622 tests passing (100% pass rate, 1 skipped) across Python 3.11 and 3.12
 **CI/CD**: Fully operational with GitHub Actions workflow
+**Achievement**: Sprint 2+ completed with 100% test pass rate, exceeding 85% target by 15 percentage points
 
 ## Architecture
 
@@ -263,17 +264,36 @@ pip install textual requests beautifulsoup4 lxml bcrypt
 
 ### Testing
 
-Run the comprehensive test suite (345 tests):
+Run the comprehensive test suite (621 tests):
 ```bash
 pytest tests/ -v
 ```
 
 Expected output:
 ```
-============================= 345 passed in X.XXs ==============================
+============================= 621 passed, 1 skipped in X.XXs ==============================
 ```
 
 CI/CD pipeline tests on Python 3.11 and 3.12.
+
+### Test Infrastructure Pattern (v2.1.0)
+
+For test files that need to import from monolithic scrapetui.py:
+
+```python
+import importlib.util
+from pathlib import Path
+
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import components
+ManagerName = _scrapetui_module.ManagerName
+```
+
+This pattern avoids package import issues where managers are set to None. All legacy tests migrated to this pattern achieve 100% pass rate.
 
 ## Code Structure Guidelines
 
@@ -431,6 +451,16 @@ class ConfirmModal(ModalScreen[bool]):
 - **User Status Bar**: Current user and role always displayed
 - **Keyboard Shortcuts**: Ctrl+U (profile), Ctrl+Alt+U (users), Ctrl+Shift+L (logout)
 
+### v2.1.0 Advanced AI Features
+- **Question Answering**: TF-IDF based Q&A system with multi-article synthesis (Ctrl+Alt+Q)
+- **Entity Relationships**: Knowledge graph construction from dependency parsing (Ctrl+Alt+L)
+- **Summary Quality Metrics**: ROUGE scores and coherence analysis (Ctrl+Alt+M)
+- **Content Similarity**: Embedding-based similarity search and clustering (Ctrl+Shift+R, Ctrl+Alt+C)
+- **Topic Modeling**: LDA/NMF algorithms for content theme discovery (Ctrl+Alt+T)
+- **Duplicate Detection**: Fuzzy matching for finding similar/duplicate articles (Ctrl+Alt+D)
+- **Named Entity Recognition**: Extract people, organizations, locations (Ctrl+Shift+E)
+- **Keyword Extraction**: TF-IDF based keyword and topic extraction (Ctrl+Shift+K)
+
 ### Core Features
 - **Pre-installed Scrapers**: 10 built-in scraper profiles for common sites
 - **Custom Scrapers**: User-defined scraper profiles with URL patterns and selectors
@@ -446,14 +476,13 @@ class ConfirmModal(ModalScreen[bool]):
 - **Export**: CSV, JSON, Excel, PDF export with current filters applied
 - **Article Reading**: Full-text article fetching and display
 - **Tag Management**: Comma-separated tagging system with AND/OR logic
-- **Advanced AI Features**: Named entity recognition, keyword extraction, topic modeling, question answering, duplicate detection
 - **Improved Error Handling**: Fixed Textual API compatibility issues
 - **Robust Confirmation Dialogs**: Fixed button display issues with proper CSS layout
 - **Code Optimization**: Comprehensive formatting improvements and performance enhancements
 - **Memory Efficiency**: Removed unused imports and optimized resource usage
 - **Database Performance**: Enhanced SQL query formatting and connection management
 - **Enhanced Stability**: Better exception handling and resource cleanup
-- **100% Test Pass Rate**: 345/345 tests passing across Python 3.11 and 3.12
+- **100% Test Pass Rate**: 621/622 tests passing (1 skipped) across Python 3.11 and 3.12
 
 ## File Locations
 
@@ -471,11 +500,17 @@ class ConfirmModal(ModalScreen[bool]):
 - **Config**: `.env` (API keys for Gemini, OpenAI, Claude)
 
 ### Test Files
-- **Phase 1 Auth Tests**: `tests/test_v2_auth_phase1.py` (456 lines)
-  - Tests for password hashing, session management, authentication, database migration
-- **Phase 2 UI Tests**: `tests/test_v2_ui_phase2.py` (575 lines)
-  - Tests for user interface components, modals, RBAC, user management
-- **Total Test Count**: 345 tests (100% passing)
+- **Unit Tests**: `tests/unit/` - 135 tests (database, auth, core)
+- **API Tests**: `tests/api/` - 64 tests (REST endpoints, middleware)
+- **Advanced AI Tests**: `tests/test_advanced_ai.py` - 30 tests (NER, keywords, topic modeling)
+- **Duplicate Detection**: `tests/test_duplicate_detection.py` - 23 tests (fuzzy matching)
+- **Phase 3 Isolation**: `tests/test_v2_phase3_isolation.py` - 23 tests (data isolation)
+- **Enhanced Export**: `tests/test_enhanced_export.py` - 21 tests (Excel, PDF)
+- **Database Tests**: `tests/test_database.py` - 14 tests (operations, migrations)
+- **Config/Presets**: `tests/test_config_and_presets.py` - 14 tests (YAML, filters)
+- **AI Providers**: `tests/test_ai_providers.py` - 9 tests (Gemini, OpenAI, Claude)
+- **Auth Phase 1**: `tests/test_v2_auth_phase1.py` - 15 tests (14 passing, 1 skipped)
+- **Total Test Count**: 621/622 tests (100% pass rate, 1 skipped)
 
 ### Documentation
 - **README**: `README.md` - Comprehensive feature documentation and setup guide

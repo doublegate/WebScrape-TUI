@@ -1,7 +1,7 @@
 # Technical Debt Tracker
 
 **Last Updated**: 2025-10-03
-**Project Version**: v2.1.0-alpha.3
+**Project Version**: v2.1.0
 **Status**: 🟡 Active Development
 
 ---

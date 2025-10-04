@@ -3,7 +3,7 @@
 This package provides both a Terminal User Interface (TUI) application
 and a REST API for web scraping, article management, and AI-powered analysis.
 
-Version: 2.1.0-alpha.3
+Version: 2.1.0
 """
 
 # NOTE: Legacy imports commented out to prevent loading monolithic TUI application
@@ -101,7 +101,7 @@ PREINSTALLED_SCRAPERS = []
 # To avoid hangs, we set a safe default here
 DB_PATH = "scraped_data_tui_v1.0.db"  # Default, can be overridden by config
 
-__version__ = "2.1.0-alpha.3"
+__version__ = "2.1.0"
 __all__ = [
     # Database
     "get_db_connection",

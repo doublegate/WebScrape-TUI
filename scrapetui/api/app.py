@@ -21,7 +21,7 @@ config = get_config()
 app = FastAPI(
     title="WebScrape-TUI API",
     description="REST API for web scraping, article management, and AI-powered content analysis",
-    version="2.1.0-alpha.3",
+    version="2.1.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json"
@@ -94,7 +94,7 @@ async def root():
     """API root endpoint."""
     return {
         "name": "WebScrape-TUI API",
-        "version": "2.1.0-alpha.3",
+        "version": "2.1.0",
         "description": "REST API for web scraping and content analysis",
         "docs": "/api/docs",
         "redoc": "/api/redoc"

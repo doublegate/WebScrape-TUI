@@ -1,6 +1,6 @@
 # WebScrape-TUI REST API Documentation
 
-**Version**: v2.1.0-alpha.3  
+**Version**: v2.1.0  
 **Base URL**: `http://localhost:8000`  
 **Authentication**: JWT Bearer Token
 
