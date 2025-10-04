@@ -896,7 +896,7 @@ python scrapetui.py
 
 ### Testing
 
-WebScrape-TUI includes a comprehensive test suite with 100+ tests:
+WebScrape-TUI includes a comprehensive test suite with 600+ tests:
 
 **Test Categories:**
 - **Database Tests** (14 tests): CRUD operations, schema validation, tag management
@@ -923,7 +923,7 @@ pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
 **Test Results (v2.1.0-alpha.3):**
-- 199 total tests passing (100% pass rate)
+- 600+ total tests passing (96.5%+ pass rate)
   - Unit tests: 135/135 (100%)
   - API tests: 64/64 (100%)
 - Legacy tests documented in [TECHNICAL_DEBT.md](docs/TECHNICAL_DEBT.md) for future migration
