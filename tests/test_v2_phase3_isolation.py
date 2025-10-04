@@ -60,27 +60,33 @@ def clean_test_db():
 @pytest.fixture
 def multi_user_db(clean_test_db):
     """Create database with multiple users for testing."""
+    import time
+    import random
+
+    # Generate unique ID for this test run to avoid UNIQUE constraint violations
+    unique_id = f"{int(time.time() * 1000000)}_{random.randint(1000, 9999)}"
+
     with get_db_connection() as conn:
         # Create admin user (already exists from init_db)
         # Create regular user 1
         conn.execute("""
             INSERT INTO users (username, password_hash, email, role, created_at, is_active)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, ('user1', hash_password('password1'), 'user1@test.com', 'user',
+        """, (f'user1_{unique_id}', hash_password('password1'), f'user1_{unique_id}@test.com', 'user',
               datetime.now().isoformat(), 1))
 
         # Create regular user 2
         conn.execute("""
             INSERT INTO users (username, password_hash, email, role, created_at, is_active)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, ('user2', hash_password('password2'), 'user2@test.com', 'user',
+        """, (f'user2_{unique_id}', hash_password('password2'), f'user2_{unique_id}@test.com', 'user',
               datetime.now().isoformat(), 1))
 
         # Create viewer user
         conn.execute("""
             INSERT INTO users (username, password_hash, email, role, created_at, is_active)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, ('viewer1', hash_password('viewer1'), 'viewer1@test.com', 'viewer',
+        """, (f'viewer1_{unique_id}', hash_password('viewer1'), f'viewer1_{unique_id}@test.com', 'viewer',
               datetime.now().isoformat(), 1))
 
         conn.commit()
