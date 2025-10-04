@@ -35,7 +35,6 @@ def analytics_test_db(temp_db):
     """Create a temporary database for analytics testing with unique data."""
     # temp_db fixture from conftest.py already provides isolated database
     # IMPORTANT: Must patch the monolithic module's DB_PATH to use temp database
-    global _scrapetui_module
     _scrapetui_module.DB_PATH = temp_db
 
     # Just add test data to it

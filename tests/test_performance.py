@@ -52,7 +52,6 @@ def perf_test_db(tmp_path):
     db_path = tmp_path / "perf_test.db"
 
     # Patch the monolithic module's DB_PATH to use temp database
-    global _scrapetui_module
     original_db = _scrapetui_module.DB_PATH
     _scrapetui_module.DB_PATH = Path(db_path)
 

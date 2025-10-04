@@ -36,7 +36,6 @@ def temp_db(monkeypatch):
         temp_db_path = f.name
 
     # Patch the monolithic module's DB_PATH to use temp database
-    global _scrapetui_module
     original_db = _scrapetui_module.DB_PATH
     _scrapetui_module.DB_PATH = Path(temp_db_path)
 
