@@ -47,6 +47,7 @@ from .ai.topic_modeling import TopicModelingManager
 from .ai.question_answering import QuestionAnsweringManager
 from .ai.entity_relationships import EntityRelationshipManager
 from .ai.summary_quality import SummaryQualityManager
+from .ai.content_similarity import ContentSimilarityManager, SentenceTransformer
 
 
 # Backward-compatible wrapper for migrate_database_to_v2()
@@ -86,7 +87,7 @@ PDFExportManager = None
 EnhancedVisualizationManager = None
 AITaggingManager = None
 EntityRecognitionManager = None
-ContentSimilarityManager = None
+# ContentSimilarityManager now imported from ai.content_similarity
 KeywordExtractionManager = None
 MultiLevelSummarizationManager = None
 # TopicModelingManager imported from ai.topic_modeling

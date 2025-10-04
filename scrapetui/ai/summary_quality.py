@@ -22,7 +22,7 @@ class SummaryQualityManager:
     """Manager for assessing summary quality."""
 
     @staticmethod
-    def calculate_rouge_scores(summary: str, reference: str) -> Dict[str, float]:
+    def calculate_rouge_scores(summary: str, reference: str) -> Dict[str, Dict[str, float]]:
         """
         Calculate ROUGE scores for summary quality.
 
@@ -34,17 +34,26 @@ class SummaryQualityManager:
             reference: Reference text (original content)
 
         Returns:
-            Dict with 'rouge-1', 'rouge-2', 'rouge-l' scores (0.0 to 1.0)
+            Dict with 'rouge1', 'rouge2', 'rougeL' keys, each containing
+            'precision', 'recall', 'fmeasure' sub-keys
         """
         if not summary or not reference:
-            return {'rouge-1': 0.0, 'rouge-2': 0.0, 'rouge-l': 0.0}
+            return {
+                'rouge1': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
+                'rouge2': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
+                'rougeL': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0}
+            }
 
         # Tokenize (simple word-based tokenization)
         summary_tokens = re.findall(r'\w+', summary.lower())
         reference_tokens = re.findall(r'\w+', reference.lower())
 
         if not summary_tokens or not reference_tokens:
-            return {'rouge-1': 0.0, 'rouge-2': 0.0, 'rouge-l': 0.0}
+            return {
+                'rouge1': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
+                'rouge2': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0},
+                'rougeL': {'precision': 0.0, 'recall': 0.0, 'fmeasure': 0.0}
+            }
 
         # ROUGE-1: Unigram overlap (F1 score)
         summary_unigrams = Counter(summary_tokens)
@@ -57,11 +66,13 @@ class SummaryQualityManager:
             rouge_1_recall = overlapping_unigrams / len(reference_tokens)
 
             if (rouge_1_precision + rouge_1_recall) > 0:
-                rouge_1 = 2 * rouge_1_precision * rouge_1_recall / (rouge_1_precision + rouge_1_recall)
+                rouge_1_fmeasure = 2 * rouge_1_precision * rouge_1_recall / (rouge_1_precision + rouge_1_recall)
             else:
-                rouge_1 = 0.0
+                rouge_1_fmeasure = 0.0
         else:
-            rouge_1 = 0.0
+            rouge_1_precision = 0.0
+            rouge_1_recall = 0.0
+            rouge_1_fmeasure = 0.0
 
         # ROUGE-2: Bigram overlap
         summary_bigrams = [
@@ -83,11 +94,13 @@ class SummaryQualityManager:
             rouge_2_recall = overlapping_bigrams / len(reference_bigrams)
 
             if (rouge_2_precision + rouge_2_recall) > 0:
-                rouge_2 = 2 * rouge_2_precision * rouge_2_recall / (rouge_2_precision + rouge_2_recall)
+                rouge_2_fmeasure = 2 * rouge_2_precision * rouge_2_recall / (rouge_2_precision + rouge_2_recall)
             else:
-                rouge_2 = 0.0
+                rouge_2_fmeasure = 0.0
         else:
-            rouge_2 = 0.0
+            rouge_2_precision = 0.0
+            rouge_2_recall = 0.0
+            rouge_2_fmeasure = 0.0
 
         # ROUGE-L: Longest Common Subsequence
         lcs_length = SummaryQualityManager._lcs_length(summary_tokens, reference_tokens)
@@ -97,16 +110,30 @@ class SummaryQualityManager:
             rouge_l_recall = lcs_length / len(reference_tokens)
 
             if (rouge_l_precision + rouge_l_recall) > 0:
-                rouge_l = 2 * rouge_l_precision * rouge_l_recall / (rouge_l_precision + rouge_l_recall)
+                rouge_l_fmeasure = 2 * rouge_l_precision * rouge_l_recall / (rouge_l_precision + rouge_l_recall)
             else:
-                rouge_l = 0.0
+                rouge_l_fmeasure = 0.0
         else:
-            rouge_l = 0.0
+            rouge_l_precision = 0.0
+            rouge_l_recall = 0.0
+            rouge_l_fmeasure = 0.0
 
         return {
-            'rouge-1': round(rouge_1, 4),
-            'rouge-2': round(rouge_2, 4),
-            'rouge-l': round(rouge_l, 4)
+            'rouge1': {
+                'precision': round(rouge_1_precision, 4),
+                'recall': round(rouge_1_recall, 4),
+                'fmeasure': round(rouge_1_fmeasure, 4)
+            },
+            'rouge2': {
+                'precision': round(rouge_2_precision, 4),
+                'recall': round(rouge_2_recall, 4),
+                'fmeasure': round(rouge_2_fmeasure, 4)
+            },
+            'rougeL': {
+                'precision': round(rouge_l_precision, 4),
+                'recall': round(rouge_l_recall, 4),
+                'fmeasure': round(rouge_l_fmeasure, 4)
+            }
         }
 
     @staticmethod
