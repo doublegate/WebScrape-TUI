@@ -126,7 +126,7 @@ class TestEntityExtractionFromArticles:
         assert article_id in results
         assert isinstance(results[article_id], list)
 
-    def test_extract_from_nonexistent_article(self):
+    def test_extract_from_nonexistent_article(self, db_connection):
         """Test with nonexistent article ID."""
         results = extract_entities_from_articles([999999])
         assert 999999 in results

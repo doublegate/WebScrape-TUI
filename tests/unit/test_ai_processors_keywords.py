@@ -164,7 +164,7 @@ class TestKeywordExtractionFromArticles:
         assert isinstance(results[article_id], list)
         assert len(results[article_id]) <= 5
 
-    def test_extract_from_nonexistent_article(self):
+    def test_extract_from_nonexistent_article(self, db_connection):
         """Test with nonexistent article ID."""
         results = extract_keywords_from_articles([999999], top_n=5)
         assert 999999 in results
