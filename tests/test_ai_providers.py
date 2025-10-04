@@ -3,6 +3,23 @@
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
+from pathlib import Path
+
+# Import from monolithic scrapetui.py using importlib.util
+import importlib.util
+
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import needed components from monolithic module
+GeminiProvider = _scrapetui_module.GeminiProvider
+OpenAIProvider = _scrapetui_module.OpenAIProvider
+ClaudeProvider = _scrapetui_module.ClaudeProvider
+get_ai_provider = _scrapetui_module.get_ai_provider
+set_ai_provider = _scrapetui_module.set_ai_provider
+TemplateManager = _scrapetui_module.TemplateManager
 
 
 class TestAIProviderAbstraction:
@@ -10,11 +27,6 @@ class TestAIProviderAbstraction:
 
     def test_gemini_provider_initialization(self):
         """Test Gemini provider initialization."""
-        # Import here to avoid import errors
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import GeminiProvider
 
         provider = GeminiProvider("test_api_key")
         assert provider.api_key == "test_api_key"
@@ -23,10 +35,6 @@ class TestAIProviderAbstraction:
 
     def test_openai_provider_initialization(self):
         """Test OpenAI provider initialization."""
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import OpenAIProvider
 
         provider = OpenAIProvider("test_api_key")
         assert provider.api_key == "test_api_key"
@@ -35,10 +43,6 @@ class TestAIProviderAbstraction:
 
     def test_claude_provider_initialization(self):
         """Test Claude provider initialization."""
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import ClaudeProvider
 
         provider = ClaudeProvider("test_api_key")
         assert provider.api_key == "test_api_key"
@@ -47,10 +51,6 @@ class TestAIProviderAbstraction:
 
     def test_provider_switching(self):
         """Test switching between providers."""
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import GeminiProvider, OpenAIProvider, set_ai_provider, get_ai_provider
 
         # Set Gemini provider
         gemini = GeminiProvider("gemini_key")
@@ -68,10 +68,6 @@ class TestTemplateManager:
 
     def test_template_variable_substitution(self):
         """Test template variable replacement."""
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import TemplateManager
 
         template = "Title: {title}\nContent: {content}\nURL: {url}"
         result = TemplateManager.apply_template(
@@ -87,10 +83,6 @@ class TestTemplateManager:
 
     def test_template_manager_apply_partial_variables(self):
         """Test template with missing variables."""
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from scrapetui import TemplateManager
 
         template = "Title: {title}\nContent: {content}"
         result = TemplateManager.apply_template(template, "Content text", "")
