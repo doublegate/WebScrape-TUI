@@ -213,7 +213,7 @@ class TestConversationHistoryTracking:
         confidence = 0.85
 
         success = QuestionAnsweringManager.save_qa_conversation(
-            question, answer, article_ids, confidence
+            question, answer, article_ids, confidence, conn=db_connection
         )
 
         assert success is True
@@ -249,7 +249,7 @@ class TestConversationHistoryTracking:
         db_connection.commit()
 
         # Retrieve history
-        history = QuestionAnsweringManager.get_qa_history(limit=20)
+        history = QuestionAnsweringManager.get_qa_history(limit=20, conn=db_connection)
 
         assert len(history) >= 3
 
@@ -279,7 +279,7 @@ class TestConversationHistoryTracking:
         db_connection.commit()
 
         # Retrieve with limit
-        history = QuestionAnsweringManager.get_qa_history(limit=10)
+        history = QuestionAnsweringManager.get_qa_history(limit=10, conn=db_connection)
 
         assert len(history) <= 10
 
@@ -303,7 +303,7 @@ class TestConversationHistoryTracking:
             db_connection.commit()
             time.sleep(0.1)  # Small delay to ensure different timestamps
 
-        history = QuestionAnsweringManager.get_qa_history(limit=5)
+        history = QuestionAnsweringManager.get_qa_history(limit=5, conn=db_connection)
 
         # Most recent should be first
         if len(history) >= 2:

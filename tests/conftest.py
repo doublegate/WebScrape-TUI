@@ -96,13 +96,13 @@ def db_connection():
     scrapetui.init_db()
 
     # Get connection to initialized database
-    conn = scrapetui.get_db_connection()
-    conn.__enter__()  # Enter context manager
+    conn_mgr = scrapetui.get_db_connection()
+    conn = conn_mgr.__enter__()  # Enter context manager and get actual connection
 
     yield conn
 
     # Cleanup
-    conn.__exit__(None, None, None)  # Exit context manager
+    conn_mgr.__exit__(None, None, None)  # Exit context manager
 
     # Restore environment and config
     if original_db_path is not None:

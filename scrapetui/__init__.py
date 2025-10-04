@@ -44,6 +44,7 @@ from .core.auth import (
 from .database.migrations import run_migrations
 from .config import Config, get_config, reset_config
 from .ai.topic_modeling import TopicModelingManager
+from .ai.question_answering import QuestionAnsweringManager
 
 
 # Backward-compatible wrapper for migrate_database_to_v2()
@@ -90,7 +91,7 @@ MultiLevelSummarizationManager = None
 EntityRelationshipManager = None
 DuplicateDetectionManager = None
 SummaryQualityManager = None
-QuestionAnsweringManager = None
+# QuestionAnsweringManager now imported from ai.question_answering
 PREINSTALLED_SCRAPERS = []
 
 # Note: DB_PATH is initialized from config - tests should override via get_config()
