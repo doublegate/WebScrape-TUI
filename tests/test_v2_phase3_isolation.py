@@ -12,19 +12,22 @@ import sys
 import os
 import tempfile
 from pathlib import Path
+import importlib.util
 
-# Add parent directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Use monolithic import pattern (established in test_analytics.py, etc.)
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
 
-from scrapetui import (
-    get_db_connection,
-    hash_password,
-    authenticate_user,
-    create_user_session,
-    validate_session,
-    init_db,
-    FilterPresetManager,
-)
+# Import components from monolith
+get_db_connection = _scrapetui_module.get_db_connection
+hash_password = _scrapetui_module.hash_password
+authenticate_user = _scrapetui_module.authenticate_user
+create_user_session = _scrapetui_module.create_user_session
+validate_session = _scrapetui_module.validate_session
+init_db = _scrapetui_module.init_db
+FilterPresetManager = _scrapetui_module.FilterPresetManager
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -41,9 +44,8 @@ def clean_test_db():
     temp_file.close()
 
     # Patch DB_PATH in scrapetui module
-    import scrapetui
-    original_db_path = scrapetui.DB_PATH
-    scrapetui.DB_PATH = temp_db_path
+    original_db_path = _scrapetui_module.DB_PATH
+    _scrapetui_module.DB_PATH = temp_db_path
 
     # Run init_db to create all tables
     result = init_db()
@@ -52,7 +54,7 @@ def clean_test_db():
     yield temp_db_path
 
     # Cleanup
-    scrapetui.DB_PATH = original_db_path
+    _scrapetui_module.DB_PATH = original_db_path
     if temp_db_path.exists():
         temp_db_path.unlink()
 
