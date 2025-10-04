@@ -34,6 +34,10 @@ jobs:
         if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
         # Additional dependencies for Phase 3 REST API
         python -m pip install email-validator
+    - name: Download spaCy model
+      run: |
+        # Required for AI features (NER, keyword extraction)
+        python -m spacy download en_core_web_sm
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
