@@ -20,11 +20,19 @@ config = get_config()
 # Create FastAPI app
 app = FastAPI(
     title="WebScrape-TUI API",
-    description="REST API for web scraping, article management, and AI-powered content analysis",
-    version="2.1.0",
+    description="REST API for web scraping, article management, and AI-powered content analysis. "
+                "Supports multi-user authentication, RBAC, advanced AI features, and background tasks.",
+    version="2.2.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json"
+    openapi_url="/api/openapi.json",
+    contact={
+        "name": "WebScrape-TUI",
+        "url": "https://github.com/doublegate/WebScrape-TUI"
+    },
+    license_info={
+        "name": "MIT",
+    }
 )
 
 # Add CORS middleware
@@ -79,25 +87,47 @@ async def shutdown_event():
     logger.info("API server shutdown complete")
 
 
-# Register routers
-app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-app.include_router(articles.router, prefix="/api/articles", tags=["Articles"])
-app.include_router(scrapers.router, prefix="/api/scrapers", tags=["Scrapers"])
-app.include_router(users.router, prefix="/api/users", tags=["Users"])
-app.include_router(tags.router, prefix="/api/tags", tags=["Tags"])
-app.include_router(ai.router, prefix="/api/ai", tags=["AI"])
+# Register routers (v1 API)
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+app.include_router(articles.router, prefix="/api/v1/articles", tags=["Articles"])
+app.include_router(scrapers.router, prefix="/api/v1/scrapers", tags=["Scrapers"])
+app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
+app.include_router(tags.router, prefix="/api/v1/tags", tags=["Tags"])
+app.include_router(ai.router, prefix="/api/v1/ai", tags=["AI Features"])
+
+# Legacy routes (no version prefix for backward compatibility)
+app.include_router(auth.router, prefix="/api/auth", tags=["Authentication (Legacy)"], include_in_schema=False)
+app.include_router(articles.router, prefix="/api/articles", tags=["Articles (Legacy)"], include_in_schema=False)
+app.include_router(scrapers.router, prefix="/api/scrapers", tags=["Scrapers (Legacy)"], include_in_schema=False)
+app.include_router(users.router, prefix="/api/users", tags=["Users (Legacy)"], include_in_schema=False)
+app.include_router(tags.router, prefix="/api/tags", tags=["Tags (Legacy)"], include_in_schema=False)
+app.include_router(ai.router, prefix="/api/ai", tags=["AI (Legacy)"], include_in_schema=False)
 
 
 # Root endpoint
 @app.get("/")
 async def root():
-    """API root endpoint."""
+    """API root endpoint with version information."""
     return {
         "name": "WebScrape-TUI API",
-        "version": "2.1.0",
-        "description": "REST API for web scraping and content analysis",
-        "docs": "/api/docs",
-        "redoc": "/api/redoc"
+        "version": "2.2.0",
+        "api_version": "v1",
+        "description": "REST API for web scraping, article management, and AI-powered content analysis",
+        "features": [
+            "Multi-user authentication with RBAC",
+            "Advanced AI features (NER, Q&A, topic modeling, similarity search)",
+            "Background task processing",
+            "Rate limiting (100 req/min standard, 10 req/min AI endpoints)"
+        ],
+        "documentation": {
+            "swagger": "/api/docs",
+            "redoc": "/api/redoc",
+            "openapi_json": "/api/openapi.json"
+        },
+        "endpoints": {
+            "v1": "/api/v1",
+            "legacy": "/api"
+        }
     }
 
 

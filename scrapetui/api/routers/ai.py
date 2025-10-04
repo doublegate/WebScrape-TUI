@@ -18,7 +18,15 @@ from ..models import (
     KeywordExtractionRequest,
     KeywordExtractionResponse,
     QuestionAnsweringRequest,
-    QuestionAnsweringResponse
+    QuestionAnsweringResponse,
+    EntityRelationshipsRequest,
+    EntityRelationshipsResponse,
+    SummaryQualityRequest,
+    SummaryQualityResponse,
+    ContentSimilarityRequest,
+    ContentSimilarityResponse,
+    TopicModelingRequest,
+    TopicModelingResponse
 )
 from ..dependencies import get_current_user, require_user
 from ..exceptions import NotFoundException, BadRequestException
@@ -404,3 +412,276 @@ async def answer_question(
     except Exception as e:
         logger.error(f"Error answering question: {e}")
         raise BadRequestException(detail="Failed to answer question")
+
+
+# === Sprint 3: Advanced AI Endpoints ===
+
+
+@router.post("/entity-relationships", response_model=EntityRelationshipsResponse)
+async def extract_entity_relationships(
+    request: EntityRelationshipsRequest,
+    current_user: User = Depends(require_user)
+):
+    """
+    Extract entity relationships and build knowledge graph.
+
+    Args:
+        request: Entity relationships request
+        current_user: Current authenticated user
+
+    Returns:
+        Entities, relationships, and knowledge graph
+
+    Raises:
+        BadRequestException: If no articles available
+    """
+    try:
+        from ...ai.entity_relationships import (
+            extract_relationships_from_articles,
+            build_knowledge_graph
+        )
+
+        # Get articles
+        with get_db_connection() as conn:
+            if not request.article_ids:
+                raise BadRequestException(detail="Article IDs are required")
+
+            placeholders = ",".join(["?"] * len(request.article_ids))
+            sql = f"SELECT * FROM scraped_data WHERE id IN ({placeholders})"
+            rows = conn.execute(sql, request.article_ids).fetchall()
+
+            if not rows:
+                raise BadRequestException(detail="No articles found")
+
+            articles = [Article.from_db_row(row) for row in rows]
+
+        # Extract relationships
+        result = extract_relationships_from_articles(
+            request.article_ids,
+            entity_types=request.entity_types
+        )
+
+        # Build knowledge graph
+        graph = build_knowledge_graph(result['relationships'])
+
+        logger.info(
+            f"Entity relationships extracted by user {current_user.id} "
+            f"(articles={len(request.article_ids)}, entities={len(result['entities'])})"
+        )
+
+        return EntityRelationshipsResponse(
+            entities=result['entities'],
+            relationships=result['relationships'],
+            knowledge_graph=graph
+        )
+
+    except BadRequestException:
+        raise
+    except Exception as e:
+        logger.error(f"Error extracting entity relationships: {e}")
+        raise BadRequestException(detail="Failed to extract entity relationships")
+
+
+@router.post("/summary-quality", response_model=SummaryQualityResponse)
+async def evaluate_summary_quality(
+    request: SummaryQualityRequest,
+    current_user: User = Depends(require_user)
+):
+    """
+    Evaluate summary quality using ROUGE and coherence metrics.
+
+    Args:
+        request: Summary quality request
+        current_user: Current authenticated user
+
+    Returns:
+        Quality scores (ROUGE-1, ROUGE-2, ROUGE-L, coherence, coverage, overall)
+
+    Raises:
+        NotFoundException: If article not found
+        BadRequestException: If article has no summary
+    """
+    try:
+        from ...ai.summary_quality import evaluate_summary_quality as eval_quality
+
+        with get_db_connection() as conn:
+            # Get article
+            row = conn.execute(
+                "SELECT * FROM scraped_data WHERE id = ?",
+                (request.article_id,)
+            ).fetchone()
+
+            if not row:
+                raise NotFoundException(detail="Article not found")
+
+            article = Article.from_db_row(row)
+
+            # Check content and summary exist
+            if not article.content:
+                raise BadRequestException(detail="Article has no content")
+
+            if not article.summary and not request.generate_if_missing:
+                raise BadRequestException(
+                    detail="Article has no summary. Set generate_if_missing=true to create one."
+                )
+
+            # Generate summary if requested and missing
+            if not article.summary and request.generate_if_missing:
+                # Generate a brief summary
+                prompt = "Provide a brief one-sentence summary:"
+                summary = call_ai_provider("gemini", prompt, article.content)
+
+                # Update article
+                conn.execute(
+                    "UPDATE scraped_data SET summary = ? WHERE id = ?",
+                    (summary, article.id)
+                )
+                conn.commit()
+                article.summary = summary
+
+        # Evaluate summary quality
+        metrics = eval_quality(article.content, article.summary)
+
+        logger.info(
+            f"Summary quality evaluated for article {article.id} by user {current_user.id} "
+            f"(overall={metrics['overall']:.2f})"
+        )
+
+        return SummaryQualityResponse(
+            rouge_1=metrics['rouge_1'],
+            rouge_2=metrics['rouge_2'],
+            rouge_l=metrics['rouge_l'],
+            coherence_score=metrics['coherence'],
+            coverage_score=metrics['coverage'],
+            overall_score=metrics['overall']
+        )
+
+    except (NotFoundException, BadRequestException):
+        raise
+    except Exception as e:
+        logger.error(f"Error evaluating summary quality for article {request.article_id}: {e}")
+        raise BadRequestException(detail="Failed to evaluate summary quality")
+
+
+@router.post("/content-similarity", response_model=ContentSimilarityResponse)
+async def find_similar_content(
+    request: ContentSimilarityRequest,
+    current_user: User = Depends(require_user)
+):
+    """
+    Find similar articles using content similarity.
+
+    Args:
+        request: Content similarity request
+        current_user: Current authenticated user
+
+    Returns:
+        List of similar articles with similarity scores
+
+    Raises:
+        NotFoundException: If article not found
+    """
+    try:
+        from ...ai.content_similarity import find_similar_articles
+
+        with get_db_connection() as conn:
+            # Get article
+            row = conn.execute(
+                "SELECT * FROM scraped_data WHERE id = ?",
+                (request.article_id,)
+            ).fetchone()
+
+            if not row:
+                raise NotFoundException(detail="Article not found")
+
+            article = Article.from_db_row(row)
+
+            if not article.content:
+                raise BadRequestException(detail="Article has no content")
+
+        # Find similar articles
+        similar = find_similar_articles(
+            request.article_id,
+            top_k=request.top_k,
+            threshold=request.threshold
+        )
+
+        logger.info(
+            f"Similar articles found for article {request.article_id} by user {current_user.id} "
+            f"(found={len(similar)})"
+        )
+
+        return ContentSimilarityResponse(similar_articles=similar)
+
+    except (NotFoundException, BadRequestException):
+        raise
+    except Exception as e:
+        logger.error(f"Error finding similar content for article {request.article_id}: {e}")
+        raise BadRequestException(detail="Failed to find similar content")
+
+
+@router.post("/topic-modeling", response_model=TopicModelingResponse)
+async def discover_topics(
+    request: TopicModelingRequest,
+    current_user: User = Depends(require_user)
+):
+    """
+    Discover topics using LDA or NMF topic modeling.
+
+    Args:
+        request: Topic modeling request
+        current_user: Current authenticated user
+
+    Returns:
+        Topics with top words and article-topic assignments
+
+    Raises:
+        BadRequestException: If no articles available
+    """
+    try:
+        from ...ai.topic_modeling import discover_topics as discover
+
+        with get_db_connection() as conn:
+            # Get articles
+            if request.article_ids:
+                placeholders = ",".join(["?"] * len(request.article_ids))
+                sql = f"SELECT * FROM scraped_data WHERE id IN ({placeholders})"
+                rows = conn.execute(sql, request.article_ids).fetchall()
+            else:
+                # Use all user's articles (limit to recent 100)
+                sql = """
+                    SELECT * FROM scraped_data
+                    WHERE user_id = ?
+                    ORDER BY timestamp DESC
+                    LIMIT 100
+                """
+                rows = conn.execute(sql, (current_user.id,)).fetchall()
+
+            if not rows:
+                raise BadRequestException(detail="No articles available for topic modeling")
+
+            article_ids = [row[0] for row in rows]
+
+        # Discover topics
+        result = discover(
+            article_ids=article_ids,
+            num_topics=request.num_topics,
+            algorithm=request.algorithm,
+            words_per_topic=request.words_per_topic
+        )
+
+        logger.info(
+            f"Topics discovered by user {current_user.id} "
+            f"(articles={len(article_ids)}, topics={request.num_topics}, algorithm={request.algorithm})"
+        )
+
+        return TopicModelingResponse(
+            topics=result['topics'],
+            article_topics=result['article_topics']
+        )
+
+    except BadRequestException:
+        raise
+    except Exception as e:
+        logger.error(f"Error discovering topics: {e}")
+        raise BadRequestException(detail="Failed to discover topics")

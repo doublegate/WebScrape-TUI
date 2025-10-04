@@ -8,7 +8,15 @@ from ...core.database import get_db_connection
 from ...core.auth import hash_password, change_password, db_datetime_now
 from ...models.user import User
 from ...utils.logging import get_logger
-from ..models import UserCreate, UserUpdate, UserResponse, UserPasswordChange
+from ..models import (
+    UserCreate,
+    UserUpdate,
+    UserResponse,
+    UserPasswordChange,
+    UserProfileResponse,
+    UserProfileUpdate,
+    UserSessionResponse
+)
 from ..dependencies import get_current_user, require_admin
 from ..exceptions import NotFoundException, BadRequestException, ConflictException
 
@@ -333,3 +341,203 @@ async def change_user_password(
         raise BadRequestException(detail="Old password is incorrect")
 
     logger.info(f"Password changed for user {user_id}")
+
+
+# === Sprint 3: Profile and Session Endpoints ===
+
+
+@router.get("/profile", response_model=UserProfileResponse)
+async def get_current_user_profile(current_user: User = Depends(get_current_user)):
+    """
+    Get current user's profile with statistics.
+
+    Args:
+        current_user: Current authenticated user
+
+    Returns:
+        User profile with article/scraper counts
+    """
+    try:
+        with get_db_connection() as conn:
+            # Get article count
+            article_count = conn.execute(
+                "SELECT COUNT(*) FROM scraped_data WHERE user_id = ?",
+                (current_user.id,)
+            ).fetchone()[0]
+
+            # Get scraper count
+            scraper_count = conn.execute(
+                "SELECT COUNT(*) FROM saved_scrapers WHERE user_id = ?",
+                (current_user.id,)
+            ).fetchone()[0]
+
+            return UserProfileResponse(
+                id=current_user.id,
+                username=current_user.username,
+                email=current_user.email,
+                role=current_user.role,
+                created_at=current_user.created_datetime,
+                last_login=current_user.last_login_datetime,
+                is_active=current_user.is_active,
+                article_count=article_count,
+                scraper_count=scraper_count
+            )
+
+    except Exception as e:
+        logger.error(f"Error fetching profile for user {current_user.id}: {e}")
+        raise BadRequestException(detail="Failed to fetch profile")
+
+
+@router.put("/profile", response_model=UserProfileResponse)
+async def update_current_user_profile(
+    profile_update: UserProfileUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Update current user's profile (email only).
+
+    Args:
+        profile_update: Profile update data
+        current_user: Current authenticated user
+
+    Returns:
+        Updated profile
+    """
+    try:
+        with get_db_connection() as conn:
+            # Update email if provided
+            if profile_update.email is not None:
+                conn.execute(
+                    "UPDATE users SET email = ? WHERE id = ?",
+                    (profile_update.email, current_user.id)
+                )
+                conn.commit()
+
+            # Fetch updated profile
+            article_count = conn.execute(
+                "SELECT COUNT(*) FROM scraped_data WHERE user_id = ?",
+                (current_user.id,)
+            ).fetchone()[0]
+
+            scraper_count = conn.execute(
+                "SELECT COUNT(*) FROM saved_scrapers WHERE user_id = ?",
+                (current_user.id,)
+            ).fetchone()[0]
+
+            # Get updated user data
+            row = conn.execute(
+                "SELECT * FROM users WHERE id = ?",
+                (current_user.id,)
+            ).fetchone()
+
+            updated_user = User.from_db_row(row)
+
+            logger.info(f"Profile updated for user {current_user.id}")
+
+            return UserProfileResponse(
+                id=updated_user.id,
+                username=updated_user.username,
+                email=updated_user.email,
+                role=updated_user.role,
+                created_at=updated_user.created_datetime,
+                last_login=updated_user.last_login_datetime,
+                is_active=updated_user.is_active,
+                article_count=article_count,
+                scraper_count=scraper_count
+            )
+
+    except Exception as e:
+        logger.error(f"Error updating profile for user {current_user.id}: {e}")
+        raise BadRequestException(detail="Failed to update profile")
+
+
+@router.get("/sessions", response_model=list[UserSessionResponse])
+async def list_user_sessions(current_user: User = Depends(get_current_user)):
+    """
+    List current user's active sessions.
+
+    Args:
+        current_user: Current authenticated user
+
+    Returns:
+        List of active sessions
+    """
+    try:
+        # Get current session token from dependencies
+        from ..dependencies import get_session_token_from_request
+        from fastapi import Request
+        from starlette.requests import Request as StarletteRequest
+
+        # We need the request to get the current session token
+        # For now, we'll mark all sessions as not current and let the client determine
+        # In a real implementation, we'd pass the current session token
+
+        with get_db_connection() as conn:
+            rows = conn.execute("""
+                SELECT id, created_at, expires_at
+                FROM user_sessions
+                WHERE user_id = ?
+                AND datetime(expires_at) > datetime('now')
+                ORDER BY created_at DESC
+            """, (current_user.id,)).fetchall()
+
+            sessions = []
+            for row in rows:
+                sessions.append(UserSessionResponse(
+                    id=row[0],
+                    created_at=row[1],
+                    expires_at=row[2],
+                    is_current=False  # TODO: Compare with current session token
+                ))
+
+            logger.info(f"Listed {len(sessions)} active sessions for user {current_user.id}")
+
+            return sessions
+
+    except Exception as e:
+        logger.error(f"Error listing sessions for user {current_user.id}: {e}")
+        raise BadRequestException(detail="Failed to list sessions")
+
+
+@router.delete("/sessions/{session_id}", status_code=204)
+async def revoke_user_session(
+    session_id: int,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Revoke a user session.
+
+    Args:
+        session_id: Session ID to revoke
+        current_user: Current authenticated user
+
+    Raises:
+        NotFoundException: If session not found
+        ForbiddenException: If session belongs to another user
+    """
+    try:
+        with get_db_connection() as conn:
+            # Check session exists and belongs to user
+            row = conn.execute(
+                "SELECT user_id FROM user_sessions WHERE id = ?",
+                (session_id,)
+            ).fetchone()
+
+            if not row:
+                raise NotFoundException(detail="Session not found")
+
+            if row[0] != current_user.id:
+                from ..exceptions import ForbiddenException
+                raise ForbiddenException(detail="Cannot revoke another user's session")
+
+            # Delete session
+            conn.execute("DELETE FROM user_sessions WHERE id = ?", (session_id,))
+            conn.commit()
+
+            logger.info(f"Session {session_id} revoked by user {current_user.id}")
+
+    except (NotFoundException, BadRequestException):
+        raise
+    except Exception as e:
+        logger.error(f"Error revoking session {session_id}: {e}")
+        raise BadRequestException(detail="Failed to revoke session")

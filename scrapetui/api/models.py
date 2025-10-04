@@ -263,6 +263,98 @@ class ArticleSearchRequest(BaseModel):
     sort_by: str = Field(default="date_desc")
 
 
+# === Advanced AI Models (Sprint 3) ===
+
+class EntityRelationshipsRequest(BaseModel):
+    """Entity relationships extraction request."""
+    article_ids: List[int] = Field(..., min_items=1)
+    entity_types: Optional[List[str]] = None
+    min_confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+
+
+class EntityRelationshipsResponse(BaseModel):
+    """Entity relationships extraction response."""
+    entities: List[dict]
+    relationships: List[dict]
+    knowledge_graph: dict
+
+
+class SummaryQualityRequest(BaseModel):
+    """Summary quality evaluation request."""
+    article_id: int
+    generate_if_missing: bool = False
+
+
+class SummaryQualityResponse(BaseModel):
+    """Summary quality evaluation response."""
+    rouge_1: float
+    rouge_2: float
+    rouge_l: float
+    coherence_score: float
+    coverage_score: float
+    overall_score: float
+
+
+class ContentSimilarityRequest(BaseModel):
+    """Content similarity search request."""
+    article_id: int
+    top_k: int = Field(default=5, ge=1, le=20)
+    threshold: float = Field(default=0.3, ge=0.0, le=1.0)
+
+
+class ContentSimilarityResponse(BaseModel):
+    """Content similarity search response."""
+    similar_articles: List[dict]
+
+
+class TopicModelingRequest(BaseModel):
+    """Topic modeling request."""
+    article_ids: Optional[List[int]] = None
+    num_topics: int = Field(default=5, ge=2, le=20)
+    algorithm: str = Field(default="lda", pattern="^(lda|nmf)$")
+    words_per_topic: int = Field(default=10, ge=5, le=20)
+
+
+class TopicModelingResponse(BaseModel):
+    """Topic modeling response."""
+    topics: List[dict]
+    article_topics: dict
+
+
+# === User Profile Models (Sprint 3) ===
+
+class UserProfileResponse(BaseModel):
+    """User profile response (for current user)."""
+    id: int
+    username: str
+    email: Optional[EmailStr] = None
+    role: str
+    created_at: datetime
+    last_login: Optional[datetime] = None
+    is_active: bool
+    article_count: int
+    scraper_count: int
+
+    class Config:
+        from_attributes = True
+
+
+class UserProfileUpdate(BaseModel):
+    """User profile update request (for current user)."""
+    email: Optional[EmailStr] = None
+
+
+class UserSessionResponse(BaseModel):
+    """User session response."""
+    id: int
+    created_at: datetime
+    expires_at: datetime
+    is_current: bool
+
+    class Config:
+        from_attributes = True
+
+
 # === Error Models ===
 
 class ErrorResponse(BaseModel):
