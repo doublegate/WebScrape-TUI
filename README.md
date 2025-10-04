@@ -160,10 +160,24 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Error Logging**: Comprehensive error tracking for failed scheduled scrapes
 - **Profile Integration**: Schedule any saved scraper profile for automatic execution
 
+### 💻 Command-Line Interface (v2.1.0)
+
+- **Comprehensive CLI**: Full-featured command-line interface for automation and scripting
+- **Scraping Commands**: URL, profile-based, and bulk scraping via CLI
+- **Export Commands**: CSV, JSON, Excel, and PDF export with filtering
+- **AI Commands**: Summarize, extract keywords, topics, entities, Q&A, and similarity search
+- **User Management**: Create users, list users, reset passwords
+- **Database Operations**: Initialize, backup, restore, and migrate database
+- **Article Management**: List, show, and delete articles
+- **Filtering Support**: All export/list commands support comprehensive filtering
+- **Entry Point**: `scrapetui-cli` command for easy access
+- **Scriptable**: Perfect for cron jobs, automation pipelines, and batch processing
+
 ## 📋 Table of Contents
 
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
+- [Command-Line Interface](#-command-line-interface)
 - [Configuration](#-configuration)
 - [Usage Guide](#-usage-guide)
 - [Features Deep Dive](#-features-deep-dive)
@@ -327,6 +341,58 @@ See [INSTALL-ARCH.md](INSTALL-ARCH.md) for detailed platform-specific instructio
    - Press `S` to open saved scrapers
    - Select from 10+ pre-installed profiles
    - Execute scraper or customize for your needs
+
+5. **Advanced Features:**
+   - Ctrl+F: Open advanced filter modal
+   - Ctrl+P: Switch AI provider (Gemini/OpenAI/Claude)
+   - Ctrl+Shift+T: Auto-tag selected articles using AI
+   - Ctrl+Shift+E: Extract named entities from articles
+   - Ctrl+Shift+K: Extract keywords from articles
+   - Ctrl+Shift+R: Find similar articles using semantic search
+   - Ctrl+Shift+Q: Question answering system
+   - Ctrl+Shift+A: Manage scheduled scraping tasks
+
+## 💻 Command-Line Interface
+
+WebScrape-TUI provides a comprehensive CLI for automation and scripting. Perfect for cron jobs, automated workflows, and batch processing.
+
+### Installation & Verification
+
+```bash
+# CLI is installed automatically with WebScrape-TUI
+pip install -e .
+
+# Verify installation
+scrapetui-cli --version
+```
+
+### Quick Examples
+
+```bash
+# Scrape a website
+scrapetui-cli scrape url --url "https://news.ycombinator.com" --selector "a.titlelink" --limit 10
+
+# Export to CSV with filters
+scrapetui-cli export csv --output articles.csv --tag "technology" --limit 100
+
+# AI analysis
+scrapetui-cli ai summarize --article-id 1 --provider gemini
+scrapetui-cli ai keywords --article-id 1 --top 10
+
+# List articles
+scrapetui-cli articles list --limit 20
+```
+
+### Available Command Groups
+
+- **scrape** - Web scraping (url, profile, bulk)
+- **export** - Data export (csv, json, excel, pdf)
+- **ai** - AI analysis (summarize, keywords, entities, topics, question, similar)
+- **articles** - Article management (list, show, delete)
+- **user** - User management (create, list, reset-password)
+- **db** - Database operations (init, backup, restore, migrate)
+
+**For complete CLI documentation, see [docs/CLI.md](docs/CLI.md)**
 
 ## ⚙️ Configuration
 

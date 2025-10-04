@@ -49,12 +49,14 @@ def _register_commands():
         from .commands.user import user as user_cmd
         from .commands.db import db as db_cmd
         from .commands.articles import articles as articles_cmd
+        from .commands.export import export as export_cmd
 
         cli.add_command(scrape_cmd, name="scrape")
         cli.add_command(ai_cmd, name="ai")
         cli.add_command(user_cmd, name="user")
         cli.add_command(db_cmd, name="db")
         cli.add_command(articles_cmd, name="articles")
+        cli.add_command(export_cmd, name="export")
     except ImportError as e:
         logger.error(f"Failed to import CLI commands: {e}")
         raise

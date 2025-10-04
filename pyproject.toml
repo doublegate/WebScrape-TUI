@@ -120,7 +120,7 @@ Changelog = "https://github.com/doublegate/WebScrape-TUI/blob/main/CHANGELOG.md"
 scrapetui = "scrapetui.__main__:main"
 scrapetui-tui = "scrapetui.app:main"
 scrapetui-api = "scrapetui.api.main:main"
-scrapetui-cli = "scrapetui.cli.main:cli"
+scrapetui-cli = "scrapetui.cli:cli"
 
 [tool.setuptools.packages.find]
 where = ["."]
