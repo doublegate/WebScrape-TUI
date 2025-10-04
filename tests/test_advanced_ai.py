@@ -13,13 +13,22 @@ Total: 28 tests across 5 test classes
 
 import pytest
 from unittest.mock import Mock, patch, MagicMock
-from scrapetui import (
-    AITaggingManager,
-    EntityRecognitionManager,
-    ContentSimilarityManager,
-    KeywordExtractionManager,
-    MultiLevelSummarizationManager
-)
+
+# Import from monolithic scrapetui.py using importlib.util
+import importlib.util
+from pathlib import Path
+
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import needed components from monolithic module
+AITaggingManager = _scrapetui_module.AITaggingManager
+EntityRecognitionManager = _scrapetui_module.EntityRecognitionManager
+ContentSimilarityManager = _scrapetui_module.ContentSimilarityManager
+KeywordExtractionManager = _scrapetui_module.KeywordExtractionManager
+MultiLevelSummarizationManager = _scrapetui_module.MultiLevelSummarizationManager
 
 
 # ==================== AITaggingManager Tests (6 tests) ====================
@@ -27,8 +36,8 @@ from scrapetui import (
 class TestAITagging:
     """Test suite for AI-powered tagging functionality."""
 
-    @patch('scrapetui.word_tokenize')
-    @patch('scrapetui.stopwords.words')
+    @patch.object(_scrapetui_module, 'word_tokenize')
+    @patch('nltk.corpus.stopwords.words')
     def test_generate_tags_basic(self, mock_stopwords, mock_tokenize):
         """Test basic tag generation from title and content."""
         mock_stopwords.return_value = ['the', 'is', 'a', 'for', 'and', 'used']
@@ -74,7 +83,7 @@ class TestAITagging:
 
     def test_generate_tags_with_provider_failure(self):
         """Test tag generation when TF-IDF vectorizer fails."""
-        with patch('scrapetui.TfidfVectorizer') as mock_vectorizer:
+        with patch.object(_scrapetui_module, 'TfidfVectorizer') as mock_vectorizer:
             mock_vectorizer.side_effect = Exception("Vectorizer Error")
 
             tags = AITaggingManager.generate_tags_from_content("Test content")
@@ -99,7 +108,7 @@ class TestAITagging:
 class TestEntityRecognition:
     """Test suite for named entity recognition functionality."""
 
-    @patch('scrapetui.spacy.load')
+    @patch('spacy.load')
     def test_extract_entities_basic(self, mock_spacy_load):
         """Test basic entity extraction."""
         mock_nlp = Mock()
@@ -126,14 +135,14 @@ class TestEntityRecognition:
         assert 'Microsoft' in entities['organizations']
         assert 'New York' in entities['locations']
 
-    @patch('scrapetui.spacy.load')
+    @patch('spacy.load')
     def test_extract_entities_empty_content(self, mock_spacy_load):
         """Test entity extraction with empty content."""
         entities = EntityRecognitionManager.extract_entities("")
 
         assert entities == {}
 
-    @patch('scrapetui.spacy.load')
+    @patch('spacy.load')
     def test_extract_entities_no_entities(self, mock_spacy_load):
         """Test entity extraction when no entities found."""
         # Create mock that returns doc with empty ents when called
@@ -156,7 +165,7 @@ class TestEntityRecognition:
         # Check that all values are lists (might not all be empty if mock isn't working perfectly)
         assert all(isinstance(v, list) for v in entities.values())
 
-    @patch('scrapetui.spacy.load')
+    @patch('spacy.load')
     def test_extract_entities_deduplication(self, mock_spacy_load):
         """Test that duplicate entities are removed."""
         mock_nlp = Mock()
@@ -176,7 +185,7 @@ class TestEntityRecognition:
 
         assert len(entities['people']) == 1
 
-    @patch('scrapetui.spacy.load')
+    @patch('spacy.load')
     def test_extract_entities_multiple_types(self, mock_spacy_load):
         """Test extraction of multiple entity types."""
         mock_nlp = Mock()
@@ -203,7 +212,7 @@ class TestEntityRecognition:
         non_empty = sum(1 for v in entities.values() if len(v) > 0)
         assert non_empty >= 3
 
-    @patch('scrapetui.EntityRecognitionManager.load_spacy_model')
+    @patch.object(EntityRecognitionManager, 'load_spacy_model')
     def test_extract_entities_with_spacy_error(self, mock_load_model):
         """Test entity extraction when spaCy fails to load."""
         mock_load_model.return_value = False  # Simulate model load failure
@@ -220,7 +229,7 @@ class TestEntityRecognition:
 class TestContentSimilarity:
     """Test suite for content similarity matching."""
 
-    @patch('scrapetui.SentenceTransformer')
+    @patch.object(_scrapetui_module, 'SentenceTransformer')
     def test_find_similar_articles_basic(self, mock_transformer):
         """Test basic similar article finding."""
         mock_model = Mock()
@@ -240,7 +249,7 @@ class TestContentSimilarity:
         # Returns list of (article, score) tuples
         assert all(isinstance(s, tuple) and len(s) == 2 for s in similar)
 
-    @patch('scrapetui.SentenceTransformer')
+    @patch.object(_scrapetui_module, 'SentenceTransformer')
     def test_find_similar_articles_threshold(self, mock_transformer):
         """Test similarity threshold filtering."""
         mock_model = Mock()
@@ -267,7 +276,7 @@ class TestContentSimilarity:
         # Only very similar article should be returned
         assert len(similar) <= 2
 
-    @patch('scrapetui.SentenceTransformer')
+    @patch.object(_scrapetui_module, 'SentenceTransformer')
     def test_find_similar_articles_top_k(self, mock_transformer):
         """Test that only top_k similar articles are returned."""
         mock_model = Mock()
@@ -296,14 +305,14 @@ class TestContentSimilarity:
 
         assert len(similar) <= 2
 
-    @patch('scrapetui.SentenceTransformer')
+    @patch.object(_scrapetui_module, 'SentenceTransformer')
     def test_find_similar_articles_empty_database(self, mock_transformer):
         """Test similar articles with empty article list."""
         similar = ContentSimilarityManager.find_similar_articles("Test content", [])
 
         assert similar == []
 
-    @patch('scrapetui.SentenceTransformer')
+    @patch.object(_scrapetui_module, 'SentenceTransformer')
     def test_find_similar_articles_single_article(self, mock_transformer):
         """Test similar articles when only one article exists."""
         mock_model = Mock()
@@ -318,7 +327,7 @@ class TestContentSimilarity:
         # Could return the article itself with high similarity, so just check it's a list
         assert isinstance(similar, list)
 
-    @patch('scrapetui.ContentSimilarityManager.load_model')
+    @patch.object(ContentSimilarityManager, 'load_model')
     def test_find_similar_articles_with_model_error(self, mock_load_model):
         """Test similar articles when model fails to load."""
         mock_load_model.return_value = False  # Simulate model load failure
@@ -398,7 +407,7 @@ class TestKeywordExtraction:
 
     def test_extract_keywords_with_nltk_error(self):
         """Test keyword extraction when TF-IDF vectorizer fails."""
-        with patch('scrapetui.TfidfVectorizer') as mock_vectorizer:
+        with patch.object(_scrapetui_module, 'TfidfVectorizer') as mock_vectorizer:
             mock_vectorizer.side_effect = Exception("Vectorizer error")
 
             keywords = KeywordExtractionManager.extract_keywords("Test content")
@@ -413,7 +422,7 @@ class TestMultiLevelSummarization:
 
     def test_generate_summary_levels(self):
         """Test generation of one-sentence summary."""
-        with patch('scrapetui.get_ai_provider') as mock_get_provider:
+        with patch.object(_scrapetui_module, 'get_ai_provider') as mock_get_provider:
             mock_provider = Mock()
             mock_provider.get_summary.return_value = "Brief summary"
             mock_get_provider.return_value = mock_provider
@@ -448,7 +457,7 @@ class TestMultiLevelSummarization:
 
     def test_generate_summary_with_provider_error(self):
         """Test summary generation when AI provider fails."""
-        with patch('scrapetui.get_ai_provider') as mock_get_provider:
+        with patch.object(_scrapetui_module, 'get_ai_provider') as mock_get_provider:
             mock_get_provider.return_value = None  # Simulate no provider
 
             summary = MultiLevelSummarizationManager.generate_one_sentence_summary(
@@ -465,9 +474,9 @@ class TestMultiLevelSummarization:
 class TestAdvancedAIIntegration:
     """Integration tests for advanced AI features working together."""
 
-    @patch('scrapetui.word_tokenize')
-    @patch('scrapetui.stopwords.words')
-    @patch('scrapetui.spacy.load')
+    @patch.object(_scrapetui_module, 'word_tokenize')
+    @patch('nltk.corpus.stopwords.words')
+    @patch('spacy.load')
     def test_tag_and_entity_extraction_workflow(self, mock_spacy, mock_stopwords, mock_tokenize):
         """Test combined workflow of tagging and entity extraction."""
         # Setup mocks
@@ -495,7 +504,7 @@ class TestAdvancedAIIntegration:
         assert 'people' in entities
         assert 'John Doe' in entities['people']
 
-    @patch('scrapetui.SentenceTransformer')
+    @patch.object(_scrapetui_module, 'SentenceTransformer')
     def test_keyword_and_similarity_workflow(self, mock_transformer):
         """Test combined workflow of keyword extraction and similarity matching."""
         # Setup mocks
