@@ -104,13 +104,13 @@ def test_article_isolation_user_sees_own_only(multi_user_db):
     with get_db_connection() as conn:
         # Create articles for different users
         conn.execute("""
-            INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+            INSERT OR IGNORE INTO scraped_data (title, url, link, timestamp, user_id)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Article', 'http://test.com/1', 'http://test.com/1',
               datetime.now().isoformat(), 2))  # user1
 
         conn.execute("""
-            INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+            INSERT OR IGNORE INTO scraped_data (title, url, link, timestamp, user_id)
             VALUES (?, ?, ?, ?, ?)
         """, ('User2 Article', 'http://test.com/2', 'http://test.com/2',
               datetime.now().isoformat(), 3))  # user2
@@ -139,13 +139,13 @@ def test_article_isolation_admin_sees_all(multi_user_db):
     with get_db_connection() as conn:
         # Create articles for different users
         conn.execute("""
-            INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+            INSERT OR IGNORE INTO scraped_data (title, url, link, timestamp, user_id)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Article', 'http://test.com/1', 'http://test.com/1',
               datetime.now().isoformat(), 2))  # user1
 
         conn.execute("""
-            INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+            INSERT OR IGNORE INTO scraped_data (title, url, link, timestamp, user_id)
             VALUES (?, ?, ?, ?, ?)
         """, ('Admin Article', 'http://test.com/2', 'http://test.com/2',
               datetime.now().isoformat(), 1))  # admin
@@ -165,7 +165,7 @@ def test_article_isolation_empty_for_new_user(multi_user_db):
     with get_db_connection() as conn:
         # Create article for user1
         conn.execute("""
-            INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+            INSERT OR IGNORE INTO scraped_data (title, url, link, timestamp, user_id)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Article', 'http://test.com/1', 'http://test.com/1',
               datetime.now().isoformat(), 2))  # user1
@@ -190,12 +190,12 @@ def test_scraper_isolation_user_sees_own_only(multi_user_db):
     with get_db_connection() as conn:
         # Create private scrapers for different users
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Scraper', 'http://test.com', 'h1', 2, 0))  # user1, private
 
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User2 Scraper', 'http://test.com', 'h2', 3, 0))  # user2, private
 
@@ -215,13 +215,13 @@ def test_scraper_isolation_shared_visible_to_all(multi_user_db):
     with get_db_connection() as conn:
         # Create shared scraper
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('Shared Scraper', 'http://test.com', 'h1', 2, 1))  # user1, shared
 
         # Create private scraper
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('Private Scraper', 'http://test.com', 'h2', 2, 0))  # user1, private
 
@@ -241,12 +241,12 @@ def test_scraper_isolation_admin_sees_all(multi_user_db):
     with get_db_connection() as conn:
         # Create various scrapers
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Private', 'http://test.com', 'h1', 2, 0))
 
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User2 Shared', 'http://test.com', 'h2', 3, 1))
 
@@ -282,7 +282,7 @@ def test_share_scraper_toggle(multi_user_db):
     with get_db_connection() as conn:
         # Create private scraper
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('Test Scraper', 'http://test.com', 'h1', 2, 0))
 
@@ -320,7 +320,7 @@ def test_shared_scraper_visible_after_toggle(multi_user_db):
     with get_db_connection() as conn:
         # Create private scraper for user1
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('Test Scraper', 'http://test.com', 'h1', 2, 0))
 
@@ -359,7 +359,7 @@ def test_permission_user_cannot_delete_others_scraper(multi_user_db):
     with get_db_connection() as conn:
         # Create scraper for user1
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Scraper', 'http://test.com', 'h1', 2, 0))
 
@@ -387,7 +387,7 @@ def test_permission_admin_can_delete_any_scraper(multi_user_db):
     with get_db_connection() as conn:
         # Create scraper for user1
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Scraper', 'http://test.com', 'h1', 2, 0))
 
@@ -415,7 +415,7 @@ def test_permission_user_can_delete_own_scraper(multi_user_db):
     with get_db_connection() as conn:
         # Create scraper for user1
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Scraper', 'http://test.com', 'h1', 2, 0))
 
@@ -443,7 +443,7 @@ def test_permission_user_cannot_edit_others_scraper(multi_user_db):
     with get_db_connection() as conn:
         # Create scraper for user1
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Scraper', 'http://test.com', 'h1', 2, 1))  # shared
 
@@ -612,13 +612,13 @@ def test_integration_user_workflow(multi_user_db):
     with get_db_connection() as conn:
         # User1 creates a scraper
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('My Scraper', 'http://test.com', 'h1', 2, 0))
 
         # User1 creates an article
         conn.execute("""
-            INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+            INSERT OR IGNORE INTO scraped_data (title, url, link, timestamp, user_id)
             VALUES (?, ?, ?, ?, ?)
         """, ('My Article', 'http://test.com/article', 'http://test.com/article',
               datetime.now().isoformat(), 2))
@@ -653,7 +653,7 @@ def test_integration_sharing_workflow(multi_user_db):
     with get_db_connection() as conn:
         # User1 creates a scraper
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('My Scraper', 'http://test.com', 'h1', 2, 0))
 
@@ -692,23 +692,23 @@ def test_integration_admin_oversight(multi_user_db):
     with get_db_connection() as conn:
         # Multiple users create data
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Scraper', 'http://test.com', 'h1', 2, 0))
 
         conn.execute("""
-            INSERT INTO saved_scrapers (name, url, selector, user_id, is_shared)
+            INSERT OR IGNORE INTO saved_scrapers (name, url, selector, user_id, is_shared)
             VALUES (?, ?, ?, ?, ?)
         """, ('User2 Scraper', 'http://test.com', 'h2', 3, 0))
 
         conn.execute("""
-            INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+            INSERT OR IGNORE INTO scraped_data (title, url, link, timestamp, user_id)
             VALUES (?, ?, ?, ?, ?)
         """, ('User1 Article', 'http://test.com/1', 'http://test.com/1',
               datetime.now().isoformat(), 2))
 
         conn.execute("""
-            INSERT INTO scraped_data (title, url, link, timestamp, user_id)
+            INSERT OR IGNORE INTO scraped_data (title, url, link, timestamp, user_id)
             VALUES (?, ?, ?, ?, ?)
         """, ('User2 Article', 'http://test.com/2', 'http://test.com/2',
               datetime.now().isoformat(), 3))
