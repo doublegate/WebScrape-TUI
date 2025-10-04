@@ -18,16 +18,20 @@ from datetime import datetime
 import tempfile
 import os
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Import from monolithic scrapetui.py using importlib.util
+import importlib.util
 
-from scrapetui import (
-    ExcelExportManager,
-    PDFExportManager,
-    EnhancedVisualizationManager,
-    init_db,
-    get_db_connection
-)
+_scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
+_spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
+_scrapetui_module = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_scrapetui_module)
+
+# Import needed components from monolithic module
+ExcelExportManager = _scrapetui_module.ExcelExportManager
+PDFExportManager = _scrapetui_module.PDFExportManager
+EnhancedVisualizationManager = _scrapetui_module.EnhancedVisualizationManager
+init_db = _scrapetui_module.init_db
+get_db_connection = _scrapetui_module.get_db_connection
 
 
 @pytest.fixture
