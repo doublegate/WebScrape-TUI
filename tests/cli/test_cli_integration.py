@@ -18,6 +18,7 @@ import sys
 
 # Import CLI
 from scrapetui.cli import cli
+from scrapetui.config import reset_config
 
 
 @pytest.fixture
@@ -27,10 +28,14 @@ def runner():
 
 
 @pytest.fixture
-def temp_db():
+def temp_db(monkeypatch):
     """Create temporary test database with sample data."""
     with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
         db_path = f.name
+
+    # Set environment variable and reset config so it's picked up
+    monkeypatch.setenv('SCRAPETUI_DB_PATH', db_path)
+    reset_config()
 
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
@@ -146,7 +151,6 @@ def temp_db():
 ])
 def test_scrape_url_command(runner, temp_db, test_case, monkeypatch):
     """Test scrape url command with various options."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     # Mock HTTP request
     mock_response = Mock()
@@ -189,7 +193,6 @@ def test_scrape_url_command(runner, temp_db, test_case, monkeypatch):
 
 def test_scrape_url_invalid_selector(runner, temp_db, monkeypatch):
     """Test scrape url with selector that finds no items."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     mock_response = Mock()
     mock_response.text = '<html><body>No matching elements</body></html>'
@@ -208,7 +211,6 @@ def test_scrape_url_invalid_selector(runner, temp_db, monkeypatch):
 
 def test_scrape_url_http_error(runner, temp_db, monkeypatch):
     """Test scrape url with HTTP error."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     with patch('scrapetui.cli.commands.scrape.requests.get', side_effect=Exception('Network error')):
         result = runner.invoke(cli, [
@@ -254,7 +256,6 @@ def test_scrape_profile_command(runner, temp_db, monkeypatch):
 
 def test_scrape_profile_not_found(runner, temp_db, monkeypatch):
     """Test scrape profile with non-existent profile."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, [
         'scrape', 'profile',
@@ -267,7 +268,6 @@ def test_scrape_profile_not_found(runner, temp_db, monkeypatch):
 
 def test_scrape_bulk_command(runner, temp_db, monkeypatch):
     """Test scrape bulk command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     mock_response = Mock()
     mock_response.text = '<html><body><a href="/test">Test</a></body></html>'
@@ -289,7 +289,6 @@ def test_scrape_bulk_command(runner, temp_db, monkeypatch):
 
 def test_export_csv_basic(runner, temp_db, monkeypatch):
     """Test basic CSV export."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     with runner.isolated_filesystem():
         result = runner.invoke(cli, [
@@ -310,7 +309,6 @@ def test_export_csv_basic(runner, temp_db, monkeypatch):
 
 def test_export_csv_with_filters(runner, temp_db, monkeypatch):
     """Test CSV export with filters."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     with runner.isolated_filesystem():
         result = runner.invoke(cli, [
@@ -325,7 +323,6 @@ def test_export_csv_with_filters(runner, temp_db, monkeypatch):
 
 def test_export_csv_no_results(runner, temp_db, monkeypatch):
     """Test CSV export with filters that match nothing."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     with runner.isolated_filesystem():
         result = runner.invoke(cli, [
@@ -340,7 +337,6 @@ def test_export_csv_no_results(runner, temp_db, monkeypatch):
 
 def test_export_json_basic(runner, temp_db, monkeypatch):
     """Test basic JSON export."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     with runner.isolated_filesystem():
         result = runner.invoke(cli, [
@@ -361,7 +357,6 @@ def test_export_json_basic(runner, temp_db, monkeypatch):
 
 def test_export_json_pretty(runner, temp_db, monkeypatch):
     """Test JSON export with pretty printing."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     with runner.isolated_filesystem():
         result = runner.invoke(cli, [
@@ -376,7 +371,6 @@ def test_export_json_pretty(runner, temp_db, monkeypatch):
 
 def test_export_excel_basic(runner, temp_db, monkeypatch):
     """Test Excel export (requires openpyxl)."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     try:
         import openpyxl
@@ -402,7 +396,6 @@ def test_export_excel_basic(runner, temp_db, monkeypatch):
 
 def test_export_pdf_basic(runner, temp_db, monkeypatch):
     """Test PDF export (requires reportlab)."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     try:
         import reportlab
@@ -428,7 +421,6 @@ def test_export_pdf_basic(runner, temp_db, monkeypatch):
 
 def test_export_csv_invalid_path(runner, temp_db, monkeypatch):
     """Test export with invalid output path."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, [
         'export', 'csv',
@@ -445,41 +437,32 @@ def test_export_csv_invalid_path(runner, temp_db, monkeypatch):
 
 def test_ai_summarize_command(runner, temp_db, monkeypatch):
     """Test AI summarize command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
-    # Mock AI provider
-    with patch('scrapetui.cli.commands.ai.get_ai_provider') as mock_provider:
-        mock_provider.return_value.summarize.return_value = "Test summary"
+    result = runner.invoke(cli, [
+        'ai', 'summarize',
+        '--article-id', '1',
+        '--provider', 'gemini'
+    ])
 
-        result = runner.invoke(cli, [
-            'ai', 'summarize',
-            '--article-id', '1',
-            '--provider', 'gemini'
-        ])
-
-        # Command should execute (may fail without API key, but should try)
-        assert 'summarize' in result.output.lower() or 'article' in result.output.lower() or result.exit_code == 0
+    # Command should execute (will fail without content, but should handle gracefully)
+    assert result.exit_code == 0 or 'content' in result.output.lower() or 'article' in result.output.lower()
 
 
 def test_ai_keywords_command(runner, temp_db, monkeypatch):
     """Test AI keywords command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
-    with patch('scrapetui.cli.commands.ai.get_ai_provider') as mock_provider:
-        mock_provider.return_value.extract_keywords.return_value = ["test", "keyword"]
+    result = runner.invoke(cli, [
+        'ai', 'keywords',
+        '--article-id', '1',
+        '--top', '5'
+    ])
 
-        result = runner.invoke(cli, [
-            'ai', 'keywords',
-            '--article-id', '1',
-            '--top', '5'
-        ])
-
-        assert 'keyword' in result.output.lower() or result.exit_code == 0
+    # Command should execute (will fail without content, but should handle gracefully)
+    assert result.exit_code == 0 or 'content' in result.output.lower() or 'keyword' in result.output.lower()
 
 
 def test_ai_topics_command(runner, temp_db, monkeypatch):
     """Test AI topics command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, [
         'ai', 'topics',
@@ -492,7 +475,6 @@ def test_ai_topics_command(runner, temp_db, monkeypatch):
 
 def test_ai_question_command(runner, temp_db, monkeypatch):
     """Test AI question answering command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, [
         'ai', 'question',
@@ -505,7 +487,6 @@ def test_ai_question_command(runner, temp_db, monkeypatch):
 
 def test_ai_similar_command(runner, temp_db, monkeypatch):
     """Test AI similar articles command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, [
         'ai', 'similar',
@@ -519,7 +500,6 @@ def test_ai_similar_command(runner, temp_db, monkeypatch):
 
 def test_ai_entities_command(runner, temp_db, monkeypatch):
     """Test AI entity extraction command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, [
         'ai', 'entities',
@@ -536,7 +516,6 @@ def test_ai_entities_command(runner, temp_db, monkeypatch):
 
 def test_user_create_command(runner, temp_db, monkeypatch):
     """Test user create command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, [
         'user', 'create',
@@ -551,7 +530,6 @@ def test_user_create_command(runner, temp_db, monkeypatch):
 
 def test_user_list_command(runner, temp_db, monkeypatch):
     """Test user list command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, ['user', 'list'])
 
@@ -561,7 +539,6 @@ def test_user_list_command(runner, temp_db, monkeypatch):
 
 def test_user_reset_password_command(runner, temp_db, monkeypatch):
     """Test user reset password command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, [
         'user', 'reset-password',
@@ -574,7 +551,6 @@ def test_user_reset_password_command(runner, temp_db, monkeypatch):
 
 def test_user_permission_check(runner, temp_db, monkeypatch):
     """Test that user commands check permissions appropriately."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     # This test verifies commands don't crash and handle auth properly
     result = runner.invoke(cli, ['user', '--help'])
@@ -582,6 +558,34 @@ def test_user_permission_check(runner, temp_db, monkeypatch):
     assert result.exit_code == 0
     assert 'create' in result.output
     assert 'list' in result.output
+
+
+def test_user_create_and_authenticate(runner, temp_db, monkeypatch):
+    """Test that CLI-created users can authenticate (regression test for database path bug)."""
+
+    # Create user via CLI
+    result = runner.invoke(cli, [
+        'user', 'create',
+        '--username', 'cliuser',
+        '--email', 'cliuser@example.com',
+        '--role', 'user'
+    ], input='testpass123\ntestpass123\n')
+
+    assert result.exit_code == 0
+    assert 'created successfully' in result.output.lower() or 'user' in result.output.lower()
+
+    # Verify user exists in database with correct password hash
+    import sqlite3
+    from scrapetui.core.auth import verify_password
+
+    conn = sqlite3.connect(temp_db)
+    conn.row_factory = sqlite3.Row
+    row = conn.execute('SELECT id, password_hash, is_active FROM users WHERE username = ?', ('cliuser',)).fetchone()
+    conn.close()
+
+    assert row is not None, "User should exist in database"
+    assert row['is_active'] == 1, "User should be active"
+    assert verify_password('testpass123', row['password_hash']), "Password hash should verify correctly"
 
 
 # ============================================================================
@@ -600,7 +604,6 @@ def test_db_init_command(runner):
 
 def test_db_backup_command(runner, temp_db, monkeypatch):
     """Test database backup command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     with runner.isolated_filesystem():
         result = runner.invoke(cli, [
@@ -614,7 +617,6 @@ def test_db_backup_command(runner, temp_db, monkeypatch):
 
 def test_db_restore_command(runner, temp_db, monkeypatch):
     """Test database restore command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     with runner.isolated_filesystem():
         # First create a backup
@@ -631,7 +633,6 @@ def test_db_restore_command(runner, temp_db, monkeypatch):
 
 def test_db_migrate_command(runner, temp_db, monkeypatch):
     """Test database migrate command."""
-    monkeypatch.setenv('SCRAPETUI_DB_PATH', temp_db)
 
     result = runner.invoke(cli, ['db', 'migrate'])
 

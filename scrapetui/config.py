@@ -99,8 +99,8 @@ def get_config() -> Config:
     load_env_file()
 
     return Config(
-        # Database
-        database_path=os.getenv('DATABASE_PATH', 'scraped_data_tui_v1.0.db'),
+        # Database (check both env vars for backwards compatibility)
+        database_path=os.getenv('SCRAPETUI_DB_PATH') or os.getenv('DATABASE_PATH', 'scraped_data_tui_v1.0.db'),
 
         # Logging
         log_file=os.getenv('LOG_FILE_PATH', 'scraper_tui_v1.0.log'),
