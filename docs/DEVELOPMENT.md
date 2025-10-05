@@ -56,10 +56,13 @@ python --version  # Should show Python 3.12.x
 # Install all production dependencies
 pip install -r requirements.txt
 
-# Install development dependencies (optional)
-pip install pytest pytest-cov black flake8 mypy isort
+# Install CLI (optional, for automation features)
+pip install -e .
 
-# Download spaCy model
+# Install development dependencies (optional)
+pip install pytest pytest-asyncio pytest-cov black flake8 mypy isort
+
+# Download spaCy model (required for NER features)
 python -m spacy download en_core_web_sm
 ```
 
@@ -94,32 +97,67 @@ pip install mypy
 
 ```
 WebScrape-TUI/
-├── scrapetui.py              # Main application (4600+ lines)
+├── scrapetui.py              # Main monolithic application (9,715 lines)
 │   ├── Database functions    # Lines 1-700
-│   ├── Manager classes       # Lines 700-2000
-│   ├── Modal screens         # Lines 2000-3500
-│   └── Main App class        # Lines 3500-4600
+│   ├── Manager classes       # Lines 700-4000
+│   ├── Modal screens         # Lines 4000-6000
+│   └── Main App class        # Lines 6000-9715
 │
-├── web_scraper_tui_v1.0.tcss # Textual CSS styling
+├── scrapetui/                # Modular package structure (v2.1.0+)
+│   ├── __init__.py           # Package initialization
+│   ├── config.py             # Configuration management
+│   ├── api/                  # FastAPI REST API
+│   │   ├── app.py            # API application
+│   │   ├── auth.py           # JWT authentication
+│   │   ├── dependencies.py   # API dependencies
+│   │   └── models.py         # Pydantic models
+│   ├── cli/                  # Command-line interface (Sprint 3)
+│   │   ├── __init__.py
+│   │   └── commands/
+│   │       ├── scrape.py     # Scraping commands
+│   │       ├── export.py     # Export commands
+│   │       ├── ai.py         # AI commands
+│   │       ├── articles.py   # Article management
+│   │       ├── user.py       # User management
+│   │       └── database.py   # Database operations
+│   └── core/                 # Core functionality
+│       ├── database_async.py # Async database layer (Sprint 4)
+│       └── auth.py           # Authentication logic
+│
+├── web_scraper_tui_v2.tcss  # Textual CSS styling (v2.1.0)
 ├── config.yaml               # User configuration (auto-created)
+├── pyproject.toml            # Project metadata and CLI entry point
 ├── requirements.txt          # Python dependencies
 │
-├── tests/                    # Test suite (142 tests)
-│   ├── test_database.py      # 13 tests
-│   ├── test_scraping.py      # 15 tests
-│   ├── test_utils.py         # 21 tests
-│   ├── test_ai_providers.py  # 9 tests
-│   ├── test_bulk_operations.py # 8 tests
-│   ├── test_json_export.py   # 14 tests
-│   ├── test_config_and_presets.py # 12 tests
-│   ├── test_scheduling.py    # 16 tests
-│   └── test_analytics.py     # 16 tests
+├── tests/                    # Test suite (680+ tests, 100% pass rate)
+│   ├── unit/                 # Unit tests (135 tests)
+│   │   ├── test_database_async.py  # Async database tests (25)
+│   │   └── ...
+│   ├── api/                  # API tests (64 tests)
+│   │   ├── test_api_auth.py
+│   │   ├── test_api_articles.py
+│   │   └── ...
+│   ├── cli/                  # CLI tests (33 tests)
+│   │   └── test_cli_integration.py
+│   ├── test_advanced_ai.py   # 30 tests (NER, keywords, topics)
+│   ├── test_duplicate_detection.py # 23 tests
+│   ├── test_v2_phase3_isolation.py # 23 tests (data isolation)
+│   ├── test_enhanced_export.py     # 21 tests (Excel, PDF)
+│   ├── test_database.py            # 14 tests
+│   ├── test_config_and_presets.py  # 14 tests
+│   ├── test_ai_providers.py        # 9 tests
+│   └── test_v2_auth_phase1.py      # 14 tests (1 skipped)
 │
-├── docs/                     # Documentation
+├── docs/                     # Documentation (13 files)
 │   ├── ARCHITECTURE.md       # System architecture
 │   ├── DEVELOPMENT.md        # This file
-│   ├── ROADMAP.md            # Future plans
-│   └── API.md                # API documentation
+│   ├── CLI.md                # CLI reference
+│   ├── API.md                # REST API documentation
+│   ├── PROJECT-STATUS.md     # Current status
+│   ├── ROADMAP.md            # Development roadmap
+│   ├── TECHNICAL_DEBT.md     # Known issues
+│   ├── MIGRATION.md          # v2.0.0 → v2.1.0 migration guide
+│   └── ...
 │
 ├── README.md                 # User documentation
 ├── CHANGELOG.md              # Version history
@@ -140,6 +178,34 @@ The main file is organized into logical sections:
 8. **Main Application** (lines 3500-4600)
 
 ## Development Workflow
+
+### Running the Application
+
+**TUI Interface (Main Application)**:
+```bash
+python scrapetui.py
+# Default login: admin / Ch4ng3M3 (change immediately!)
+```
+
+**CLI Interface (v2.1.0+)**:
+```bash
+# After pip install -e .
+scrapetui-cli --help
+scrapetui-cli scrape url --url "https://example.com"
+scrapetui-cli export csv --output articles.csv
+scrapetui-cli ai summarize --article-id 1
+```
+
+**API Server (v2.1.0+)**:
+```bash
+# Development mode (with auto-reload)
+uvicorn scrapetui.api.app:app --reload
+
+# Or using Python module
+python -m scrapetui.api.app
+
+# Visit http://localhost:8000/docs for Swagger UI
+```
 
 ### 1. Feature Branch Strategy
 
@@ -203,22 +269,30 @@ git commit -m "test: add tests for analytics edge cases"
 
 ```bash
 # Run all tests
-pytest tests/
-
-# Run specific test file
-pytest tests/test_analytics.py
-
-# Run with verbose output
 pytest tests/ -v
 
+# Run specific test directory
+pytest tests/unit/ -v        # Unit tests only
+pytest tests/api/ -v         # API tests only
+pytest tests/cli/ -v         # CLI tests only
+
+# Run specific test file
+pytest tests/unit/test_database_async.py -v
+
 # Run with coverage
-pytest tests/ --cov=. --cov-report=html
+pytest tests/ --cov=scrapetui --cov-report=html
+
+# Run async tests only
+pytest tests/unit/test_database_async.py -v -m asyncio
 
 # Run specific test class
-pytest tests/test_analytics.py::TestAnalyticsManager
+pytest tests/test_advanced_ai.py::TestEntityRecognition
 
 # Run specific test method
-pytest tests/test_analytics.py::TestAnalyticsManager::test_get_statistics
+pytest tests/test_advanced_ai.py::TestEntityRecognition::test_extract_entities
+
+# Expected results (v2.1.0):
+# 680+/680+ tests passing (100%, 1 skipped)
 ```
 
 ### Writing Tests

@@ -5,11 +5,62 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.0] - Unreleased
+## [2.1.0] - 2025-10-05
 
 ### 🎉 Major Release: Advanced AI Features, CLI Interface & 100% Test Pass Rate
 
-This release completes the modular architecture migration, adds comprehensive CLI interface (Sprint 3), implements async database layer (Sprint 4), eliminates all deprecation warnings, and achieves 100% test pass rate across all test suites. All Sprint 1-4 objectives have been exceeded with comprehensive AI-powered content analysis features, complete CLI automation interface, modern async/await patterns, and production-ready code quality.
+**Major Feature Release** - Advanced AI capabilities, CLI automation, async database layer, and zero deprecation warnings.
+
+This release adds 8 new AI features, a comprehensive command-line interface, async database operations, and eliminates all deprecation warnings. Fully backward compatible with v2.0.0.
+
+**Highlights**:
+- 🤖 8 new AI features (NER, keywords, topic modeling, Q&A, entity relationships, similarity, quality metrics, duplicate detection)
+- 💻 Complete CLI with 18+ commands for automation
+- ⚡ Async database layer with aiosqlite for better performance
+- 🧹 Zero deprecation warnings (future-proof codebase)
+- ✅ 680+ tests passing (100% pass rate)
+- 📚 Comprehensive documentation including migration guide
+
+**Migration**: Easy - see [MIGRATION.md](docs/MIGRATION.md) for upgrade instructions.
+
+### Added - Sprint 5: Documentation & Release (2025-10-05)
+
+**Documentation Updates**
+- **docs/MIGRATION.md**: NEW - Comprehensive v2.0.0 → v2.1.0 migration guide (570+ lines)
+  - Overview of all new features from Sprints 1-4
+  - Step-by-step migration instructions with examples
+  - Database compatibility information (no migration needed)
+  - Configuration changes and environment variables
+  - New features usage examples (TUI, CLI, API)
+  - Troubleshooting common issues
+  - Rollback procedure
+- **docs/DEVELOPMENT.md**: Updated with v2.1.0 structure
+  - Added CLI installation instructions (`pip install -e .`)
+  - Updated project structure with modular architecture
+  - Added async test examples
+  - Updated test count (680+ tests)
+  - Added sections for TUI, CLI, and API usage
+- **README.md**: Updated to v2.1.0 RELEASED status
+  - All Sprint 1-5 features documented
+  - Installation includes CLI setup
+  - Quick start for all interfaces (TUI, CLI, API)
+  - Development status: RELEASED
+- **docs/PROJECT-STATUS.md**: Updated to 100% complete (RELEASED)
+  - Sprint 5 achievements documented
+  - All 680+ tests verified
+- **docs/ROADMAP.md**: Updated to 100% complete (RELEASED)
+  - All sprints marked complete
+  - Post-v2.1.0 enhancements section
+- **docs/TECHNICAL_DEBT.md**: Updated for v2.1.0 release
+  - Minimal technical debt noted
+  - All high-priority items resolved
+
+**Release Preparation**
+- Final testing complete: 680+/680+ tests passing (100%, 1 skipped)
+- Zero deprecation warnings verified
+- Manual smoke testing: TUI, CLI, API all verified
+- Code quality checks passed
+- All documentation synchronized
 
 ### Added - Sprint 4: Async & Deprecation Fixes (2025-10-05)
 

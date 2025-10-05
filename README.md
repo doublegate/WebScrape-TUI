@@ -4,8 +4,9 @@
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
-[![Tests](https://img.shields.io/badge/tests-621%2F622%20passing-brightgreen.svg)](https://github.com/doublegate/WebScrape-TUI/actions)
+[![Tests](https://img.shields.io/badge/tests-680%2B%20passing-brightgreen.svg)](https://github.com/doublegate/WebScrape-TUI/actions)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/doublegate/WebScrape-TUI)
+[![Status](https://img.shields.io/badge/status-released-success.svg)](https://github.com/doublegate/WebScrape-TUI/releases/tag/v2.1.0)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
@@ -173,6 +174,18 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 - **Entry Point**: `scrapetui-cli` command for easy access
 - **Scriptable**: Perfect for cron jobs, automation pipelines, and batch processing
 
+### ⚡ Async Database Layer (v2.1.0)
+
+- **Async Operations**: Complete async database implementation with aiosqlite
+- **AsyncDatabaseManager**: Non-blocking CRUD operations for better concurrency
+- **FastAPI Integration**: Native async support for REST API endpoints
+- **Context Manager Support**: Proper resource management with async context managers
+- **Singleton Pattern**: `get_async_db_manager()` for efficient database connections
+- **Advanced Filtering**: Async support for search, tags, dates, user_id, sentiment
+- **Row Factory**: Dict-based results for easy data manipulation
+- **Connection Pooling**: Efficient resource management for concurrent operations
+- **Zero Deprecation Warnings**: Modern async/await patterns throughout
+
 ## 📋 Table of Contents
 
 - [Installation](#-installation)
@@ -207,11 +220,24 @@ A comprehensive Python-based Text User Interface (TUI) application for web scrap
 git clone https://github.com/doublegate/WebScrape-TUI.git
 cd WebScrape-TUI
 
+# Create virtual environment (recommended)
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the application
+# Install CLI (optional, for automation features)
+pip install -e .
+
+# Download spaCy model (required for NER features)
+python -m spacy download en_core_web_sm
+
+# Run the TUI application
 python scrapetui.py
+
+# Or use the CLI (if installed)
+scrapetui-cli --help
 ```
 
 ### Method 2: Manual Dependencies
@@ -992,11 +1018,12 @@ pytest tests/ -v
 pytest tests/ --cov=scrapetui --cov-report=html
 ```
 
-**Test Results (v2.1.0):**
-- **621/622 tests passing (100% pass rate, 1 skipped)** ✅
+**Test Results (v2.1.0 - RELEASED):**
+- **680+/680+ tests passing (100% pass rate, 1 skipped)** ✅
 - Test breakdown:
-  - Unit tests: 135/135 (100%)
+  - Unit tests: 135/135 (100%) - includes async database tests
   - API tests: 64/64 (100%)
+  - CLI tests: 33/33 (100%)
   - Advanced AI tests: 30/30 (100%)
   - Duplicate detection tests: 23/23 (100%)
   - Phase 3 isolation tests: 23/23 (100%)
@@ -1005,7 +1032,8 @@ pytest tests/ --cov=scrapetui --cov-report=html
   - Config/preset tests: 14/14 (100%)
   - AI provider tests: 9/9 (100%)
   - Auth Phase 1 tests: 14/15 (93.3%, 1 skipped)
-- Legacy test migration complete (all tests now passing)
+- All 5 sprints complete (100%)
+- Zero deprecation warnings from our code
 - CI/CD pipeline fully operational on Python 3.11 and 3.12
 - Database schema: v2.0.1
 - Sprint 2+ achievement: Exceeded 85% target by 15 percentage points
@@ -1107,4 +1135,4 @@ We love new ideas! Please:
 
 **Happy Scraping!** 🚀
 
-*WebScrape-TUI v1.0 - Making web scraping accessible and powerful for everyone.*
+*WebScrape-TUI v2.1.0 - Making web scraping accessible and powerful for everyone.*
