@@ -6786,20 +6786,16 @@ class AnalyticsModal(ModalScreen):
         content = "# 📊 Data Analytics & Statistics\n\n"
         content += "## Overview\n\n"
         content += f"- **Total Articles**: {stats.get('total_articles', 0)}\n"
-        content += f"- **With Summaries**: {
-            stats.get(
-                'articles_with_summaries',
-                0)} ({
-            stats.get(
-                'summary_percentage',
-                0):.1f}%)\n"
-        content += f"- **With Sentiment**: {
-            stats.get(
-                'articles_with_sentiment',
-                0)} ({
-            stats.get(
-                'sentiment_percentage',
-                0):.1f}%)\n\n"
+        content += (
+            f"- **With Summaries**: "
+            f"{stats.get('articles_with_summaries', 0)} "
+            f"({stats.get('summary_percentage', 0):.1f}%)\n"
+        )
+        content += (
+            f"- **With Sentiment**: "
+            f"{stats.get('articles_with_sentiment', 0)} "
+            f"({stats.get('sentiment_percentage', 0):.1f}%)\n\n"
+        )
 
         # Sentiment distribution
         content += "## Sentiment Distribution\n\n"
@@ -8203,8 +8199,8 @@ class WebScraperApp(App[None]):
                     self.notify("Cancelled.", title="Info", severity="info")
             self.push_screen(
                 ConfirmModal(
-                    f"ID {
-                        self.selected_row_id} has summary. Re-summarize?"),
+                    f"ID {self.selected_row_id} has summary. Re-summarize?"
+                ),
                 handle_confirm_result)
         else:
             self._show_summary_style_selector()
@@ -8288,8 +8284,7 @@ class WebScraperApp(App[None]):
                         _update_tags_for_article_blocking(aid, default_tags_csv)
                 _apply_tags_blocking()
                 self.notify(
-                    f"Applied default tags to {
-                        len(inserted_ids)} new articles.",
+                    f"Applied default tags to {len(inserted_ids)} new articles.",
                     title="Tags Applied",
                     severity="info")
             self.notify(
@@ -9855,8 +9850,8 @@ class WebScraperApp(App[None]):
                         self.notify(f"Scraper '{s_to_del['name']}' deleted.", title="Success", severity="info")
                 self.push_screen(
                     ConfirmModal(
-                        f"Delete saved scraper '{
-                            s_to_del['name']}'?"),
+                        f"Delete saved scraper '{s_to_del['name']}'?"
+                    ),
                     handle_delete_scraper_confirmation)
             except Exception as e:
                 logger.error(f"Err deleting scraper: {e}", exc_info=True)
@@ -9891,8 +9886,7 @@ class WebScraperApp(App[None]):
                 self.current_scraper_profile = data['name']
                 self.query_one(StatusBar).scraper_profile = self.current_scraper_profile
                 self.notify(
-                    f"Profile '{
-                        data['name']}' loaded. Please provide target URL.",
+                    f"Profile '{data['name']}' loaded. Please provide target URL.",
                     title="Scraper Profile",
                     severity="information")
                 callback_with_tags = functools.partial(
@@ -9907,8 +9901,7 @@ class WebScraperApp(App[None]):
             self.current_scraper_profile = data['name']
             self.query_one(StatusBar).scraper_profile = self.current_scraper_profile
             self.notify(
-                f"Executing scraper profile '{
-                    data['name']}'. Parameters loaded.",
+                f"Executing scraper profile '{data['name']}'. Parameters loaded.",
                 title="Scraper Profile",
                 severity="information")
             callback_with_tags = functools.partial(self._handle_scrape_new_result, default_tags_csv=default_tags)
