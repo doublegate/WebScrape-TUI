@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 """Pytest configuration and shared fixtures."""
 
+import scrapetui
 import sys
 from pathlib import Path
 import sqlite3
 import pytest
 import tempfile
-from unittest.mock import patch
 import os
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import after path is set
-import scrapetui
 
 
 @pytest.fixture(autouse=True)

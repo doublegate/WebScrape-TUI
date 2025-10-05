@@ -14,7 +14,6 @@ logger = get_logger(__name__)
 @click.group()
 def articles():
     """Article management commands."""
-    pass
 
 
 @articles.command()

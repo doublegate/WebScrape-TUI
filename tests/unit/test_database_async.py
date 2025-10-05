@@ -10,8 +10,12 @@ Tests AsyncDatabaseManager functionality including:
 - Filter operations
 """
 
+from scrapetui.core.database_async import (
+    AsyncDatabaseManager,
+    get_async_db_manager,
+    reset_async_db_manager
+)
 import pytest
-import asyncio
 from pathlib import Path
 from datetime import datetime, timezone, timedelta
 import tempfile
@@ -25,12 +29,6 @@ _scrapetui_module = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_scrapetui_module)
 
 hash_password = _scrapetui_module.hash_password
-
-from scrapetui.core.database_async import (
-    AsyncDatabaseManager,
-    get_async_db_manager,
-    reset_async_db_manager
-)
 
 
 @pytest.fixture

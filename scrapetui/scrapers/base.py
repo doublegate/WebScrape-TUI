@@ -97,7 +97,6 @@ class BaseScraper(ABC):
         Returns:
             True if this scraper can handle the URL
         """
-        pass
 
     @abstractmethod
     def scrape(self, url: str, **kwargs) -> ScraperResult:
@@ -111,7 +110,6 @@ class BaseScraper(ABC):
         Returns:
             ScraperResult with scraped content
         """
-        pass
 
     def validate_config(self, config: Dict[str, Any]) -> bool:
         """

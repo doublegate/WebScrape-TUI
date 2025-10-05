@@ -2,7 +2,6 @@
 """Scraping CLI commands."""
 
 import click
-from typing import Optional
 import sys
 import requests
 from bs4 import BeautifulSoup
@@ -18,7 +17,6 @@ logger = get_logger(__name__)
 @click.group()
 def scrape():
     """Web scraping commands."""
-    pass
 
 
 @scrape.command()
@@ -439,13 +437,15 @@ def bulk(profiles, limit, user_id):
                 logger.error(f"Bulk scrape failed for {profile_name}: {e}", exc_info=True)
 
         # Final summary
-        click.echo(f"{'='*60}")
+        click.echo(f"{'=' * 60}")
         click.echo(f"Bulk scraping complete:")
         click.echo(f"  Total inserted: {total_inserted}")
         click.echo(f"  Total skipped: {total_skipped}")
         click.echo(f"  Profiles processed: {len(results_summary)}/{len(profile_list)}")
 
-        logger.info(f"CLI bulk scrape: {total_inserted} inserted, {total_skipped} skipped from {len(results_summary)} profiles")
+        logger.info(
+            f"CLI bulk scrape: {total_inserted} inserted, {total_skipped} skipped from {
+                len(results_summary)} profiles")
 
     except Exception as e:
         logger.error(f"Bulk scraping failed: {e}", exc_info=True)

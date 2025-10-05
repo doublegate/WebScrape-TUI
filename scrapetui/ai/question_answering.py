@@ -10,7 +10,6 @@ import json
 from datetime import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 
 try:
     from ..utils.logging import get_logger
@@ -144,7 +143,7 @@ class QuestionAnsweringManager:
 
             # Get top article for answer extraction
             top_idx = sorted_indices[0]
-            top_article = article_data[top_idx]
+            article_data[top_idx]
             confidence = float(similarities[top_idx])
 
             # Try to get AI provider for natural language answer

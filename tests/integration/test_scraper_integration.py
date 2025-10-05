@@ -1,11 +1,8 @@
 """Integration tests for scraper system."""
 
-import pytest
-import tempfile
-from pathlib import Path
 
 from scrapetui.scrapers.manager import ScraperManager
-from scrapetui.scrapers.base import HTMLScraper, ScraperMetadata, ScraperResult, ScraperType
+from scrapetui.scrapers.base import ScraperType
 
 
 def test_plugin_directory_creation():

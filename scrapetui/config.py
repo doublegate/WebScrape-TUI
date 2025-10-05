@@ -86,7 +86,6 @@ def load_env_file(env_path: str = ".env") -> None:
     except Exception:
         # Silently fail if .env can't be read (will use defaults)
         _env_loaded = True
-        pass
 
 
 def get_config() -> Config:

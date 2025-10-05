@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for Duplicate Detection in AI processors."""
 
-import pytest
 from scrapetui.ai.processors import (
     detect_duplicates,
     detect_duplicates_from_db

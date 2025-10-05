@@ -6,7 +6,7 @@ and quality metrics.
 """
 
 import pytest
-from scrapetui import SummaryQualityManager, get_db_connection
+from scrapetui import SummaryQualityManager
 
 
 @pytest.fixture
@@ -130,9 +130,10 @@ class TestCoherenceEvaluation:
         )
 
         # Coherence not in basic ROUGE implementation
-        pass  #         pass  # 
+        pass  # pass  #
         # Coherence should be 0-100
-        pass  # 
+        pass  #
+
     def test_coherent_summary_high_score(self, sample_text_and_summary):
         """Test that coherent summary has high coherence score."""
         metrics = SummaryQualityManager.calculate_rouge_scores(
@@ -140,10 +141,11 @@ class TestCoherenceEvaluation:
             sample_text_and_summary['summary']
         )
 
-        pass  # 
+        pass  #
         # Good summary should have reasonable coherence
         # (exact threshold depends on implementation)
-        pass  # 
+        pass  #
+
     def test_incoherent_summary_low_score(self, poor_quality_summary):
         """Test that incoherent summary has low coherence score."""
         metrics = SummaryQualityManager.calculate_rouge_scores(
@@ -286,7 +288,6 @@ class TestReadabilityMetrics:
     def test_flesch_reading_ease(self):
         """Test Flesch Reading Ease calculation."""
         # Simple text should have high readability
-        simple_summary = "The cat sat on the mat. The dog ran fast."
 
         # Complex text should have lower readability
         complex_summary = """
@@ -426,6 +427,6 @@ class TestEdgeCases:
             metrics = SummaryQualityManager.calculate_rouge_scores(summary, original)
             # Should work or gracefully handle non-English
             assert 'rouge1' in metrics
-        except Exception as e:
+        except Exception:
             # Acceptable if non-English not supported
             pass

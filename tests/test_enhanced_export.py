@@ -13,8 +13,6 @@ Tests cover:
 import pytest
 import sqlite3
 from pathlib import Path
-import sys
-from datetime import datetime
 import tempfile
 import os
 
@@ -92,8 +90,7 @@ def test_db():
 
     cursor.executemany(
         "INSERT INTO scraped_data (title, url, link, timestamp, summary, sentiment, content) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        test_articles
-    )
+        test_articles)
 
     # Insert test tags
     test_tags = ['python', 'testing', 'export', 'excel', 'pdf']

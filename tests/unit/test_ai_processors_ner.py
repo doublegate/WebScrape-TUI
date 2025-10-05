@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for Named Entity Recognition in AI processors."""
 
-import pytest
 from scrapetui.ai.processors import (
     extract_named_entities,
     extract_entities_from_articles

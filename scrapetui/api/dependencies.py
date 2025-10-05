@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 
@@ -240,5 +240,5 @@ def get_optional_current_user(
 
     try:
         return get_current_user(credentials)
-    except:
+    except BaseException:
         return None

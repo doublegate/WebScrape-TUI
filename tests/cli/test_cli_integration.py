@@ -14,7 +14,6 @@ import csv
 from pathlib import Path
 from click.testing import CliRunner
 from unittest.mock import patch, Mock
-import sys
 
 # Import CLI
 from scrapetui.cli import cli
@@ -112,9 +111,9 @@ def temp_db(monkeypatch):
             "INSERT INTO scraped_data (url, title, link, summary, sentiment, user_id) VALUES (?, ?, ?, ?, ?, ?)",
             (
                 f'https://example.com',
-                f'Test Article {i+1}',
-                f'https://example.com/article-{i+1}',
-                f'This is test article {i+1}',
+                f'Test Article {i + 1}',
+                f'https://example.com/article-{i + 1}',
+                f'This is test article {i + 1}',
                 'Neutral',
                 1
             )
@@ -227,6 +226,7 @@ def test_scrape_profile_command(runner, temp_db, monkeypatch):
     # Patch get_db_connection to use our temp database
     def mock_get_db_connection():
         import contextlib
+
         @contextlib.contextmanager
         def _connection():
             import sqlite3
@@ -373,7 +373,6 @@ def test_export_excel_basic(runner, temp_db, monkeypatch):
     """Test Excel export (requires openpyxl)."""
 
     try:
-        import openpyxl
         has_openpyxl = True
     except ImportError:
         has_openpyxl = False
@@ -398,7 +397,6 @@ def test_export_pdf_basic(runner, temp_db, monkeypatch):
     """Test PDF export (requires reportlab)."""
 
     try:
-        import reportlab
         has_reportlab = True
     except ImportError:
         has_reportlab = False

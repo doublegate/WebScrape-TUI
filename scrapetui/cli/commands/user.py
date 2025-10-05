@@ -15,7 +15,6 @@ logger = get_logger(__name__)
 @click.group()
 def user():
     """User management commands."""
-    pass
 
 
 @user.command()

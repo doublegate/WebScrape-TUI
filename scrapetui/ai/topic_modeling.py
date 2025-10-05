@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Topic modeling functionality for article analysis."""
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from sklearn.decomposition import LatentDirichletAllocation, NMF
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 import numpy as np

@@ -2,10 +2,10 @@
 
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 
 from ..core.database import get_db_connection
-from ..core.auth import authenticate_user, db_datetime_now, db_datetime_future
+from ..core.auth import authenticate_user
 from ..models.user import User
 from ..utils.logging import get_logger
 from .models import UserLogin, Token, TokenRefresh, UserResponse
@@ -13,13 +13,11 @@ from .dependencies import (
     create_access_token,
     create_refresh_token,
     decode_token,
-    blacklist_token,
     get_current_user,
     is_token_blacklisted,
-    ACCESS_TOKEN_EXPIRE_MINUTES,
     REFRESH_TOKEN_EXPIRE_DAYS
 )
-from .exceptions import UnauthorizedException, BadRequestException
+from .exceptions import UnauthorizedException
 
 logger = get_logger(__name__)
 router = APIRouter()
@@ -121,7 +119,7 @@ async def refresh_token(token_request: TokenRefresh):
     # Decode refresh token
     try:
         payload = decode_token(refresh_token)
-    except:
+    except BaseException:
         raise UnauthorizedException(detail="Invalid refresh token")
 
     # Verify token type

@@ -16,10 +16,11 @@ Target Performance Metrics:
 - Database operations: < 200ms for complex queries
 """
 
+from pathlib import Path
+import importlib.util
 import pytest
 import time
-import sqlite3
-from typing import List, Tuple
+from typing import List
 import sys
 import os
 
@@ -28,8 +29,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import from monolithic scrapetui.py file directly
 # We need to import the .py file, not the package directory
-import importlib.util
-from pathlib import Path
 
 _scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
 _spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
@@ -130,7 +129,7 @@ def create_test_scrapers(user_id: int, count: int = 10, shared: bool = False) ->
         for i in range(count):
             # Make unique names to avoid UNIQUE constraint failures
             # Include timestamp and random component for uniqueness
-            unique_id = f"{user_id}_{i}_{int(time.time()*1000)}_{random.randint(1000,9999)}"
+            unique_id = f"{user_id}_{i}_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
             cursor.execute(
                 """INSERT INTO saved_scrapers
                    (name, url, selector, is_preinstalled, user_id, is_shared)

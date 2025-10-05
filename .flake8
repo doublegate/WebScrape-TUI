@@ -1,0 +1,38 @@
+[flake8]
+# Maximum line length (modern standard for readability)
+max-line-length = 120
+
+# Exclude directories
+exclude =
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    build,
+    dist,
+    *.egg-info,
+    .pytest_cache,
+    .mypy_cache,
+    .tox,
+    migrations
+
+# Ignore specific error codes
+ignore =
+    # W503: line break before binary operator (deprecated, conflicts with W504)
+    W503,
+    # E203: whitespace before ':' (conflicts with black formatter)
+    E203,
+    # C901: function complexity (informational only, not a blocker)
+    C901
+
+# Maximum complexity (cyclomatic complexity)
+max-complexity = 15
+
+# Show source code for each error
+show-source = True
+
+# Count errors
+count = True
+
+# Show statistics
+statistics = True

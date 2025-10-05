@@ -28,7 +28,7 @@ from ..models import (
     TopicModelingRequest,
     TopicModelingResponse
 )
-from ..dependencies import get_current_user, require_user
+from ..dependencies import require_user
 from ..exceptions import NotFoundException, BadRequestException
 
 logger = get_logger(__name__)
@@ -453,7 +453,7 @@ async def extract_entity_relationships(
             if not rows:
                 raise BadRequestException(detail="No articles found")
 
-            articles = [Article.from_db_row(row) for row in rows]
+            [Article.from_db_row(row) for row in rows]
 
         # Extract relationships
         result = extract_relationships_from_articles(

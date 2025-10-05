@@ -2,7 +2,6 @@
 """Command-line interface for WebScrape-TUI (Sprint 3)."""
 
 import click
-from typing import Optional
 
 from ..utils.logging import get_logger
 from ..config import get_config
@@ -60,6 +59,7 @@ def _register_commands():
     except ImportError as e:
         logger.error(f"Failed to import CLI commands: {e}")
         raise
+
 
 _register_commands()
 

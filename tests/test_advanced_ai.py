@@ -12,7 +12,7 @@ Total: 28 tests across 5 test classes
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 # Import from monolithic scrapetui.py using importlib.util
 import importlib.util
@@ -42,7 +42,19 @@ class TestAITagging:
         """Test basic tag generation from title and content."""
         mock_stopwords.return_value = ['the', 'is', 'a', 'for', 'and', 'used']
         # Need at least 10 tokens to pass the check (line 3139)
-        mock_tokenize.return_value = ['python', 'versatile', 'programming', 'language', 'web', 'development', 'artificial', 'intelligence', 'software', 'engineering', 'development', 'technology']
+        mock_tokenize.return_value = [
+            'python',
+            'versatile',
+            'programming',
+            'language',
+            'web',
+            'development',
+            'artificial',
+            'intelligence',
+            'software',
+            'engineering',
+            'development',
+            'technology']
 
         text = "Python is a versatile programming language used for web development and artificial intelligence software engineering."
 
@@ -482,7 +494,19 @@ class TestAdvancedAIIntegration:
         # Setup mocks
         mock_stopwords.return_value = ['the', 'is', 'a', 'about']
         # Need at least 10 tokens to pass the check
-        mock_tokenize.return_value = ['john', 'doe', 'writes', 'python', 'programming', 'technology', 'development', 'software', 'engineering', 'computer', 'science', 'algorithms']
+        mock_tokenize.return_value = [
+            'john',
+            'doe',
+            'writes',
+            'python',
+            'programming',
+            'technology',
+            'development',
+            'software',
+            'engineering',
+            'computer',
+            'science',
+            'algorithms']
 
         mock_nlp = Mock()
         mock_doc = Mock()

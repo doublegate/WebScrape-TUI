@@ -105,7 +105,6 @@ class TestFilterPresetManager:
     @pytest.fixture
     def temp_db(self, monkeypatch):
         """Create a temporary database with proper schema."""
-        import sqlite3
 
         with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
             db_path = Path(f.name)

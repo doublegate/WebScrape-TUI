@@ -5,17 +5,6 @@ Tests all user interface components and role-based access control functionality
 introduced in Phase 2 of the multi-user system.
 """
 
-import pytest
-import sqlite3
-from datetime import datetime, timedelta
-import sys
-import os
-import tempfile
-from pathlib import Path
-
-# Add parent directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from scrapetui import (
     get_db_connection,
     hash_password,
@@ -25,6 +14,15 @@ from scrapetui import (
     logout_session,
     init_db,
 )
+import pytest
+import sqlite3
+import sys
+import os
+import tempfile
+from pathlib import Path
+
+# Add parent directory to path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -311,7 +309,7 @@ def test_create_new_user(clean_test_db):
         assert row['username'] == 'newuser'
         assert row['email'] == 'new@test.com'
         assert row['role'] == 'user'
-        assert row['is_active'] == True
+        assert row['is_active']
 
 
 def test_update_user_email(test_users):
@@ -348,14 +346,14 @@ def test_toggle_user_active_status(test_users):
         conn.commit()
 
         row = conn.execute("SELECT is_active FROM users WHERE id=?", (test_users['user'],)).fetchone()
-        assert row['is_active'] == False
+        assert row['is_active'] is False
 
         # Reactivate
         conn.execute("UPDATE users SET is_active = NOT is_active WHERE id = ?", (test_users['user'],))
         conn.commit()
 
         row = conn.execute("SELECT is_active FROM users WHERE id=?", (test_users['user'],)).fetchone()
-        assert row['is_active'] == True
+        assert row['is_active']
 
 
 def test_list_all_users(test_users):
@@ -390,7 +388,7 @@ def test_get_user_profile(test_users):
         assert row is not None
         assert row['username'] == 'admin'
         assert row['role'] == 'admin'
-        assert row['is_active'] == True
+        assert row['is_active']
 
 
 def test_change_password(test_users):

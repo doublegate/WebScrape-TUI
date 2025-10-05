@@ -1,7 +1,7 @@
 """Unit tests for scraper system."""
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
 from scrapetui.scrapers.base import (
     BaseScraper, HTMLScraper, ScraperMetadata, ScraperResult, ScraperType
@@ -12,6 +12,7 @@ from scrapetui.scrapers.builtin.news import TechCrunchScraper, BBCNewsScraper
 from scrapetui.scrapers.builtin.tech import ArsTechnicaScraper
 
 # Fixtures
+
 
 @pytest.fixture
 def sample_html():
@@ -29,6 +30,7 @@ def sample_html():
     </html>
     """
 
+
 @pytest.fixture
 def mock_requests_get(sample_html):
     """Mock requests.get for testing."""
@@ -41,6 +43,7 @@ def mock_requests_get(sample_html):
         yield mock_get
 
 # ScraperMetadata Tests
+
 
 def test_scraper_metadata_creation():
     """Test ScraperMetadata creation."""
@@ -57,6 +60,7 @@ def test_scraper_metadata_creation():
     assert metadata.scraper_type == ScraperType.HTML
     assert "example.com" in metadata.supported_domains
 
+
 def test_scraper_metadata_to_dict():
     """Test ScraperMetadata to_dict."""
     metadata = ScraperMetadata(
@@ -69,6 +73,7 @@ def test_scraper_metadata_to_dict():
     assert data['name'] == "Test"
     assert data['scraper_type'] == "html"
     assert data['supported_domains'] == ["test.com"]
+
 
 def test_scraper_metadata_defaults():
     """Test ScraperMetadata default values."""
@@ -85,6 +90,7 @@ def test_scraper_metadata_defaults():
 
 # ScraperResult Tests
 
+
 def test_scraper_result_success():
     """Test successful ScraperResult."""
     result = ScraperResult(
@@ -98,6 +104,7 @@ def test_scraper_result_success():
     assert result.success
     assert result.error is None
     assert result.content_length == len("Test content")
+
 
 def test_scraper_result_failure():
     """Test failed ScraperResult."""
@@ -113,6 +120,7 @@ def test_scraper_result_failure():
     assert not result.success
     assert result.error == "Connection failed"
 
+
 def test_scraper_result_to_dict():
     """Test ScraperResult to_dict."""
     result = ScraperResult(
@@ -125,6 +133,7 @@ def test_scraper_result_to_dict():
     assert data['title'] == "Title"
     assert data['success'] is True
 
+
 def test_scraper_result_content_length():
     """Test content_length property."""
     result = ScraperResult(
@@ -133,6 +142,7 @@ def test_scraper_result_content_length():
     )
 
     assert result.content_length == 1000
+
 
 def test_scraper_result_empty_content():
     """Test content_length with empty content."""
@@ -145,6 +155,7 @@ def test_scraper_result_empty_content():
 
 # HTMLScraper Tests
 
+
 def test_html_scraper_fetch_html(mock_requests_get, sample_html):
     """Test HTML fetching."""
     scraper = GenericHTMLScraper()
@@ -152,6 +163,7 @@ def test_html_scraper_fetch_html(mock_requests_get, sample_html):
 
     assert html == sample_html
     mock_requests_get.assert_called_once()
+
 
 def test_html_scraper_parse_html(sample_html):
     """Test HTML parsing with CSS selector."""
@@ -162,6 +174,7 @@ def test_html_scraper_parse_html(sample_html):
     assert paragraphs[0] == "First paragraph."
     assert paragraphs[1] == "Second paragraph."
 
+
 def test_html_scraper_extract_content(sample_html):
     """Test content extraction."""
     scraper = GenericHTMLScraper()
@@ -170,6 +183,7 @@ def test_html_scraper_extract_content(sample_html):
     assert title == "Test Title"
     assert "First paragraph" in content
     assert "Second paragraph" in content
+
 
 def test_html_scraper_matches_domain():
     """Test domain matching."""
@@ -199,6 +213,7 @@ def test_html_scraper_matches_domain():
     assert scraper.matches_domain("https://sub.test.com/page")
     assert not scraper.matches_domain("https://other.com")
 
+
 def test_html_scraper_wildcard_domain():
     """Test wildcard domain matching."""
     from scrapetui.scrapers.base import ScraperMetadata, ScraperType
@@ -225,6 +240,7 @@ def test_html_scraper_wildcard_domain():
     assert scraper.matches_domain("https://blog.example.com")
     assert not scraper.matches_domain("https://example.com")
 
+
 def test_html_scraper_extract_no_title(sample_html):
     """Test extraction with no title found."""
     scraper = GenericHTMLScraper()
@@ -232,6 +248,7 @@ def test_html_scraper_extract_no_title(sample_html):
     title, content = scraper.extract_content(sample_html, 'h2', 'article p')
     assert title == "No title"
     assert "First paragraph" in content
+
 
 def test_html_scraper_extract_no_content(sample_html):
     """Test extraction with no content found."""
@@ -243,6 +260,7 @@ def test_html_scraper_extract_no_content(sample_html):
 
 # GenericHTMLScraper Tests
 
+
 def test_generic_scraper_can_handle():
     """Test GenericHTMLScraper can handle any HTTP(S) URL."""
     scraper = GenericHTMLScraper()
@@ -250,6 +268,7 @@ def test_generic_scraper_can_handle():
     assert scraper.can_handle("https://example.com")
     assert scraper.can_handle("http://test.com")
     assert not scraper.can_handle("ftp://file.com")
+
 
 def test_generic_scraper_scrape(mock_requests_get, sample_html):
     """Test GenericHTMLScraper scraping."""
@@ -261,6 +280,7 @@ def test_generic_scraper_scrape(mock_requests_get, sample_html):
     # Default selector is 'h1, title' which finds <title> first
     assert result.title == "Test Article"
     assert "First paragraph" in result.content
+
 
 def test_generic_scraper_custom_selectors(mock_requests_get, sample_html):
     """Test GenericHTMLScraper with custom selectors."""
@@ -275,6 +295,7 @@ def test_generic_scraper_custom_selectors(mock_requests_get, sample_html):
     assert result.success
     assert result.title == "Test Article"
 
+
 def test_generic_scraper_metadata():
     """Test GenericHTMLScraper metadata."""
     scraper = GenericHTMLScraper()
@@ -285,6 +306,7 @@ def test_generic_scraper_metadata():
 
 # Built-in Scraper Tests
 
+
 def test_techcrunch_scraper_can_handle():
     """Test TechCrunchScraper domain matching."""
     scraper = TechCrunchScraper()
@@ -293,12 +315,14 @@ def test_techcrunch_scraper_can_handle():
     assert scraper.can_handle("https://www.techcrunch.com/article")
     assert not scraper.can_handle("https://example.com")
 
+
 def test_techcrunch_scraper_metadata():
     """Test TechCrunchScraper metadata."""
     scraper = TechCrunchScraper()
 
     assert scraper.metadata.name == "TechCrunch"
     assert "techcrunch.com" in scraper.metadata.supported_domains
+
 
 def test_bbc_scraper_can_handle():
     """Test BBCNewsScraper domain and path matching."""
@@ -308,6 +332,7 @@ def test_bbc_scraper_can_handle():
     assert scraper.can_handle("https://www.bbc.co.uk/news/uk-12345")
     assert not scraper.can_handle("https://bbc.com/sport")  # Not /news/
 
+
 def test_bbc_scraper_metadata():
     """Test BBCNewsScraper metadata."""
     scraper = BBCNewsScraper()
@@ -316,6 +341,7 @@ def test_bbc_scraper_metadata():
     assert "bbc.com" in scraper.metadata.supported_domains
     assert "bbc.co.uk" in scraper.metadata.supported_domains
 
+
 def test_ars_technica_scraper():
     """Test ArsTechnicaScraper initialization."""
     scraper = ArsTechnicaScraper()
@@ -323,6 +349,7 @@ def test_ars_technica_scraper():
     assert scraper.metadata.name == "Ars Technica"
     assert scraper.metadata.scraper_type == ScraperType.HTML
     assert "arstechnica.com" in scraper.metadata.supported_domains
+
 
 def test_ars_technica_can_handle():
     """Test ArsTechnicaScraper URL handling."""
@@ -333,12 +360,14 @@ def test_ars_technica_can_handle():
 
 # ScraperManager Tests
 
+
 def test_scraper_manager_initialization():
     """Test ScraperManager loads scrapers."""
     manager = ScraperManager()
 
     assert len(manager.scrapers) > 0
     assert "Generic HTML" in manager.scrapers
+
 
 def test_scraper_manager_loads_builtin_scrapers():
     """Test ScraperManager loads all built-in scrapers."""
@@ -356,6 +385,7 @@ def test_scraper_manager_loads_builtin_scrapers():
 
     for name in expected_scrapers:
         assert name in manager.scrapers, f"{name} not loaded"
+
 
 def test_scraper_manager_register_scraper():
     """Test registering a scraper."""
@@ -375,6 +405,7 @@ def test_scraper_manager_register_scraper():
     assert len(manager.scrapers) == initial_count + 1
     assert "Test Scraper" in manager.scrapers
 
+
 def test_scraper_manager_unregister_scraper():
     """Test unregistering a scraper."""
     manager = ScraperManager()
@@ -393,6 +424,7 @@ def test_scraper_manager_unregister_scraper():
 
     assert "Test Scraper" not in manager.scrapers
 
+
 def test_scraper_manager_get_scraper():
     """Test getting scraper by name."""
     manager = ScraperManager()
@@ -401,12 +433,14 @@ def test_scraper_manager_get_scraper():
     assert scraper is not None
     assert isinstance(scraper, GenericHTMLScraper)
 
+
 def test_scraper_manager_get_nonexistent_scraper():
     """Test getting nonexistent scraper."""
     manager = ScraperManager()
 
     scraper = manager.get_scraper("Nonexistent Scraper")
     assert scraper is None
+
 
 def test_scraper_manager_get_scraper_for_url():
     """Test getting appropriate scraper for URL."""
@@ -422,6 +456,7 @@ def test_scraper_manager_get_scraper_for_url():
     assert scraper is not None
     assert scraper.metadata.name == "Generic HTML"
 
+
 def test_scraper_manager_list_scrapers():
     """Test listing all scrapers."""
     manager = ScraperManager()
@@ -431,6 +466,7 @@ def test_scraper_manager_list_scrapers():
     assert all('name' in s for s in scrapers)
     assert all('version' in s for s in scrapers)
 
+
 def test_scraper_manager_scrape_url(mock_requests_get):
     """Test scraping URL through manager."""
     manager = ScraperManager()
@@ -438,6 +474,7 @@ def test_scraper_manager_scrape_url(mock_requests_get):
     result = manager.scrape_url("https://techcrunch.com/article")
 
     assert isinstance(result, ScraperResult)
+
 
 def test_scraper_manager_scrape_url_specific_scraper(mock_requests_get):
     """Test scraping with specific scraper name."""
@@ -450,6 +487,7 @@ def test_scraper_manager_scrape_url_specific_scraper(mock_requests_get):
 
     assert isinstance(result, ScraperResult)
 
+
 def test_scraper_manager_scrape_url_invalid_scraper():
     """Test scraping with invalid scraper name."""
     manager = ScraperManager()
@@ -461,6 +499,7 @@ def test_scraper_manager_scrape_url_invalid_scraper():
 
     assert not result.success
     assert "not found" in result.error.lower()
+
 
 def test_scraper_manager_scrape_url_no_scraper():
     """Test scraping with no available scraper."""
@@ -476,6 +515,7 @@ def test_scraper_manager_scrape_url_no_scraper():
 
 # Error Handling Tests
 
+
 def test_scraper_http_error():
     """Test scraper handles HTTP errors."""
     with patch('requests.get') as mock_get:
@@ -486,6 +526,7 @@ def test_scraper_http_error():
 
         assert not result.success
         assert "Connection failed" in result.error
+
 
 def test_scraper_invalid_html():
     """Test scraper handles invalid HTML gracefully."""
@@ -502,6 +543,7 @@ def test_scraper_invalid_html():
         # Should still succeed but with "No title" / "No content"
         assert result.success
 
+
 def test_scraper_timeout():
     """Test scraper handles timeout."""
     with patch('requests.get') as mock_get:
@@ -513,6 +555,7 @@ def test_scraper_timeout():
 
         assert not result.success
         assert "timeout" in result.error.lower()
+
 
 def test_scraper_manager_scrape_exception():
     """Test manager handles scraper exceptions."""
@@ -526,6 +569,7 @@ def test_scraper_manager_scrape_exception():
 
 # Integration Tests
 
+
 def test_scraper_manager_singleton():
     """Test ScraperManager singleton pattern."""
     from scrapetui.scrapers.manager import get_scraper_manager
@@ -534,6 +578,7 @@ def test_scraper_manager_singleton():
     manager2 = get_scraper_manager()
 
     assert manager1 is manager2
+
 
 def test_scraper_get_metadata():
     """Test getting scraper metadata."""
@@ -544,6 +589,7 @@ def test_scraper_get_metadata():
     assert isinstance(metadata, dict)
     assert metadata['name'] == "Generic HTML"
     assert metadata['scraper_type'] == "html"
+
 
 def test_scraper_validate_config():
     """Test scraper config validation."""

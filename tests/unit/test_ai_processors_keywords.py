@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Tests for Keyword Extraction in AI processors."""
 
-import pytest
 from scrapetui.ai.processors import (
     extract_keywords,
     extract_keywords_from_articles

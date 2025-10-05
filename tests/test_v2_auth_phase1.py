@@ -12,18 +12,6 @@ This test suite covers Phase 1 of the v2.0.0 multi-user foundation:
 Total Tests: 20 tests covering all Phase 1 functionality
 """
 
-import pytest
-import sqlite3
-import tempfile
-import shutil
-from pathlib import Path
-from datetime import datetime, timedelta
-from unittest.mock import patch
-
-# Import functions from scrapetui
-import sys
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from scrapetui import (
     hash_password,
     verify_password,
@@ -36,6 +24,14 @@ from scrapetui import (
     migrate_database_to_v2,
     get_db_connection,
 )
+import pytest
+import tempfile
+from pathlib import Path
+from datetime import datetime, timedelta
+
+# Import functions from scrapetui
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 @pytest.fixture

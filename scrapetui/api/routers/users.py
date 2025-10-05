@@ -464,9 +464,7 @@ async def list_user_sessions(current_user: User = Depends(get_current_user)):
     """
     try:
         # Get current session token from dependencies
-        from ..dependencies import get_session_token_from_request
-        from fastapi import Request
-        from starlette.requests import Request as StarletteRequest
+        pass
 
         # We need the request to get the current session token
         # For now, we'll mark all sessions as not current and let the client determine

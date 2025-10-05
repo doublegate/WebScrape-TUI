@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Tests for v1.5.0 features: Scheduled Scraping & Automation."""
 
+import importlib.util
 import pytest
 import tempfile
 import sqlite3
 import time
 import random
 from pathlib import Path
-from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
+from datetime import datetime
 
 # Import the application components
 import sys
@@ -16,7 +16,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import from monolithic scrapetui.py file directly
 # We need to import the .py file, not the package directory which has ScheduleManager=None
-import importlib.util
 _scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
 _spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
 _scrapetui_module = importlib.util.module_from_spec(_spec)

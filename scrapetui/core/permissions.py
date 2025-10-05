@@ -1,6 +1,5 @@
 """Role-Based Access Control (RBAC) system."""
 
-from typing import Optional
 
 from .database import get_db_connection
 from ..utils.logging import get_logger

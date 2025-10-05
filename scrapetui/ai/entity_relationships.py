@@ -5,9 +5,8 @@ This module provides entity recognition, relationship extraction, and
 knowledge graph construction capabilities using spaCy NLP.
 """
 
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any
 from collections import defaultdict
-import json
 
 try:
     import spacy
@@ -113,8 +112,8 @@ class EntityRelationshipManager:
                         for verb in verbs:
                             for obj in objects:
                                 # Check if they're connected in dependency tree
-                                if (verb in subj.ancestors or verb in subj.descendants or
-                                    verb in obj.ancestors or verb in obj.descendants):
+                                if (verb in subj.ancestors or verb in subj.descendants
+                                        or verb in obj.ancestors or verb in obj.descendants):
                                     relationships.append({
                                         'subject': subj.text,
                                         'predicate': verb.text,
@@ -151,6 +150,7 @@ class EntityRelationshipManager:
         except ImportError:
             logger.error("NetworkX is not installed. Install with: pip install networkx")
             # Return empty graph-like object
+
             class EmptyGraph:
                 def __init__(self):
                     self.nodes = []

@@ -1,8 +1,6 @@
 """Tests for miscellaneous API endpoints (root, health, rate limiting)."""
 
-import pytest
 from fastapi.testclient import TestClient
-import time
 
 
 def test_root_endpoint(client: TestClient):

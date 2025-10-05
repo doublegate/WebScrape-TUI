@@ -6,40 +6,27 @@ and topic hierarchy creation.
 """
 
 import pytest
-from datetime import datetime
-from scrapetui import TopicModelingManager, get_db_connection
+from scrapetui import TopicModelingManager
 
 
 @pytest.fixture
 def sample_articles():
     """Sample articles for topic modeling tests."""
-    return [
-        {
-            'id': 1,
-            'title': 'Python Machine Learning Tutorial',
-            'content': 'Python machine learning tutorial covers scikit-learn, tensorflow, and neural networks. Deep learning with Python is essential for modern AI development.'
-        },
-        {
-            'id': 2,
-            'title': 'Web Development with JavaScript',
-            'content': 'JavaScript web development using React, Node.js, and Express. Frontend and backend JavaScript frameworks for building modern web applications.'
-        },
-        {
-            'id': 3,
-            'title': 'Data Science with Python',
-            'content': 'Data science using Python pandas, numpy, and matplotlib. Statistical analysis and data visualization with Python libraries for data scientists.'
-        },
-        {
-            'id': 4,
-            'title': 'React Native Mobile Development',
-            'content': 'Mobile app development with React Native. Building cross-platform mobile applications using JavaScript and React framework for iOS and Android.'
-        },
-        {
-            'id': 5,
-            'title': 'Deep Learning Fundamentals',
-            'content': 'Deep learning fundamentals including neural networks, convolutional networks, and recurrent networks. TensorFlow and PyTorch for deep learning projects.'
-        }
-    ]
+    return [{'id': 1,
+             'title': 'Python Machine Learning Tutorial',
+             'content': 'Python machine learning tutorial covers scikit-learn, tensorflow, and neural networks. Deep learning with Python is essential for modern AI development.'},
+            {'id': 2,
+             'title': 'Web Development with JavaScript',
+             'content': 'JavaScript web development using React, Node.js, and Express. Frontend and backend JavaScript frameworks for building modern web applications.'},
+            {'id': 3,
+             'title': 'Data Science with Python',
+             'content': 'Data science using Python pandas, numpy, and matplotlib. Statistical analysis and data visualization with Python libraries for data scientists.'},
+            {'id': 4,
+             'title': 'React Native Mobile Development',
+             'content': 'Mobile app development with React Native. Building cross-platform mobile applications using JavaScript and React framework for iOS and Android.'},
+            {'id': 5,
+             'title': 'Deep Learning Fundamentals',
+             'content': 'Deep learning fundamentals including neural networks, convolutional networks, and recurrent networks. TensorFlow and PyTorch for deep learning projects.'}]
 
 
 @pytest.fixture

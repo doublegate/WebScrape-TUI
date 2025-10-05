@@ -18,7 +18,6 @@ logger = get_logger(__name__)
 @click.group()
 def export():
     """Export articles in various formats (CSV, JSON, Excel, PDF)."""
-    pass
 
 
 def _build_export_query(
@@ -191,7 +190,7 @@ def export_csv(output, search, tag, date_from, date_to, user_id, sentiment, limi
 
             with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
                 fieldnames = ['ID', 'Title', 'Source URL', 'Article Link', 'Timestamp',
-                             'Summary', 'Sentiment', 'User ID', 'Tags']
+                              'Summary', 'Sentiment', 'User ID', 'Tags']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
                 writer.writeheader()
@@ -337,7 +336,7 @@ def export_json(output, search, tag, date_from, date_to, user_id, sentiment, lim
 @click.option('--template', type=click.Choice(['standard', 'executive', 'detailed']),
               default='standard', help='Export template style')
 def export_excel(output, search, tag, date_from, date_to, user_id, sentiment, limit,
-                include_charts, template):
+                 include_charts, template):
     """
     Export articles to Excel (XLSX) format with formatting.
 
@@ -451,7 +450,7 @@ def export_excel(output, search, tag, date_from, date_to, user_id, sentiment, li
 @click.option('--template', type=click.Choice(['standard', 'executive', 'detailed']),
               default='standard', help='Report template style')
 def export_pdf(output, search, tag, date_from, date_to, user_id, sentiment, limit,
-              include_charts, template):
+               include_charts, template):
     """
     Export articles to PDF report format.
 

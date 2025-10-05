@@ -8,7 +8,6 @@ ROUGE-N scores, coherence analysis, and overall quality scoring.
 from typing import Dict, Any, List, Optional
 import re
 from collections import Counter
-import json
 
 try:
     from ..utils.logging import get_logger
@@ -198,7 +197,7 @@ class SummaryQualityManager:
             return 0.0
 
         # Calculate variance
-        variance = sum((l - avg_length) ** 2 for l in lengths) / len(lengths)
+        variance = sum((length - avg_length) ** 2 for length in lengths) / len(lengths)
 
         # Convert variance to coherence score (lower variance = higher coherence)
         # Normalize using average length to make it scale-invariant
@@ -228,10 +227,10 @@ class SummaryQualityManager:
         # Overall quality: weighted average
         # ROUGE-1: 30%, ROUGE-2: 30%, ROUGE-L: 20%, Coherence: 20%
         overall = (
-            rouge_scores['rouge-1'] * 0.3 +
-            rouge_scores['rouge-2'] * 0.3 +
-            rouge_scores['rouge-l'] * 0.2 +
-            coherence * 0.2
+            rouge_scores['rouge-1'] * 0.3
+            + rouge_scores['rouge-2'] * 0.3
+            + rouge_scores['rouge-l'] * 0.2
+            + coherence * 0.2
         )
 
         return {

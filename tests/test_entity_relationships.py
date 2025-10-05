@@ -6,7 +6,7 @@ and entity-based operations.
 """
 
 import pytest
-from scrapetui import EntityRelationshipManager, get_db_connection
+from scrapetui import EntityRelationshipManager
 
 
 @pytest.fixture
@@ -27,23 +27,15 @@ def sample_article_with_entities():
 @pytest.fixture
 def multiple_articles():
     """Multiple articles for relationship testing."""
-    return [
-        {
-            'id': 1,
-            'title': 'SpaceX Launch',
-            'content': 'SpaceX launched a Falcon 9 rocket from Kennedy Space Center in Florida. Elon Musk announced plans for Mars colonization.'
-        },
-        {
-            'id': 2,
-            'title': 'Tesla Earnings',
-            'content': 'Tesla reported strong quarterly earnings. Elon Musk discussed expansion plans in Europe and Asia. Gigafactory production increased.'
-        },
-        {
-            'id': 3,
-            'title': 'Amazon Expansion',
-            'content': 'Amazon announced new fulfillment centers in Texas and Ohio. Jeff Bezos emphasized customer service improvements and AWS growth.'
-        }
-    ]
+    return [{'id': 1,
+             'title': 'SpaceX Launch',
+             'content': 'SpaceX launched a Falcon 9 rocket from Kennedy Space Center in Florida. Elon Musk announced plans for Mars colonization.'},
+            {'id': 2,
+             'title': 'Tesla Earnings',
+             'content': 'Tesla reported strong quarterly earnings. Elon Musk discussed expansion plans in Europe and Asia. Gigafactory production increased.'},
+            {'id': 3,
+             'title': 'Amazon Expansion',
+             'content': 'Amazon announced new fulfillment centers in Texas and Ohio. Jeff Bezos emphasized customer service improvements and AWS growth.'}]
 
 
 class TestEntityExtraction:
@@ -65,10 +57,10 @@ class TestEntityExtraction:
         # SpaCy may extract names as full names or separate tokens depending on model/version
         # Accept either full names or individual name components
         has_expected_entity = (
-            'Elon Musk' in entity_texts or 'Jeff Bezos' in entity_texts or
-            'Elon' in entity_texts or 'Musk' in entity_texts or
-            'Jeff' in entity_texts or 'Bezos' in entity_texts or
-            'SpaceX' in entity_texts or 'Tesla' in entity_texts or 'Amazon' in entity_texts
+            'Elon Musk' in entity_texts or 'Jeff Bezos' in entity_texts
+            or 'Elon' in entity_texts or 'Musk' in entity_texts
+            or 'Jeff' in entity_texts or 'Bezos' in entity_texts
+            or 'SpaceX' in entity_texts or 'Tesla' in entity_texts or 'Amazon' in entity_texts
         )
         assert has_expected_entity, f"Expected to find person or organization entities, found: {entity_texts}"
 

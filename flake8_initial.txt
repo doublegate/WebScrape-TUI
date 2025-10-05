@@ -1,0 +1,2407 @@
+scrapetui.py:5:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9:80: E501 line too long (87 > 79 characters)
+scrapetui.py:10:80: E501 line too long (81 > 79 characters)
+scrapetui.py:123:1: F401 'apscheduler.triggers.date.DateTrigger' imported but unused
+scrapetui.py:128:1: E402 module level import not at top of file
+scrapetui.py:129:1: F401 'pandas as pd' imported but unused
+scrapetui.py:129:1: E402 module level import not at top of file
+scrapetui.py:130:1: F401 'collections.Counter' imported but unused
+scrapetui.py:130:1: E402 module level import not at top of file
+scrapetui.py:131:1: E402 module level import not at top of file
+scrapetui.py:132:1: E402 module level import not at top of file
+scrapetui.py:135:1: E402 module level import not at top of file
+scrapetui.py:136:1: F401 'openpyxl.styles.Border' imported but unused
+scrapetui.py:136:1: F401 'openpyxl.styles.Side' imported but unused
+scrapetui.py:136:1: E402 module level import not at top of file
+scrapetui.py:137:1: F401 'openpyxl.chart.PieChart' imported but unused
+scrapetui.py:137:1: F401 'openpyxl.chart.LineChart' imported but unused
+scrapetui.py:137:1: F401 'openpyxl.chart.BarChart' imported but unused
+scrapetui.py:137:1: F401 'openpyxl.chart.Reference' imported but unused
+scrapetui.py:137:1: E402 module level import not at top of file
+scrapetui.py:138:1: F401 'openpyxl.drawing.image.Image as XLImage' imported but unused
+scrapetui.py:138:1: E402 module level import not at top of file
+scrapetui.py:139:1: F401 'reportlab.lib.pagesizes.A4' imported but unused
+scrapetui.py:139:1: E402 module level import not at top of file
+scrapetui.py:140:1: E402 module level import not at top of file
+scrapetui.py:141:1: E402 module level import not at top of file
+scrapetui.py:142:1: F401 'reportlab.platypus.Image as RLImage' imported but unused
+scrapetui.py:142:1: E402 module level import not at top of file
+scrapetui.py:146:1: E402 module level import not at top of file
+scrapetui.py:147:1: F401 'reportlab.lib.enums.TA_LEFT' imported but unused
+scrapetui.py:147:1: F401 'reportlab.lib.enums.TA_RIGHT' imported but unused
+scrapetui.py:147:1: E402 module level import not at top of file
+scrapetui.py:148:1: E402 module level import not at top of file
+scrapetui.py:151:1: E402 module level import not at top of file
+scrapetui.py:152:1: E402 module level import not at top of file
+scrapetui.py:153:1: E402 module level import not at top of file
+scrapetui.py:154:1: E402 module level import not at top of file
+scrapetui.py:155:1: E402 module level import not at top of file
+scrapetui.py:156:1: E402 module level import not at top of file
+scrapetui.py:157:1: E402 module level import not at top of file
+scrapetui.py:158:1: F401 'sklearn.decomposition.LatentDirichletAllocation' imported but unused
+scrapetui.py:158:1: E402 module level import not at top of file
+scrapetui.py:159:1: F401 'warnings' imported but unused
+scrapetui.py:159:1: E402 module level import not at top of file
+scrapetui.py:162:1: F401 'gensim.models' imported but unused
+scrapetui.py:162:1: E402 module level import not at top of file
+scrapetui.py:163:1: F401 'gensim.models.Nmf' imported but unused
+scrapetui.py:163:1: E402 module level import not at top of file
+scrapetui.py:164:1: E402 module level import not at top of file
+scrapetui.py:165:1: E402 module level import not at top of file
+scrapetui.py:166:1: E402 module level import not at top of file
+scrapetui.py:167:1: E402 module level import not at top of file
+scrapetui.py:168:1: E402 module level import not at top of file
+scrapetui.py:169:1: E402 module level import not at top of file
+scrapetui.py:188:1: E402 module level import not at top of file
+scrapetui.py:189:1: E402 module level import not at top of file
+scrapetui.py:194:1: E402 module level import not at top of file
+scrapetui.py:195:1: E402 module level import not at top of file
+scrapetui.py:196:1: E402 module level import not at top of file
+scrapetui.py:197:1: E402 module level import not at top of file
+scrapetui.py:198:1: E402 module level import not at top of file
+scrapetui.py:281:80: E501 line too long (92 > 79 characters)
+scrapetui.py:286:80: E501 line too long (91 > 79 characters)
+scrapetui.py:302:80: E501 line too long (81 > 79 characters)
+scrapetui.py:378:80: E501 line too long (86 > 79 characters)
+scrapetui.py:383:80: E501 line too long (86 > 79 characters)
+scrapetui.py:538:80: E501 line too long (80 > 79 characters)
+scrapetui.py:551:80: E501 line too long (88 > 79 characters)
+scrapetui.py:566:80: E501 line too long (80 > 79 characters)
+scrapetui.py:620:80: E501 line too long (84 > 79 characters)
+scrapetui.py:639:80: E501 line too long (84 > 79 characters)
+scrapetui.py:652:80: E501 line too long (82 > 79 characters)
+scrapetui.py:663:80: E501 line too long (80 > 79 characters)
+scrapetui.py:1006:80: E501 line too long (80 > 79 characters)
+scrapetui.py:1010:80: E501 line too long (82 > 79 characters)
+scrapetui.py:1086:80: E501 line too long (84 > 79 characters)
+scrapetui.py:1090:80: E501 line too long (82 > 79 characters)
+scrapetui.py:1094:80: E501 line too long (97 > 79 characters)
+scrapetui.py:1098:80: E501 line too long (99 > 79 characters)
+scrapetui.py:1117:80: E501 line too long (100 > 79 characters)
+scrapetui.py:1139:80: E501 line too long (91 > 79 characters)
+scrapetui.py:1140:80: E501 line too long (83 > 79 characters)
+scrapetui.py:1161:80: E501 line too long (91 > 79 characters)
+scrapetui.py:1162:80: E501 line too long (86 > 79 characters)
+scrapetui.py:1175:80: E501 line too long (87 > 79 characters)
+scrapetui.py:1176:80: E501 line too long (87 > 79 characters)
+scrapetui.py:1177:80: E501 line too long (90 > 79 characters)
+scrapetui.py:1202:80: E501 line too long (90 > 79 characters)
+scrapetui.py:1217:80: E501 line too long (90 > 79 characters)
+scrapetui.py:1229:80: E501 line too long (90 > 79 characters)
+scrapetui.py:1239:80: E501 line too long (80 > 79 characters)
+scrapetui.py:1250:80: E501 line too long (91 > 79 characters)
+scrapetui.py:1255:80: E501 line too long (83 > 79 characters)
+scrapetui.py:1256:80: E501 line too long (90 > 79 characters)
+scrapetui.py:1289:80: E501 line too long (172 > 79 characters)
+scrapetui.py:1290:80: E501 line too long (159 > 79 characters)
+scrapetui.py:1291:80: E501 line too long (163 > 79 characters)
+scrapetui.py:1292:80: E501 line too long (201 > 79 characters)
+scrapetui.py:1293:80: E501 line too long (228 > 79 characters)
+scrapetui.py:1294:80: E501 line too long (197 > 79 characters)
+scrapetui.py:1295:80: E501 line too long (169 > 79 characters)
+scrapetui.py:1299:80: E501 line too long (107 > 79 characters)
+scrapetui.py:1311:80: E501 line too long (81 > 79 characters)
+scrapetui.py:1324:80: E501 line too long (95 > 79 characters)
+scrapetui.py:1328:80: E501 line too long (91 > 79 characters)
+scrapetui.py:1331:80: E501 line too long (105 > 79 characters)
+scrapetui.py:1332:80: E501 line too long (119 > 79 characters)
+scrapetui.py:1334:80: E501 line too long (99 > 79 characters)
+scrapetui.py:1336:80: E501 line too long (124 > 79 characters)
+scrapetui.py:1340:80: E501 line too long (85 > 79 characters)
+scrapetui.py:1347:80: E501 line too long (101 > 79 characters)
+scrapetui.py:1353:80: E501 line too long (102 > 79 characters)
+scrapetui.py:1361:80: E501 line too long (91 > 79 characters)
+scrapetui.py:1380:80: E501 line too long (111 > 79 characters)
+scrapetui.py:1386:80: E501 line too long (85 > 79 characters)
+scrapetui.py:1421:80: E501 line too long (136 > 79 characters)
+scrapetui.py:1432:80: E501 line too long (101 > 79 characters)
+scrapetui.py:1433:80: E501 line too long (86 > 79 characters)
+scrapetui.py:1442:80: E501 line too long (86 > 79 characters)
+scrapetui.py:1449:80: E501 line too long (103 > 79 characters)
+scrapetui.py:1450:80: E501 line too long (80 > 79 characters)
+scrapetui.py:1454:80: E501 line too long (82 > 79 characters)
+scrapetui.py:1456:80: E501 line too long (86 > 79 characters)
+scrapetui.py:1459:80: E501 line too long (81 > 79 characters)
+scrapetui.py:1465:80: E501 line too long (84 > 79 characters)
+scrapetui.py:1471:80: E501 line too long (86 > 79 characters)
+scrapetui.py:1479:80: E501 line too long (80 > 79 characters)
+scrapetui.py:1480:80: E501 line too long (100 > 79 characters)
+scrapetui.py:1485:80: E501 line too long (98 > 79 characters)
+scrapetui.py:1488:80: E501 line too long (84 > 79 characters)
+scrapetui.py:1490:80: E501 line too long (88 > 79 characters)
+scrapetui.py:1510:80: E501 line too long (136 > 79 characters)
+scrapetui.py:1521:80: E501 line too long (101 > 79 characters)
+scrapetui.py:1522:80: E501 line too long (86 > 79 characters)
+scrapetui.py:1540:80: E501 line too long (93 > 79 characters)
+scrapetui.py:1548:80: E501 line too long (82 > 79 characters)
+scrapetui.py:1550:80: E501 line too long (86 > 79 characters)
+scrapetui.py:1553:80: E501 line too long (81 > 79 characters)
+scrapetui.py:1559:80: E501 line too long (103 > 79 characters)
+scrapetui.py:1575:80: E501 line too long (93 > 79 characters)
+scrapetui.py:1579:80: E501 line too long (88 > 79 characters)
+scrapetui.py:1584:80: E501 line too long (98 > 79 characters)
+scrapetui.py:1587:80: E501 line too long (84 > 79 characters)
+scrapetui.py:1589:80: E501 line too long (88 > 79 characters)
+scrapetui.py:1607:80: E501 line too long (100 > 79 characters)
+scrapetui.py:1609:80: E501 line too long (136 > 79 characters)
+scrapetui.py:1620:80: E501 line too long (101 > 79 characters)
+scrapetui.py:1621:80: E501 line too long (86 > 79 characters)
+scrapetui.py:1640:80: E501 line too long (93 > 79 characters)
+scrapetui.py:1648:80: E501 line too long (82 > 79 characters)
+scrapetui.py:1650:80: E501 line too long (86 > 79 characters)
+scrapetui.py:1653:80: E501 line too long (81 > 79 characters)
+scrapetui.py:1659:80: E501 line too long (103 > 79 characters)
+scrapetui.py:1676:80: E501 line too long (93 > 79 characters)
+scrapetui.py:1685:80: E501 line too long (98 > 79 characters)
+scrapetui.py:1688:80: E501 line too long (84 > 79 characters)
+scrapetui.py:1690:80: E501 line too long (88 > 79 characters)
+scrapetui.py:1740:80: E501 line too long (82 > 79 characters)
+scrapetui.py:1755:80: E501 line too long (108 > 79 characters)
+scrapetui.py:1771:80: E501 line too long (92 > 79 characters)
+scrapetui.py:1779:80: E501 line too long (80 > 79 characters)
+scrapetui.py:1786:80: E501 line too long (107 > 79 characters)
+scrapetui.py:1810:80: E501 line too long (105 > 79 characters)
+scrapetui.py:1846:80: E501 line too long (84 > 79 characters)
+scrapetui.py:1864:80: E501 line too long (93 > 79 characters)
+scrapetui.py:1868:80: E501 line too long (91 > 79 characters)
+scrapetui.py:1879:80: E501 line too long (82 > 79 characters)
+scrapetui.py:1880:20: E128 continuation line under-indented for visual indent
+scrapetui.py:1881:20: E128 continuation line under-indented for visual indent
+scrapetui.py:1903:80: E501 line too long (89 > 79 characters)
+scrapetui.py:1915:80: E501 line too long (83 > 79 characters)
+scrapetui.py:1972:80: E501 line too long (82 > 79 characters)
+scrapetui.py:1985:24: E128 continuation line under-indented for visual indent
+scrapetui.py:1992:80: E501 line too long (83 > 79 characters)
+scrapetui.py:1993:80: E501 line too long (97 > 79 characters)
+scrapetui.py:2002:80: E501 line too long (93 > 79 characters)
+scrapetui.py:2006:80: E501 line too long (96 > 79 characters)
+scrapetui.py:2008:80: E501 line too long (103 > 79 characters)
+scrapetui.py:2021:24: E128 continuation line under-indented for visual indent
+scrapetui.py:2022:24: E128 continuation line under-indented for visual indent
+scrapetui.py:2023:24: E128 continuation line under-indented for visual indent
+scrapetui.py:2024:24: E128 continuation line under-indented for visual indent
+scrapetui.py:2044:80: E501 line too long (97 > 79 characters)
+scrapetui.py:2055:80: E501 line too long (89 > 79 characters)
+scrapetui.py:2069:80: E501 line too long (90 > 79 characters)
+scrapetui.py:2092:80: E501 line too long (80 > 79 characters)
+scrapetui.py:2093:80: E501 line too long (80 > 79 characters)
+scrapetui.py:2094:80: E501 line too long (83 > 79 characters)
+scrapetui.py:2097:80: E501 line too long (80 > 79 characters)
+scrapetui.py:2133:80: E501 line too long (80 > 79 characters)
+scrapetui.py:2134:80: E501 line too long (80 > 79 characters)
+scrapetui.py:2135:80: E501 line too long (83 > 79 characters)
+scrapetui.py:2138:80: E501 line too long (80 > 79 characters)
+scrapetui.py:2166:80: E501 line too long (93 > 79 characters)
+scrapetui.py:2184:80: E501 line too long (95 > 79 characters)
+scrapetui.py:2214:80: E501 line too long (93 > 79 characters)
+scrapetui.py:2229:80: E501 line too long (93 > 79 characters)
+scrapetui.py:2232:17: E722 do not use bare 'except'
+scrapetui.py:2242:80: E501 line too long (80 > 79 characters)
+scrapetui.py:2245:80: E501 line too long (98 > 79 characters)
+scrapetui.py:2246:17: E722 do not use bare 'except'
+scrapetui.py:2253:17: E722 do not use bare 'except'
+scrapetui.py:2284:80: E501 line too long (83 > 79 characters)
+scrapetui.py:2288:80: E501 line too long (109 > 79 characters)
+scrapetui.py:2292:80: E501 line too long (111 > 79 characters)
+scrapetui.py:2302:80: E501 line too long (94 > 79 characters)
+scrapetui.py:2313:80: E501 line too long (96 > 79 characters)
+scrapetui.py:2324:80: E501 line too long (94 > 79 characters)
+scrapetui.py:2334:80: E501 line too long (102 > 79 characters)
+scrapetui.py:2338:80: E501 line too long (86 > 79 characters)
+scrapetui.py:2342:80: E501 line too long (86 > 79 characters)
+scrapetui.py:2352:80: E501 line too long (85 > 79 characters)
+scrapetui.py:2357:80: E501 line too long (97 > 79 characters)
+scrapetui.py:2383:80: E501 line too long (90 > 79 characters)
+scrapetui.py:2404:80: E501 line too long (84 > 79 characters)
+scrapetui.py:2409:80: E501 line too long (97 > 79 characters)
+scrapetui.py:2427:80: E501 line too long (106 > 79 characters)
+scrapetui.py:2430:80: E501 line too long (98 > 79 characters)
+scrapetui.py:2451:80: E501 line too long (87 > 79 characters)
+scrapetui.py:2456:80: E501 line too long (97 > 79 characters)
+scrapetui.py:2470:80: E501 line too long (102 > 79 characters)
+scrapetui.py:2477:80: E501 line too long (88 > 79 characters)
+scrapetui.py:2528:80: E501 line too long (87 > 79 characters)
+scrapetui.py:2534:80: E501 line too long (140 > 79 characters)
+scrapetui.py:2535:80: E501 line too long (144 > 79 characters)
+scrapetui.py:2539:80: E501 line too long (88 > 79 characters)
+scrapetui.py:2545:80: E501 line too long (85 > 79 characters)
+scrapetui.py:2604:80: E501 line too long (86 > 79 characters)
+scrapetui.py:2614:80: E501 line too long (80 > 79 characters)
+scrapetui.py:2626:80: E501 line too long (82 > 79 characters)
+scrapetui.py:2632:80: E501 line too long (120 > 79 characters)
+scrapetui.py:2634:80: E501 line too long (88 > 79 characters)
+scrapetui.py:2637:80: E501 line too long (94 > 79 characters)
+scrapetui.py:2639:80: E501 line too long (92 > 79 characters)
+scrapetui.py:2657:80: E501 line too long (86 > 79 characters)
+scrapetui.py:2667:80: E501 line too long (87 > 79 characters)
+scrapetui.py:2668:80: E501 line too long (90 > 79 characters)
+scrapetui.py:2693:17: E722 do not use bare 'except'
+scrapetui.py:2733:80: E501 line too long (90 > 79 characters)
+scrapetui.py:2829:80: E501 line too long (82 > 79 characters)
+scrapetui.py:2831:80: E501 line too long (112 > 79 characters)
+scrapetui.py:2832:80: E501 line too long (89 > 79 characters)
+scrapetui.py:2838:80: E501 line too long (80 > 79 characters)
+scrapetui.py:2872:80: E501 line too long (87 > 79 characters)
+scrapetui.py:2873:80: E501 line too long (97 > 79 characters)
+scrapetui.py:2887:80: E501 line too long (93 > 79 characters)
+scrapetui.py:2889:80: E501 line too long (93 > 79 characters)
+scrapetui.py:3056:80: E501 line too long (100 > 79 characters)
+scrapetui.py:3058:80: E501 line too long (86 > 79 characters)
+scrapetui.py:3059:21: E722 do not use bare 'except'
+scrapetui.py:3137:80: E501 line too long (94 > 79 characters)
+scrapetui.py:3151:80: E501 line too long (80 > 79 characters)
+scrapetui.py:3211:80: E501 line too long (112 > 79 characters)
+scrapetui.py:3243:80: E501 line too long (82 > 79 characters)
+scrapetui.py:3246:80: E501 line too long (110 > 79 characters)
+scrapetui.py:3259:80: E501 line too long (80 > 79 characters)
+scrapetui.py:3296:80: E501 line too long (92 > 79 characters)
+scrapetui.py:3298:80: E501 line too long (94 > 79 characters)
+scrapetui.py:3324:80: E501 line too long (89 > 79 characters)
+scrapetui.py:3351:80: E501 line too long (93 > 79 characters)
+scrapetui.py:3389:80: E501 line too long (94 > 79 characters)
+scrapetui.py:3395:80: E501 line too long (109 > 79 characters)
+scrapetui.py:3399:80: E501 line too long (100 > 79 characters)
+scrapetui.py:3458:80: E501 line too long (83 > 79 characters)
+scrapetui.py:3501:80: E501 line too long (83 > 79 characters)
+scrapetui.py:3541:80: E501 line too long (97 > 79 characters)
+scrapetui.py:3579:80: E501 line too long (83 > 79 characters)
+scrapetui.py:3593:80: E501 line too long (81 > 79 characters)
+scrapetui.py:3596:13: E722 do not use bare 'except'
+scrapetui.py:3636:80: E501 line too long (93 > 79 characters)
+scrapetui.py:3651:80: E501 line too long (91 > 79 characters)
+scrapetui.py:3691:80: E501 line too long (84 > 79 characters)
+scrapetui.py:3722:80: E501 line too long (93 > 79 characters)
+scrapetui.py:3734:80: E501 line too long (91 > 79 characters)
+scrapetui.py:3775:80: E501 line too long (88 > 79 characters)
+scrapetui.py:3831:80: E501 line too long (90 > 79 characters)
+scrapetui.py:3873:17: E722 do not use bare 'except'
+scrapetui.py:3874:80: E501 line too long (84 > 79 characters)
+scrapetui.py:3875:80: E501 line too long (87 > 79 characters)
+scrapetui.py:3888:80: E501 line too long (80 > 79 characters)
+scrapetui.py:3894:80: E501 line too long (89 > 79 characters)
+scrapetui.py:3909:80: E501 line too long (80 > 79 characters)
+scrapetui.py:3938:80: E501 line too long (83 > 79 characters)
+scrapetui.py:3951:80: E501 line too long (98 > 79 characters)
+scrapetui.py:3966:80: E501 line too long (83 > 79 characters)
+scrapetui.py:3997:80: E501 line too long (92 > 79 characters)
+scrapetui.py:4034:80: E501 line too long (82 > 79 characters)
+scrapetui.py:4078:80: E501 line too long (82 > 79 characters)
+scrapetui.py:4082:80: E501 line too long (86 > 79 characters)
+scrapetui.py:4107:80: E501 line too long (88 > 79 characters)
+scrapetui.py:4137:80: E501 line too long (96 > 79 characters)
+scrapetui.py:4142:80: E501 line too long (81 > 79 characters)
+scrapetui.py:4195:80: E501 line too long (86 > 79 characters)
+scrapetui.py:4216:80: E501 line too long (80 > 79 characters)
+scrapetui.py:4274:80: E501 line too long (95 > 79 characters)
+scrapetui.py:4308:80: E501 line too long (81 > 79 characters)
+scrapetui.py:4316:80: E501 line too long (94 > 79 characters)
+scrapetui.py:4419:80: E501 line too long (94 > 79 characters)
+scrapetui.py:4434:80: E501 line too long (80 > 79 characters)
+scrapetui.py:4435:80: E501 line too long (82 > 79 characters)
+scrapetui.py:4446:80: E501 line too long (89 > 79 characters)
+scrapetui.py:4453:80: E501 line too long (168 > 79 characters)
+scrapetui.py:4533:80: E501 line too long (84 > 79 characters)
+scrapetui.py:4558:80: E501 line too long (148 > 79 characters)
+scrapetui.py:4564:80: E501 line too long (82 > 79 characters)
+scrapetui.py:4567:80: E501 line too long (88 > 79 characters)
+scrapetui.py:4577:80: E501 line too long (81 > 79 characters)
+scrapetui.py:4621:80: E501 line too long (99 > 79 characters)
+scrapetui.py:4630:80: E501 line too long (91 > 79 characters)
+scrapetui.py:4631:80: E501 line too long (111 > 79 characters)
+scrapetui.py:4647:80: E501 line too long (83 > 79 characters)
+scrapetui.py:4802:80: E501 line too long (83 > 79 characters)
+scrapetui.py:4812:80: E501 line too long (81 > 79 characters)
+scrapetui.py:4815:80: E501 line too long (82 > 79 characters)
+scrapetui.py:4816:80: E501 line too long (83 > 79 characters)
+scrapetui.py:4817:80: E501 line too long (97 > 79 characters)
+scrapetui.py:4825:80: E501 line too long (80 > 79 characters)
+scrapetui.py:4840:80: E501 line too long (85 > 79 characters)
+scrapetui.py:4902:80: E501 line too long (88 > 79 characters)
+scrapetui.py:4903:80: E501 line too long (80 > 79 characters)
+scrapetui.py:4904:80: E501 line too long (92 > 79 characters)
+scrapetui.py:4906:80: E501 line too long (83 > 79 characters)
+scrapetui.py:4928:80: E501 line too long (85 > 79 characters)
+scrapetui.py:4929:80: E501 line too long (87 > 79 characters)
+scrapetui.py:5018:80: E501 line too long (84 > 79 characters)
+scrapetui.py:5028:80: E501 line too long (84 > 79 characters)
+scrapetui.py:5068:80: E501 line too long (88 > 79 characters)
+scrapetui.py:5071:80: E501 line too long (88 > 79 characters)
+scrapetui.py:5080:80: E501 line too long (88 > 79 characters)
+scrapetui.py:5085:80: E501 line too long (87 > 79 characters)
+scrapetui.py:5089:80: E501 line too long (86 > 79 characters)
+scrapetui.py:5092:80: E501 line too long (85 > 79 characters)
+scrapetui.py:5198:80: E501 line too long (80 > 79 characters)
+scrapetui.py:5337:80: E501 line too long (84 > 79 characters)
+scrapetui.py:5377:80: E501 line too long (108 > 79 characters)
+scrapetui.py:5379:80: E501 line too long (96 > 79 characters)
+scrapetui.py:5389:80: E501 line too long (80 > 79 characters)
+scrapetui.py:5449:80: E501 line too long (83 > 79 characters)
+scrapetui.py:5489:80: E501 line too long (83 > 79 characters)
+scrapetui.py:5540:80: E501 line too long (80 > 79 characters)
+scrapetui.py:5549:80: E501 line too long (91 > 79 characters)
+scrapetui.py:5564:80: E501 line too long (92 > 79 characters)
+scrapetui.py:5603:80: E501 line too long (101 > 79 characters)
+scrapetui.py:5607:80: E501 line too long (85 > 79 characters)
+scrapetui.py:5609:80: E501 line too long (91 > 79 characters)
+scrapetui.py:5613:80: E501 line too long (89 > 79 characters)
+scrapetui.py:5615:80: E501 line too long (86 > 79 characters)
+scrapetui.py:5663:80: E501 line too long (81 > 79 characters)
+scrapetui.py:5708:80: E501 line too long (97 > 79 characters)
+scrapetui.py:5709:80: E501 line too long (94 > 79 characters)
+scrapetui.py:5710:80: E501 line too long (100 > 79 characters)
+scrapetui.py:5781:80: E501 line too long (99 > 79 characters)
+scrapetui.py:5783:80: E501 line too long (81 > 79 characters)
+scrapetui.py:5784:80: E501 line too long (103 > 79 characters)
+scrapetui.py:5799:80: E501 line too long (82 > 79 characters)
+scrapetui.py:5802:80: E501 line too long (92 > 79 characters)
+scrapetui.py:5859:80: E501 line too long (87 > 79 characters)
+scrapetui.py:5862:80: E501 line too long (103 > 79 characters)
+scrapetui.py:5889:80: E501 line too long (84 > 79 characters)
+scrapetui.py:5896:80: E501 line too long (97 > 79 characters)
+scrapetui.py:5898:80: E501 line too long (88 > 79 characters)
+scrapetui.py:5905:80: E501 line too long (103 > 79 characters)
+scrapetui.py:5978:80: E501 line too long (83 > 79 characters)
+scrapetui.py:5979:80: E501 line too long (85 > 79 characters)
+scrapetui.py:5981:80: E501 line too long (89 > 79 characters)
+scrapetui.py:5992:80: E501 line too long (98 > 79 characters)
+scrapetui.py:5996:80: E501 line too long (131 > 79 characters)
+scrapetui.py:5997:80: E501 line too long (96 > 79 characters)
+scrapetui.py:6002:80: E501 line too long (131 > 79 characters)
+scrapetui.py:6023:80: E501 line too long (83 > 79 characters)
+scrapetui.py:6027:80: E501 line too long (128 > 79 characters)
+scrapetui.py:6031:80: E501 line too long (85 > 79 characters)
+scrapetui.py:6036:80: E501 line too long (86 > 79 characters)
+scrapetui.py:6055:80: E501 line too long (86 > 79 characters)
+scrapetui.py:6079:80: E501 line too long (85 > 79 characters)
+scrapetui.py:6083:80: E501 line too long (124 > 79 characters)
+scrapetui.py:6085:80: E501 line too long (89 > 79 characters)
+scrapetui.py:6087:80: E501 line too long (87 > 79 characters)
+scrapetui.py:6089:80: E501 line too long (101 > 79 characters)
+scrapetui.py:6098:80: E501 line too long (106 > 79 characters)
+scrapetui.py:6103:80: E501 line too long (96 > 79 characters)
+scrapetui.py:6108:80: E501 line too long (99 > 79 characters)
+scrapetui.py:6109:80: E501 line too long (94 > 79 characters)
+scrapetui.py:6120:80: E501 line too long (85 > 79 characters)
+scrapetui.py:6122:80: E501 line too long (89 > 79 characters)
+scrapetui.py:6123:80: E501 line too long (97 > 79 characters)
+scrapetui.py:6124:80: E501 line too long (97 > 79 characters)
+scrapetui.py:6126:80: E501 line too long (93 > 79 characters)
+scrapetui.py:6129:80: E501 line too long (105 > 79 characters)
+scrapetui.py:6134:80: E501 line too long (80 > 79 characters)
+scrapetui.py:6138:80: E501 line too long (82 > 79 characters)
+scrapetui.py:6170:80: E501 line too long (98 > 79 characters)
+scrapetui.py:6179:80: E501 line too long (84 > 79 characters)
+scrapetui.py:6182:80: E501 line too long (126 > 79 characters)
+scrapetui.py:6185:80: E501 line too long (127 > 79 characters)
+scrapetui.py:6187:80: E501 line too long (120 > 79 characters)
+scrapetui.py:6191:80: E501 line too long (126 > 79 characters)
+scrapetui.py:6192:80: E501 line too long (120 > 79 characters)
+scrapetui.py:6195:80: E501 line too long (106 > 79 characters)
+scrapetui.py:6200:80: E501 line too long (116 > 79 characters)
+scrapetui.py:6201:80: E501 line too long (112 > 79 characters)
+scrapetui.py:6204:80: E501 line too long (135 > 79 characters)
+scrapetui.py:6232:80: E501 line too long (86 > 79 characters)
+scrapetui.py:6233:80: E501 line too long (82 > 79 characters)
+scrapetui.py:6234:80: E501 line too long (86 > 79 characters)
+scrapetui.py:6235:80: E501 line too long (87 > 79 characters)
+scrapetui.py:6236:80: E501 line too long (83 > 79 characters)
+scrapetui.py:6237:80: E501 line too long (84 > 79 characters)
+scrapetui.py:6242:80: E501 line too long (97 > 79 characters)
+scrapetui.py:6244:80: E501 line too long (94 > 79 characters)
+scrapetui.py:6283:80: E501 line too long (80 > 79 characters)
+scrapetui.py:6311:17: E722 do not use bare 'except'
+scrapetui.py:6323:80: E501 line too long (101 > 79 characters)
+scrapetui.py:6328:80: E501 line too long (87 > 79 characters)
+scrapetui.py:6333:80: E501 line too long (88 > 79 characters)
+scrapetui.py:6335:17: E722 do not use bare 'except'
+scrapetui.py:6377:80: E501 line too long (81 > 79 characters)
+scrapetui.py:6412:80: E501 line too long (80 > 79 characters)
+scrapetui.py:6418:80: E501 line too long (85 > 79 characters)
+scrapetui.py:6430:80: E501 line too long (91 > 79 characters)
+scrapetui.py:6440:80: E501 line too long (81 > 79 characters)
+scrapetui.py:6448:80: E501 line too long (80 > 79 characters)
+scrapetui.py:6453:80: E501 line too long (83 > 79 characters)
+scrapetui.py:6483:80: E501 line too long (105 > 79 characters)
+scrapetui.py:6484:80: E501 line too long (103 > 79 characters)
+scrapetui.py:6488:80: E501 line too long (86 > 79 characters)
+scrapetui.py:6523:80: E501 line too long (87 > 79 characters)
+scrapetui.py:6525:80: E501 line too long (82 > 79 characters)
+scrapetui.py:6533:80: E501 line too long (128 > 79 characters)
+scrapetui.py:6551:80: E501 line too long (83 > 79 characters)
+scrapetui.py:6570:80: E501 line too long (92 > 79 characters)
+scrapetui.py:6576:80: E501 line too long (88 > 79 characters)
+scrapetui.py:6581:80: E501 line too long (93 > 79 characters)
+scrapetui.py:6584:80: E501 line too long (89 > 79 characters)
+scrapetui.py:6586:80: E501 line too long (86 > 79 characters)
+scrapetui.py:6591:80: E501 line too long (88 > 79 characters)
+scrapetui.py:6598:80: E501 line too long (91 > 79 characters)
+scrapetui.py:6600:80: E501 line too long (94 > 79 characters)
+scrapetui.py:6603:80: E501 line too long (82 > 79 characters)
+scrapetui.py:6607:80: E501 line too long (86 > 79 characters)
+scrapetui.py:6644:80: E501 line too long (82 > 79 characters)
+scrapetui.py:6647:80: E501 line too long (87 > 79 characters)
+scrapetui.py:6652:80: E501 line too long (99 > 79 characters)
+scrapetui.py:6653:80: E501 line too long (103 > 79 characters)
+scrapetui.py:6654:80: E501 line too long (85 > 79 characters)
+scrapetui.py:6657:80: E501 line too long (88 > 79 characters)
+scrapetui.py:6671:13: F841 local variable 'type_radio' is assigned to but never used
+scrapetui.py:6703:80: E501 line too long (80 > 79 characters)
+scrapetui.py:6707:80: E501 line too long (101 > 79 characters)
+scrapetui.py:6710:80: E501 line too long (103 > 79 characters)
+scrapetui.py:6747:80: E501 line too long (131 > 79 characters)
+scrapetui.py:6748:80: E501 line too long (135 > 79 characters)
+scrapetui.py:6765:80: E501 line too long (84 > 79 characters)
+scrapetui.py:6776:80: E501 line too long (90 > 79 characters)
+scrapetui.py:6779:80: E501 line too long (97 > 79 characters)
+scrapetui.py:6789:80: E501 line too long (95 > 79 characters)
+scrapetui.py:6791:80: E501 line too long (89 > 79 characters)
+scrapetui.py:6799:80: E501 line too long (84 > 79 characters)
+scrapetui.py:6812:80: E501 line too long (97 > 79 characters)
+scrapetui.py:6813:80: E501 line too long (95 > 79 characters)
+scrapetui.py:6814:80: E501 line too long (97 > 79 characters)
+scrapetui.py:6822:80: E501 line too long (87 > 79 characters)
+scrapetui.py:6830:80: E501 line too long (105 > 79 characters)
+scrapetui.py:6837:80: E501 line too long (87 > 79 characters)
+scrapetui.py:6872:80: E501 line too long (115 > 79 characters)
+scrapetui.py:6876:80: E501 line too long (96 > 79 characters)
+scrapetui.py:6877:80: E501 line too long (96 > 79 characters)
+scrapetui.py:6889:80: E501 line too long (89 > 79 characters)
+scrapetui.py:6890:80: E501 line too long (87 > 79 characters)
+scrapetui.py:6891:80: E501 line too long (103 > 79 characters)
+scrapetui.py:6931:80: E501 line too long (91 > 79 characters)
+scrapetui.py:6945:80: E501 line too long (106 > 79 characters)
+scrapetui.py:6947:80: E501 line too long (84 > 79 characters)
+scrapetui.py:6952:80: E501 line too long (102 > 79 characters)
+scrapetui.py:7031:80: E501 line too long (91 > 79 characters)
+scrapetui.py:7035:80: E501 line too long (94 > 79 characters)
+scrapetui.py:7037:80: E501 line too long (80 > 79 characters)
+scrapetui.py:7076:80: E501 line too long (83 > 79 characters)
+scrapetui.py:7084:80: E501 line too long (114 > 79 characters)
+scrapetui.py:7150:80: E501 line too long (83 > 79 characters)
+scrapetui.py:7157:80: E501 line too long (95 > 79 characters)
+scrapetui.py:7160:80: E501 line too long (80 > 79 characters)
+scrapetui.py:7163:80: E501 line too long (87 > 79 characters)
+scrapetui.py:7209:29: F541 f-string is missing placeholders
+scrapetui.py:7210:80: E501 line too long (89 > 79 characters)
+scrapetui.py:7226:80: E501 line too long (98 > 79 characters)
+scrapetui.py:7229:80: E501 line too long (87 > 79 characters)
+scrapetui.py:7231:80: E501 line too long (80 > 79 characters)
+scrapetui.py:7252:80: E501 line too long (88 > 79 characters)
+scrapetui.py:7271:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7273:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7274:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7275:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7276:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7279:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7281:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7282:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7283:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7286:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7288:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7289:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7290:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7291:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7292:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7293:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7294:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7295:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7298:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7300:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7301:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7302:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7303:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7304:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7305:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7306:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7309:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7311:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7312:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7313:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7314:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7315:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7316:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7317:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7320:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7322:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7323:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7324:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7325:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7328:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7330:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7331:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7332:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7333:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7334:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7335:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7338:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7340:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7341:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7342:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7345:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7347:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7348:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7349:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7354:80: E501 line too long (88 > 79 characters)
+scrapetui.py:7355:80: E501 line too long (89 > 79 characters)
+scrapetui.py:7359:80: E501 line too long (81 > 79 characters)
+scrapetui.py:7428:80: E501 line too long (84 > 79 characters)
+scrapetui.py:7430:80: E501 line too long (81 > 79 characters)
+scrapetui.py:7502:80: E501 line too long (82 > 79 characters)
+scrapetui.py:7513:80: E501 line too long (99 > 79 characters)
+scrapetui.py:7516:80: E501 line too long (101 > 79 characters)
+scrapetui.py:7532:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7569:80: E501 line too long (88 > 79 characters)
+scrapetui.py:7587:80: E501 line too long (96 > 79 characters)
+scrapetui.py:7606:80: E501 line too long (93 > 79 characters)
+scrapetui.py:7610:80: E501 line too long (82 > 79 characters)
+scrapetui.py:7620:80: E501 line too long (82 > 79 characters)
+scrapetui.py:7633:80: E501 line too long (90 > 79 characters)
+scrapetui.py:7639:80: E501 line too long (90 > 79 characters)
+scrapetui.py:7694:80: E501 line too long (104 > 79 characters)
+scrapetui.py:7702:80: E501 line too long (102 > 79 characters)
+scrapetui.py:7712:80: E501 line too long (97 > 79 characters)
+scrapetui.py:7716:80: E501 line too long (87 > 79 characters)
+scrapetui.py:7720:80: E501 line too long (88 > 79 characters)
+scrapetui.py:7721:80: E501 line too long (170 > 79 characters)
+scrapetui.py:7729:80: E501 line too long (158 > 79 characters)
+scrapetui.py:7741:80: E501 line too long (118 > 79 characters)
+scrapetui.py:7743:80: E501 line too long (80 > 79 characters)
+scrapetui.py:7752:80: E501 line too long (87 > 79 characters)
+scrapetui.py:7765:80: E501 line too long (93 > 79 characters)
+scrapetui.py:7768:80: E501 line too long (89 > 79 characters)
+scrapetui.py:7773:80: E501 line too long (97 > 79 characters)
+scrapetui.py:7781:80: E501 line too long (93 > 79 characters)
+scrapetui.py:7784:80: E501 line too long (138 > 79 characters)
+scrapetui.py:7793:80: E501 line too long (117 > 79 characters)
+scrapetui.py:7794:80: E501 line too long (124 > 79 characters)
+scrapetui.py:7796:80: E501 line too long (96 > 79 characters)
+scrapetui.py:7801:80: E501 line too long (129 > 79 characters)
+scrapetui.py:7802:80: E501 line too long (106 > 79 characters)
+scrapetui.py:7804:80: E501 line too long (91 > 79 characters)
+scrapetui.py:7807:80: E501 line too long (80 > 79 characters)
+scrapetui.py:7822:80: E501 line too long (82 > 79 characters)
+scrapetui.py:7823:80: E501 line too long (125 > 79 characters)
+scrapetui.py:7827:80: E501 line too long (121 > 79 characters)
+scrapetui.py:7830:80: E501 line too long (86 > 79 characters)
+scrapetui.py:7833:80: E501 line too long (90 > 79 characters)
+scrapetui.py:7848:80: E501 line too long (149 > 79 characters)
+scrapetui.py:7853:80: E501 line too long (92 > 79 characters)
+scrapetui.py:7854:80: E501 line too long (97 > 79 characters)
+scrapetui.py:7857:80: E501 line too long (91 > 79 characters)
+scrapetui.py:7859:80: E501 line too long (122 > 79 characters)
+scrapetui.py:7861:80: E501 line too long (109 > 79 characters)
+scrapetui.py:7863:80: E501 line too long (100 > 79 characters)
+scrapetui.py:7864:80: E501 line too long (87 > 79 characters)
+scrapetui.py:7866:80: E501 line too long (81 > 79 characters)
+scrapetui.py:7872:80: E501 line too long (83 > 79 characters)
+scrapetui.py:7881:80: E501 line too long (109 > 79 characters)
+scrapetui.py:7885:80: E501 line too long (89 > 79 characters)
+scrapetui.py:7886:80: E501 line too long (107 > 79 characters)
+scrapetui.py:7899:80: E501 line too long (93 > 79 characters)
+scrapetui.py:7914:80: E501 line too long (85 > 79 characters)
+scrapetui.py:7950:80: E501 line too long (82 > 79 characters)
+scrapetui.py:8033:80: E501 line too long (82 > 79 characters)
+scrapetui.py:8038:80: E501 line too long (82 > 79 characters)
+scrapetui.py:8048:80: E501 line too long (110 > 79 characters)
+scrapetui.py:8053:80: E501 line too long (102 > 79 characters)
+scrapetui.py:8055:80: E501 line too long (86 > 79 characters)
+scrapetui.py:8058:80: E501 line too long (111 > 79 characters)
+scrapetui.py:8063:80: E501 line too long (118 > 79 characters)
+scrapetui.py:8067:80: E501 line too long (94 > 79 characters)
+scrapetui.py:8074:80: E501 line too long (83 > 79 characters)
+scrapetui.py:8077:80: E501 line too long (91 > 79 characters)
+scrapetui.py:8078:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8080:80: E501 line too long (106 > 79 characters)
+scrapetui.py:8090:80: E501 line too long (106 > 79 characters)
+scrapetui.py:8093:80: E501 line too long (92 > 79 characters)
+scrapetui.py:8096:80: E501 line too long (94 > 79 characters)
+scrapetui.py:8099:80: E501 line too long (83 > 79 characters)
+scrapetui.py:8112:80: E501 line too long (99 > 79 characters)
+scrapetui.py:8118:80: E501 line too long (114 > 79 characters)
+scrapetui.py:8138:80: E501 line too long (122 > 79 characters)
+scrapetui.py:8156:80: E501 line too long (83 > 79 characters)
+scrapetui.py:8161:80: E501 line too long (115 > 79 characters)
+scrapetui.py:8165:80: E501 line too long (114 > 79 characters)
+scrapetui.py:8167:80: E501 line too long (106 > 79 characters)
+scrapetui.py:8169:80: E501 line too long (110 > 79 characters)
+scrapetui.py:8176:80: E501 line too long (109 > 79 characters)
+scrapetui.py:8179:80: E501 line too long (108 > 79 characters)
+scrapetui.py:8182:80: E501 line too long (112 > 79 characters)
+scrapetui.py:8185:80: E501 line too long (98 > 79 characters)
+scrapetui.py:8192:80: E501 line too long (91 > 79 characters)
+scrapetui.py:8198:80: E501 line too long (99 > 79 characters)
+scrapetui.py:8200:80: E501 line too long (104 > 79 characters)
+scrapetui.py:8203:80: E501 line too long (124 > 79 characters)
+scrapetui.py:8205:80: E501 line too long (87 > 79 characters)
+scrapetui.py:8213:80: E501 line too long (111 > 79 characters)
+scrapetui.py:8217:80: E501 line too long (80 > 79 characters)
+scrapetui.py:8219:80: E501 line too long (128 > 79 characters)
+scrapetui.py:8220:80: E501 line too long (128 > 79 characters)
+scrapetui.py:8224:80: E501 line too long (91 > 79 characters)
+scrapetui.py:8228:80: E501 line too long (131 > 79 characters)
+scrapetui.py:8231:80: E501 line too long (113 > 79 characters)
+scrapetui.py:8236:80: E501 line too long (80 > 79 characters)
+scrapetui.py:8237:80: E501 line too long (155 > 79 characters)
+scrapetui.py:8250:80: E501 line too long (121 > 79 characters)
+scrapetui.py:8255:80: E501 line too long (109 > 79 characters)
+scrapetui.py:8259:80: E501 line too long (121 > 79 characters)
+scrapetui.py:8262:80: E501 line too long (103 > 79 characters)
+scrapetui.py:8263:80: E501 line too long (92 > 79 characters)
+scrapetui.py:8271:80: E501 line too long (119 > 79 characters)
+scrapetui.py:8275:34: E225 missing whitespace around operator
+scrapetui.py:8276:74: E231 missing whitespace after ','
+scrapetui.py:8276:80: E501 line too long (106 > 79 characters)
+scrapetui.py:8276:90: E231 missing whitespace after ','
+scrapetui.py:8277:45: E225 missing whitespace around operator
+scrapetui.py:8278:62: E225 missing whitespace around operator
+scrapetui.py:8281:76: E231 missing whitespace after ','
+scrapetui.py:8281:80: E501 line too long (111 > 79 characters)
+scrapetui.py:8281:92: E231 missing whitespace after ','
+scrapetui.py:8283:75: E231 missing whitespace after ','
+scrapetui.py:8283:80: E501 line too long (89 > 79 characters)
+scrapetui.py:8284:74: E231 missing whitespace after ','
+scrapetui.py:8284:80: E501 line too long (105 > 79 characters)
+scrapetui.py:8284:88: E231 missing whitespace after ','
+scrapetui.py:8286:41: E231 missing whitespace after ','
+scrapetui.py:8286:54: E231 missing whitespace after ','
+scrapetui.py:8288:80: E501 line too long (112 > 79 characters)
+scrapetui.py:8307:80: E501 line too long (90 > 79 characters)
+scrapetui.py:8309:80: E501 line too long (114 > 79 characters)
+scrapetui.py:8312:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8322:80: E501 line too long (87 > 79 characters)
+scrapetui.py:8327:80: E501 line too long (98 > 79 characters)
+scrapetui.py:8340:80: E501 line too long (104 > 79 characters)
+scrapetui.py:8350:80: E501 line too long (115 > 79 characters)
+scrapetui.py:8356:80: E501 line too long (135 > 79 characters)
+scrapetui.py:8361:80: E501 line too long (83 > 79 characters)
+scrapetui.py:8362:80: E501 line too long (96 > 79 characters)
+scrapetui.py:8372:80: E501 line too long (89 > 79 characters)
+scrapetui.py:8382:80: E501 line too long (110 > 79 characters)
+scrapetui.py:8387:80: E501 line too long (93 > 79 characters)
+scrapetui.py:8389:80: E501 line too long (84 > 79 characters)
+scrapetui.py:8399:42: E225 missing whitespace around operator
+scrapetui.py:8405:66: E701 multiple statements on one line (colon)
+scrapetui.py:8405:66: E231 missing whitespace after ':'
+scrapetui.py:8405:80: E501 line too long (321 > 79 characters)
+scrapetui.py:8405:299: E702 multiple statements on one line (semicolon)
+scrapetui.py:8405:299: E231 missing whitespace after ';'
+scrapetui.py:8407:80: E501 line too long (118 > 79 characters)
+scrapetui.py:8407:83: E231 missing whitespace after ','
+scrapetui.py:8407:102: E231 missing whitespace after ','
+scrapetui.py:8409:41: E225 missing whitespace around operator
+scrapetui.py:8410:58: E225 missing whitespace around operator
+scrapetui.py:8413:57: E231 missing whitespace after ','
+scrapetui.py:8414:56: E231 missing whitespace after ','
+scrapetui.py:8414:73: E231 missing whitespace after ','
+scrapetui.py:8414:80: E501 line too long (90 > 79 characters)
+scrapetui.py:8418:50: E231 missing whitespace after ','
+scrapetui.py:8418:63: E231 missing whitespace after ','
+scrapetui.py:8420:80: E501 line too long (142 > 79 characters)
+scrapetui.py:8420:83: E231 missing whitespace after ','
+scrapetui.py:8428:80: E501 line too long (104 > 79 characters)
+scrapetui.py:8431:80: E501 line too long (101 > 79 characters)
+scrapetui.py:8434:80: E501 line too long (107 > 79 characters)
+scrapetui.py:8436:80: E501 line too long (98 > 79 characters)
+scrapetui.py:8444:80: E501 line too long (83 > 79 characters)
+scrapetui.py:8462:80: E501 line too long (104 > 79 characters)
+scrapetui.py:8466:80: E501 line too long (89 > 79 characters)
+scrapetui.py:8485:80: E501 line too long (95 > 79 characters)
+scrapetui.py:8487:80: E501 line too long (89 > 79 characters)
+scrapetui.py:8505:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8516:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8527:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8538:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8577:80: E501 line too long (87 > 79 characters)
+scrapetui.py:8586:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8604:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8611:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8638:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8661:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8698:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8721:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8734:39: E225 missing whitespace around operator
+scrapetui.py:8734:45: E231 missing whitespace after ':'
+scrapetui.py:8734:80: E501 line too long (84 > 79 characters)
+scrapetui.py:8735:44: E225 missing whitespace around operator
+scrapetui.py:8735:50: E231 missing whitespace after ':'
+scrapetui.py:8735:74: E225 missing whitespace around operator
+scrapetui.py:8735:80: E501 line too long (281 > 79 characters)
+scrapetui.py:8735:102: E228 missing whitespace around modulo operator
+scrapetui.py:8735:125: E702 multiple statements on one line (semicolon)
+scrapetui.py:8735:125: E231 missing whitespace after ';'
+scrapetui.py:8735:160: E702 multiple statements on one line (semicolon)
+scrapetui.py:8735:160: E231 missing whitespace after ';'
+scrapetui.py:8735:234: E231 missing whitespace after ','
+scrapetui.py:8735:255: E231 missing whitespace after ','
+scrapetui.py:8735:271: E231 missing whitespace after ','
+scrapetui.py:8736:5: E301 expected 1 blank line, found 0
+scrapetui.py:8736:46: E231 missing whitespace after ','
+scrapetui.py:8736:50: E231 missing whitespace after ':'
+scrapetui.py:8736:54: E231 missing whitespace after ','
+scrapetui.py:8736:58: E231 missing whitespace after ':'
+scrapetui.py:8736:73: E225 missing whitespace around operator
+scrapetui.py:8740:54: E231 missing whitespace after ','
+scrapetui.py:8741:58: E231 missing whitespace after ','
+scrapetui.py:8741:79: E231 missing whitespace after ','
+scrapetui.py:8741:80: E501 line too long (130 > 79 characters)
+scrapetui.py:8741:96: E702 multiple statements on one line (semicolon)
+scrapetui.py:8741:96: E231 missing whitespace after ';'
+scrapetui.py:8742:34: E701 multiple statements on one line (colon)
+scrapetui.py:8742:34: E231 missing whitespace after ':'
+scrapetui.py:8742:73: E231 missing whitespace after ','
+scrapetui.py:8742:80: E501 line too long (152 > 79 characters)
+scrapetui.py:8742:88: E702 multiple statements on one line (semicolon)
+scrapetui.py:8742:88: E231 missing whitespace after ';'
+scrapetui.py:8742:117: E231 missing whitespace after ','
+scrapetui.py:8742:135: E231 missing whitespace after ','
+scrapetui.py:8743:20: E701 multiple statements on one line (colon)
+scrapetui.py:8743:20: E231 missing whitespace after ':'
+scrapetui.py:8744:5: E301 expected 1 blank line, found 0
+scrapetui.py:8744:39: E225 missing whitespace around operator
+scrapetui.py:8745:19: E225 missing whitespace around operator
+scrapetui.py:8746:30: E701 multiple statements on one line (colon)
+scrapetui.py:8746:30: E231 missing whitespace after ':'
+scrapetui.py:8746:61: E231 missing whitespace after ','
+scrapetui.py:8746:74: E231 missing whitespace after ','
+scrapetui.py:8746:80: E501 line too long (100 > 79 characters)
+scrapetui.py:8746:94: E702 multiple statements on one line (semicolon)
+scrapetui.py:8746:94: E231 missing whitespace after ';'
+scrapetui.py:8747:29: E225 missing whitespace around operator
+scrapetui.py:8751:80: E501 line too long (99 > 79 characters)
+scrapetui.py:8751:85: E261 at least two spaces before inline comment
+scrapetui.py:8753:76: E231 missing whitespace after ','
+scrapetui.py:8753:80: E501 line too long (162 > 79 characters)
+scrapetui.py:8753:80: E231 missing whitespace after ','
+scrapetui.py:8753:90: E231 missing whitespace after ':'
+scrapetui.py:8753:143: E231 missing whitespace after ','
+scrapetui.py:8753:148: E261 at least two spaces before inline comment
+scrapetui.py:8754:30: E701 multiple statements on one line (colon)
+scrapetui.py:8754:30: E231 missing whitespace after ':'
+scrapetui.py:8754:80: E501 line too long (173 > 79 characters)
+scrapetui.py:8754:91: E231 missing whitespace after ','
+scrapetui.py:8754:106: E702 multiple statements on one line (semicolon)
+scrapetui.py:8754:106: E231 missing whitespace after ';'
+scrapetui.py:8754:142: E231 missing whitespace after ','
+scrapetui.py:8754:156: E231 missing whitespace after ','
+scrapetui.py:8756:38: E231 missing whitespace after ','
+scrapetui.py:8756:47: E231 missing whitespace after ':'
+scrapetui.py:8756:52: E225 missing whitespace around operator
+scrapetui.py:8758:50: E231 missing whitespace after ','
+scrapetui.py:8758:72: E231 missing whitespace after ','
+scrapetui.py:8758:80: E501 line too long (88 > 79 characters)
+scrapetui.py:8760:18: E231 missing whitespace after ','
+scrapetui.py:8760:20: E225 missing whitespace around operator
+scrapetui.py:8761:13: E306 expected 1 blank line before a nested definition, found 0
+scrapetui.py:8762:26: E225 missing whitespace around operator
+scrapetui.py:8762:80: E501 line too long (246 > 79 characters)
+scrapetui.py:8763:29: E231 missing whitespace after ','
+scrapetui.py:8763:43: E225 missing whitespace around operator
+scrapetui.py:8763:46: E231 missing whitespace after ','
+scrapetui.py:8764:37: E701 multiple statements on one line (colon)
+scrapetui.py:8764:37: E231 missing whitespace after ':'
+scrapetui.py:8764:78: E702 multiple statements on one line (semicolon)
+scrapetui.py:8764:78: E231 missing whitespace after ';'
+scrapetui.py:8764:80: E501 line too long (122 > 79 characters)
+scrapetui.py:8764:98: E225 missing whitespace around operator
+scrapetui.py:8765:35: E701 multiple statements on one line (colon)
+scrapetui.py:8765:35: E231 missing whitespace after ':'
+scrapetui.py:8765:74: E702 multiple statements on one line (semicolon)
+scrapetui.py:8765:74: E231 missing whitespace after ';'
+scrapetui.py:8765:80: E501 line too long (116 > 79 characters)
+scrapetui.py:8765:94: E225 missing whitespace around operator
+scrapetui.py:8766:36: E701 multiple statements on one line (colon)
+scrapetui.py:8766:36: E231 missing whitespace after ':'
+scrapetui.py:8766:80: E501 line too long (118 > 79 characters)
+scrapetui.py:8766:82: E702 multiple statements on one line (semicolon)
+scrapetui.py:8766:82: E231 missing whitespace after ';'
+scrapetui.py:8766:102: E225 missing whitespace around operator
+scrapetui.py:8768:31: E225 missing whitespace around operator
+scrapetui.py:8768:80: E501 line too long (100 > 79 characters)
+scrapetui.py:8769:26: E231 missing whitespace after ','
+scrapetui.py:8769:61: E701 multiple statements on one line (colon)
+scrapetui.py:8769:61: E231 missing whitespace after ':'
+scrapetui.py:8769:71: E225 missing whitespace around operator
+scrapetui.py:8769:80: E501 line too long (261 > 79 characters)
+scrapetui.py:8769:82: E702 multiple statements on one line (semicolon)
+scrapetui.py:8769:82: E231 missing whitespace after ';'
+scrapetui.py:8769:227: E702 multiple statements on one line (semicolon)
+scrapetui.py:8769:227: E231 missing whitespace after ';'
+scrapetui.py:8769:252: E225 missing whitespace around operator
+scrapetui.py:8770:41: E701 multiple statements on one line (colon)
+scrapetui.py:8770:41: E231 missing whitespace after ':'
+scrapetui.py:8770:53: E225 missing whitespace around operator
+scrapetui.py:8770:80: E501 line too long (179 > 79 characters)
+scrapetui.py:8770:96: E702 multiple statements on one line (semicolon)
+scrapetui.py:8770:96: E231 missing whitespace after ';'
+scrapetui.py:8770:141: E702 multiple statements on one line (semicolon)
+scrapetui.py:8770:141: E231 missing whitespace after ';'
+scrapetui.py:8770:161: E225 missing whitespace around operator
+scrapetui.py:8771:32: E701 multiple statements on one line (colon)
+scrapetui.py:8771:32: E231 missing whitespace after ':'
+scrapetui.py:8771:42: E225 missing whitespace around operator
+scrapetui.py:8772:26: E225 missing whitespace around operator
+scrapetui.py:8774:59: E231 missing whitespace after ','
+scrapetui.py:8774:80: E501 line too long (84 > 79 characters)
+scrapetui.py:8776:34: E701 multiple statements on one line (colon)
+scrapetui.py:8776:34: E231 missing whitespace after ':'
+scrapetui.py:8776:67: E231 missing whitespace after ','
+scrapetui.py:8776:80: E501 line too long (140 > 79 characters)
+scrapetui.py:8776:87: E231 missing whitespace after ','
+scrapetui.py:8776:104: E702 multiple statements on one line (semicolon)
+scrapetui.py:8776:133: E702 multiple statements on one line (semicolon)
+scrapetui.py:8777:13: E306 expected 1 blank line before a nested definition, found 0
+scrapetui.py:8778:19: E225 missing whitespace around operator
+scrapetui.py:8779:29: E231 missing whitespace after ','
+scrapetui.py:8779:33: E231 missing whitespace after ','
+scrapetui.py:8779:44: E231 missing whitespace after ','
+scrapetui.py:8780:23: E225 missing whitespace around operator
+scrapetui.py:8780:29: E231 missing whitespace after ','
+scrapetui.py:8780:37: E231 missing whitespace after ','
+scrapetui.py:8780:50: E231 missing whitespace after ','
+scrapetui.py:8780:65: E231 missing whitespace after ','
+scrapetui.py:8780:77: E231 missing whitespace after ','
+scrapetui.py:8780:80: E501 line too long (159 > 79 characters)
+scrapetui.py:8780:87: E231 missing whitespace after ','
+scrapetui.py:8780:99: E231 missing whitespace after ','
+scrapetui.py:8780:107: E702 multiple statements on one line (semicolon)
+scrapetui.py:8780:107: E231 missing whitespace after ';'
+scrapetui.py:8780:109: E225 missing whitespace around operator
+scrapetui.py:8780:129: E231 missing whitespace after ','
+scrapetui.py:8780:144: E702 multiple statements on one line (semicolon)
+scrapetui.py:8780:144: E231 missing whitespace after ';'
+scrapetui.py:8783:80: E501 line too long (146 > 79 characters)
+scrapetui.py:8784:41: E231 missing whitespace after ':'
+scrapetui.py:8784:54: E231 missing whitespace after ','
+scrapetui.py:8784:62: E231 missing whitespace after ':'
+scrapetui.py:8784:78: E231 missing whitespace after ','
+scrapetui.py:8784:80: E501 line too long (246 > 79 characters)
+scrapetui.py:8784:91: E231 missing whitespace after ':'
+scrapetui.py:8784:105: E231 missing whitespace after ','
+scrapetui.py:8784:120: E231 missing whitespace after ':'
+scrapetui.py:8784:135: E231 missing whitespace after ','
+scrapetui.py:8784:147: E231 missing whitespace after ':'
+scrapetui.py:8784:161: E231 missing whitespace after ','
+scrapetui.py:8784:171: E231 missing whitespace after ':'
+scrapetui.py:8784:189: E231 missing whitespace after ','
+scrapetui.py:8784:201: E231 missing whitespace after ':'
+scrapetui.py:8784:221: E231 missing whitespace after ','
+scrapetui.py:8784:228: E231 missing whitespace after ':'
+scrapetui.py:8787:60: E231 missing whitespace after ','
+scrapetui.py:8787:80: E501 line too long (157 > 79 characters)
+scrapetui.py:8787:81: E231 missing whitespace after ','
+scrapetui.py:8787:98: E702 multiple statements on one line (semicolon)
+scrapetui.py:8787:98: E231 missing whitespace after ';'
+scrapetui.py:8788:30: E701 multiple statements on one line (colon)
+scrapetui.py:8788:30: E231 missing whitespace after ':'
+scrapetui.py:8788:79: E231 missing whitespace after ','
+scrapetui.py:8788:80: E501 line too long (167 > 79 characters)
+scrapetui.py:8788:94: E702 multiple statements on one line (semicolon)
+scrapetui.py:8788:94: E231 missing whitespace after ';'
+scrapetui.py:8788:129: E231 missing whitespace after ','
+scrapetui.py:8788:150: E231 missing whitespace after ','
+scrapetui.py:8789:16: E701 multiple statements on one line (colon)
+scrapetui.py:8789:16: E231 missing whitespace after ':'
+scrapetui.py:8790:5: E301 expected 1 blank line, found 0
+scrapetui.py:8790:38: E225 missing whitespace around operator
+scrapetui.py:8791:12: E225 missing whitespace around operator
+scrapetui.py:8792:9: E306 expected 1 blank line before a nested definition, found 0
+scrapetui.py:8794:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8795:80: E501 line too long (84 > 79 characters)
+scrapetui.py:8796:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8801:80: E501 line too long (91 > 79 characters)
+scrapetui.py:8825:80: E501 line too long (102 > 79 characters)
+scrapetui.py:8829:80: E501 line too long (87 > 79 characters)
+scrapetui.py:8830:80: E501 line too long (99 > 79 characters)
+scrapetui.py:8841:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8845:80: E501 line too long (87 > 79 characters)
+scrapetui.py:8860:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8881:80: E501 line too long (82 > 79 characters)
+scrapetui.py:8885:80: E501 line too long (93 > 79 characters)
+scrapetui.py:8902:80: E501 line too long (82 > 79 characters)
+scrapetui.py:8903:80: E501 line too long (93 > 79 characters)
+scrapetui.py:8913:80: E501 line too long (82 > 79 characters)
+scrapetui.py:8914:80: E501 line too long (84 > 79 characters)
+scrapetui.py:8916:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8924:80: E501 line too long (83 > 79 characters)
+scrapetui.py:8925:80: E501 line too long (84 > 79 characters)
+scrapetui.py:8927:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8932:80: E501 line too long (92 > 79 characters)
+scrapetui.py:8935:80: E501 line too long (80 > 79 characters)
+scrapetui.py:8938:80: E501 line too long (87 > 79 characters)
+scrapetui.py:8945:80: E501 line too long (80 > 79 characters)
+scrapetui.py:8957:80: E501 line too long (103 > 79 characters)
+scrapetui.py:8961:80: E501 line too long (91 > 79 characters)
+scrapetui.py:8971:80: E501 line too long (81 > 79 characters)
+scrapetui.py:8972:80: E501 line too long (84 > 79 characters)
+scrapetui.py:8974:80: E501 line too long (85 > 79 characters)
+scrapetui.py:8979:80: E501 line too long (99 > 79 characters)
+scrapetui.py:8982:80: E501 line too long (80 > 79 characters)
+scrapetui.py:8985:80: E501 line too long (87 > 79 characters)
+scrapetui.py:8992:80: E501 line too long (80 > 79 characters)
+scrapetui.py:8999:80: E501 line too long (88 > 79 characters)
+scrapetui.py:9004:80: E501 line too long (101 > 79 characters)
+scrapetui.py:9008:80: E501 line too long (89 > 79 characters)
+scrapetui.py:9018:80: E501 line too long (88 > 79 characters)
+scrapetui.py:9019:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9021:80: E501 line too long (85 > 79 characters)
+scrapetui.py:9026:80: E501 line too long (96 > 79 characters)
+scrapetui.py:9039:80: E501 line too long (108 > 79 characters)
+scrapetui.py:9045:80: E501 line too long (92 > 79 characters)
+scrapetui.py:9056:80: E501 line too long (112 > 79 characters)
+scrapetui.py:9060:80: E501 line too long (89 > 79 characters)
+scrapetui.py:9067:80: E501 line too long (105 > 79 characters)
+scrapetui.py:9072:80: E501 line too long (85 > 79 characters)
+scrapetui.py:9079:80: E501 line too long (82 > 79 characters)
+scrapetui.py:9094:80: E501 line too long (82 > 79 characters)
+scrapetui.py:9104:80: E501 line too long (91 > 79 characters)
+scrapetui.py:9108:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9115:80: E501 line too long (119 > 79 characters)
+scrapetui.py:9120:80: E501 line too long (85 > 79 characters)
+scrapetui.py:9127:80: E501 line too long (82 > 79 characters)
+scrapetui.py:9171:80: E501 line too long (102 > 79 characters)
+scrapetui.py:9175:80: E501 line too long (88 > 79 characters)
+scrapetui.py:9177:80: E501 line too long (83 > 79 characters)
+scrapetui.py:9180:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9181:80: E501 line too long (97 > 79 characters)
+scrapetui.py:9183:80: E501 line too long (100 > 79 characters)
+scrapetui.py:9185:80: E501 line too long (100 > 79 characters)
+scrapetui.py:9188:80: E501 line too long (81 > 79 characters)
+scrapetui.py:9189:80: E501 line too long (89 > 79 characters)
+scrapetui.py:9196:80: E501 line too long (120 > 79 characters)
+scrapetui.py:9201:80: E501 line too long (85 > 79 characters)
+scrapetui.py:9208:80: E501 line too long (82 > 79 characters)
+scrapetui.py:9230:80: E501 line too long (101 > 79 characters)
+scrapetui.py:9233:80: E501 line too long (81 > 79 characters)
+scrapetui.py:9234:80: E501 line too long (90 > 79 characters)
+scrapetui.py:9241:80: E501 line too long (112 > 79 characters)
+scrapetui.py:9251:80: E501 line too long (88 > 79 characters)
+scrapetui.py:9259:80: E501 line too long (88 > 79 characters)
+scrapetui.py:9269:80: E501 line too long (95 > 79 characters)
+scrapetui.py:9273:80: E501 line too long (81 > 79 characters)
+scrapetui.py:9287:80: E501 line too long (104 > 79 characters)
+scrapetui.py:9289:80: E501 line too long (100 > 79 characters)
+scrapetui.py:9293:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9299:80: E501 line too long (100 > 79 characters)
+scrapetui.py:9302:80: E501 line too long (110 > 79 characters)
+scrapetui.py:9307:80: E501 line too long (95 > 79 characters)
+scrapetui.py:9313:80: E501 line too long (95 > 79 characters)
+scrapetui.py:9332:80: E501 line too long (89 > 79 characters)
+scrapetui.py:9350:80: E501 line too long (86 > 79 characters)
+scrapetui.py:9357:80: E501 line too long (106 > 79 characters)
+scrapetui.py:9362:80: E501 line too long (109 > 79 characters)
+scrapetui.py:9368:80: E501 line too long (81 > 79 characters)
+scrapetui.py:9374:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9381:80: E501 line too long (87 > 79 characters)
+scrapetui.py:9389:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9400:80: E501 line too long (118 > 79 characters)
+scrapetui.py:9405:80: E501 line too long (95 > 79 characters)
+scrapetui.py:9411:80: E501 line too long (100 > 79 characters)
+scrapetui.py:9417:80: E501 line too long (96 > 79 characters)
+scrapetui.py:9422:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9427:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9428:80: E501 line too long (91 > 79 characters)
+scrapetui.py:9435:80: E501 line too long (110 > 79 characters)
+scrapetui.py:9440:80: E501 line too long (95 > 79 characters)
+scrapetui.py:9447:80: E501 line too long (90 > 79 characters)
+scrapetui.py:9455:80: E501 line too long (103 > 79 characters)
+scrapetui.py:9466:80: E501 line too long (82 > 79 characters)
+scrapetui.py:9473:80: E501 line too long (122 > 79 characters)
+scrapetui.py:9478:80: E501 line too long (83 > 79 characters)
+scrapetui.py:9486:80: E501 line too long (87 > 79 characters)
+scrapetui.py:9492:80: E501 line too long (82 > 79 characters)
+scrapetui.py:9510:80: E501 line too long (82 > 79 characters)
+scrapetui.py:9511:80: E501 line too long (89 > 79 characters)
+scrapetui.py:9538:80: E501 line too long (94 > 79 characters)
+scrapetui.py:9543:80: E501 line too long (91 > 79 characters)
+scrapetui.py:9555:80: E501 line too long (87 > 79 characters)
+scrapetui.py:9586:40: E231 missing whitespace after ','
+scrapetui.py:9586:44: E231 missing whitespace after ':'
+scrapetui.py:9586:48: E231 missing whitespace after ','
+scrapetui.py:9586:53: E231 missing whitespace after ':'
+scrapetui.py:9586:57: E231 missing whitespace after ','
+scrapetui.py:9586:63: E231 missing whitespace after ':'
+scrapetui.py:9586:68: E225 missing whitespace around operator
+scrapetui.py:9587:35: E702 multiple statements on one line (semicolon)
+scrapetui.py:9587:35: E231 missing whitespace after ';'
+scrapetui.py:9587:80: E501 line too long (128 > 79 characters)
+scrapetui.py:9587:88: E231 missing whitespace after ','
+scrapetui.py:9587:112: E231 missing whitespace after ','
+scrapetui.py:9589:20: E225 missing whitespace around operator
+scrapetui.py:9589:47: E231 missing whitespace after ','
+scrapetui.py:9590:35: E701 multiple statements on one line (colon)
+scrapetui.py:9590:35: E231 missing whitespace after ':'
+scrapetui.py:9590:80: E501 line too long (94 > 79 characters)
+scrapetui.py:9590:85: E231 missing whitespace after ','
+scrapetui.py:9591:17: E701 multiple statements on one line (colon)
+scrapetui.py:9591:17: E231 missing whitespace after ':'
+scrapetui.py:9591:65: E231 missing whitespace after ','
+scrapetui.py:9591:80: E501 line too long (101 > 79 characters)
+scrapetui.py:9591:84: E231 missing whitespace after ','
+scrapetui.py:9592:30: E701 multiple statements on one line (colon)
+scrapetui.py:9592:30: E231 missing whitespace after ':'
+scrapetui.py:9592:76: E231 missing whitespace after ','
+scrapetui.py:9592:80: E501 line too long (168 > 79 characters)
+scrapetui.py:9592:91: E702 multiple statements on one line (semicolon)
+scrapetui.py:9592:91: E231 missing whitespace after ';'
+scrapetui.py:9592:132: E231 missing whitespace after ','
+scrapetui.py:9592:151: E231 missing whitespace after ','
+scrapetui.py:9593:16: E701 multiple statements on one line (colon)
+scrapetui.py:9593:16: E231 missing whitespace after ':'
+scrapetui.py:9594:5: E301 expected 1 blank line, found 0
+scrapetui.py:9594:40: E225 missing whitespace around operator
+scrapetui.py:9595:19: E225 missing whitespace around operator
+scrapetui.py:9596:30: E701 multiple statements on one line (colon)
+scrapetui.py:9596:30: E231 missing whitespace after ':'
+scrapetui.py:9596:61: E231 missing whitespace after ','
+scrapetui.py:9596:74: E231 missing whitespace after ','
+scrapetui.py:9596:80: E501 line too long (100 > 79 characters)
+scrapetui.py:9596:94: E702 multiple statements on one line (semicolon)
+scrapetui.py:9596:94: E231 missing whitespace after ';'
+scrapetui.py:9597:29: E225 missing whitespace around operator
+scrapetui.py:9601:80: E501 line too long (148 > 79 characters)
+scrapetui.py:9601:98: E231 missing whitespace after ','
+scrapetui.py:9601:134: E261 at least two spaces before inline comment
+scrapetui.py:9603:22: E701 multiple statements on one line (colon)
+scrapetui.py:9603:22: E231 missing whitespace after ':'
+scrapetui.py:9603:80: E501 line too long (120 > 79 characters)
+scrapetui.py:9603:82: E231 missing whitespace after ','
+scrapetui.py:9603:96: E231 missing whitespace after ','
+scrapetui.py:9603:114: E702 multiple statements on one line (semicolon)
+scrapetui.py:9603:114: E231 missing whitespace after ';'
+scrapetui.py:9604:80: E501 line too long (122 > 79 characters)
+scrapetui.py:9606:30: E701 multiple statements on one line (colon)
+scrapetui.py:9606:30: E231 missing whitespace after ':'
+scrapetui.py:9606:80: E501 line too long (171 > 79 characters)
+scrapetui.py:9606:91: E231 missing whitespace after ','
+scrapetui.py:9606:106: E702 multiple statements on one line (semicolon)
+scrapetui.py:9606:106: E231 missing whitespace after ';'
+scrapetui.py:9606:140: E231 missing whitespace after ','
+scrapetui.py:9606:154: E231 missing whitespace after ','
+scrapetui.py:9608:50: E231 missing whitespace after ','
+scrapetui.py:9608:57: E231 missing whitespace after ':'
+scrapetui.py:9608:76: E231 missing whitespace after ','
+scrapetui.py:9608:80: E501 line too long (89 > 79 characters)
+scrapetui.py:9608:83: E225 missing whitespace around operator
+scrapetui.py:9609:22: E701 multiple statements on one line (colon)
+scrapetui.py:9609:22: E231 missing whitespace after ':'
+scrapetui.py:9610:15: E231 missing whitespace after ','
+scrapetui.py:9610:20: E225 missing whitespace around operator
+scrapetui.py:9611:18: E225 missing whitespace around operator
+scrapetui.py:9618:70: E701 multiple statements on one line (colon)
+scrapetui.py:9618:70: E231 missing whitespace after ':'
+scrapetui.py:9618:80: E501 line too long (342 > 79 characters)
+scrapetui.py:9618:316: E231 missing whitespace after ','
+scrapetui.py:9618:320: E702 multiple statements on one line (semicolon)
+scrapetui.py:9618:320: E231 missing whitespace after ';'
+scrapetui.py:9620:69: E231 missing whitespace after ','
+scrapetui.py:9620:80: E501 line too long (101 > 79 characters)
+scrapetui.py:9620:85: E231 missing whitespace after ','
+scrapetui.py:9621:50: E701 multiple statements on one line (colon)
+scrapetui.py:9621:50: E231 missing whitespace after ':'
+scrapetui.py:9621:80: E501 line too long (140 > 79 characters)
+scrapetui.py:9621:109: E231 missing whitespace after ','
+scrapetui.py:9621:123: E231 missing whitespace after ','
+scrapetui.py:9622:42: E701 multiple statements on one line (colon)
+scrapetui.py:9622:42: E231 missing whitespace after ':'
+scrapetui.py:9622:80: E501 line too long (155 > 79 characters)
+scrapetui.py:9622:82: E231 missing whitespace after ','
+scrapetui.py:9622:97: E702 multiple statements on one line (semicolon)
+scrapetui.py:9622:97: E231 missing whitespace after ';'
+scrapetui.py:9622:138: E231 missing whitespace after ','
+scrapetui.py:9624:20: E225 missing whitespace around operator
+scrapetui.py:9627:80: E501 line too long (104 > 79 characters)
+scrapetui.py:9629:13: E306 expected 1 blank line before a nested definition, found 0
+scrapetui.py:9635:38: E114 indentation is not a multiple of 4 (comment)
+scrapetui.py:9635:38: E117 over-indented (comment)
+scrapetui.py:9635:80: E501 line too long (82 > 79 characters)
+scrapetui.py:9636:38: E111 indentation is not a multiple of 4
+scrapetui.py:9636:38: E117 over-indented
+scrapetui.py:9636:80: E501 line too long (285 > 79 characters)
+scrapetui.py:9636:282: E231 missing whitespace after ','
+scrapetui.py:9638:38: E114 indentation is not a multiple of 4 (comment)
+scrapetui.py:9638:38: E117 over-indented (comment)
+scrapetui.py:9638:80: E501 line too long (81 > 79 characters)
+scrapetui.py:9639:38: E111 indentation is not a multiple of 4
+scrapetui.py:9639:38: E117 over-indented
+scrapetui.py:9640:38: E111 indentation is not a multiple of 4
+scrapetui.py:9640:80: E501 line too long (286 > 79 characters)
+scrapetui.py:9640:283: E231 missing whitespace after ','
+scrapetui.py:9643:69: E231 missing whitespace after ','
+scrapetui.py:9643:80: E501 line too long (101 > 79 characters)
+scrapetui.py:9643:85: E231 missing whitespace after ','
+scrapetui.py:9644:50: E701 multiple statements on one line (colon)
+scrapetui.py:9644:50: E231 missing whitespace after ':'
+scrapetui.py:9644:80: E501 line too long (134 > 79 characters)
+scrapetui.py:9644:103: E231 missing whitespace after ','
+scrapetui.py:9644:117: E231 missing whitespace after ','
+scrapetui.py:9645:42: E701 multiple statements on one line (colon)
+scrapetui.py:9645:42: E231 missing whitespace after ':'
+scrapetui.py:9645:80: E501 line too long (155 > 79 characters)
+scrapetui.py:9645:82: E231 missing whitespace after ','
+scrapetui.py:9645:97: E702 multiple statements on one line (semicolon)
+scrapetui.py:9645:97: E231 missing whitespace after ';'
+scrapetui.py:9645:138: E231 missing whitespace after ','
+scrapetui.py:9646:80: E501 line too long (96 > 79 characters)
+scrapetui.py:9647:20: E225 missing whitespace around operator
+scrapetui.py:9648:23: E225 missing whitespace around operator
+scrapetui.py:9652:80: E501 line too long (147 > 79 characters)
+scrapetui.py:9652:122: E231 missing whitespace after ','
+scrapetui.py:9654:32: E701 multiple statements on one line (colon)
+scrapetui.py:9654:32: E231 missing whitespace after ':'
+scrapetui.py:9654:65: E231 missing whitespace after ','
+scrapetui.py:9654:80: E501 line too long (89 > 79 characters)
+scrapetui.py:9654:83: E702 multiple statements on one line (semicolon)
+scrapetui.py:9654:83: E231 missing whitespace after ';'
+scrapetui.py:9655:47: E701 multiple statements on one line (colon)
+scrapetui.py:9655:80: E501 line too long (169 > 79 characters)
+scrapetui.py:9655:162: E702 multiple statements on one line (semicolon)
+scrapetui.py:9656:80: E501 line too long (83 > 79 characters)
+scrapetui.py:9658:80: E501 line too long (110 > 79 characters)
+scrapetui.py:9660:17: E306 expected 1 blank line before a nested definition, found 0
+scrapetui.py:9663:70: E701 multiple statements on one line (colon)
+scrapetui.py:9663:70: E231 missing whitespace after ':'
+scrapetui.py:9663:80: E501 line too long (169 > 79 characters)
+scrapetui.py:9663:132: E231 missing whitespace after ','
+scrapetui.py:9663:147: E702 multiple statements on one line (semicolon)
+scrapetui.py:9663:147: E231 missing whitespace after ';'
+scrapetui.py:9665:77: E231 missing whitespace after ','
+scrapetui.py:9665:80: E501 line too long (109 > 79 characters)
+scrapetui.py:9665:93: E231 missing whitespace after ','
+scrapetui.py:9666:80: E501 line too long (129 > 79 characters)
+scrapetui.py:9667:34: E701 multiple statements on one line (colon)
+scrapetui.py:9667:34: E231 missing whitespace after ':'
+scrapetui.py:9667:76: E231 missing whitespace after ','
+scrapetui.py:9667:80: E501 line too long (151 > 79 characters)
+scrapetui.py:9667:91: E702 multiple statements on one line (semicolon)
+scrapetui.py:9667:91: E231 missing whitespace after ';'
+scrapetui.py:9667:134: E231 missing whitespace after ','
+scrapetui.py:9668:20: E225 missing whitespace around operator
+scrapetui.py:9668:41: W291 trailing whitespace
+scrapetui.py:9674:80: E501 line too long (110 > 79 characters)
+scrapetui.py:9675:80: E501 line too long (141 > 79 characters)
+scrapetui.py:9677:80: E501 line too long (167 > 79 characters)
+scrapetui.py:9678:80: E501 line too long (91 > 79 characters)
+scrapetui.py:9680:80: E501 line too long (102 > 79 characters)
+scrapetui.py:9681:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9682:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9684:42: W291 trailing whitespace
+scrapetui.py:9688:80: E501 line too long (88 > 79 characters)
+scrapetui.py:9689:80: E501 line too long (140 > 79 characters)
+scrapetui.py:9690:80: E501 line too long (129 > 79 characters)
+scrapetui.py:9691:80: E501 line too long (123 > 79 characters)
+scrapetui.py:9692:23: W291 trailing whitespace
+scrapetui.py:9698:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9699:80: E501 line too long (139 > 79 characters)
+scrapetui.py:9700:80: E501 line too long (113 > 79 characters)
+scrapetui.py:9701:80: E501 line too long (136 > 79 characters)
+scrapetui.py:9704:80: E501 line too long (94 > 79 characters)
+scrapetui.py:9711:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9712:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9713:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9714:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9715:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9716:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9717:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9718:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9719:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9720:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9721:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9722:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9723:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9724:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9725:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9726:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9727:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9728:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9729:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9730:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9731:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9732:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9733:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9734:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9735:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9736:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9737:80: E501 line too long (80 > 79 characters)
+scrapetui.py:9782:80: E501 line too long (98 > 79 characters)
+scrapetui.py:9784:80: E501 line too long (97 > 79 characters)
+scrapetui.py:9785:80: E501 line too long (123 > 79 characters)
+scrapetui.py:9790:80: E501 line too long (118 > 79 characters)
+scrapetui.py:9791:80: E501 line too long (84 > 79 characters)
+scrapetui.py:9792:80: E501 line too long (94 > 79 characters)
+scrapetui.py:9793:80: E501 line too long (92 > 79 characters)
+scrapetui.py:9795:80: E501 line too long (81 > 79 characters)
+scrapetui.py:9798:80: E501 line too long (106 > 79 characters)
+scrapetui.py:9799:80: E501 line too long (149 > 79 characters)
+scrapetui.py:9800:80: E501 line too long (94 > 79 characters)
+scrapetui/__init__.py:9:80: E501 line too long (82 > 79 characters)
+scrapetui/__init__.py:24:80: E501 line too long (81 > 79 characters)
+scrapetui/__init__.py:27:80: E501 line too long (81 > 79 characters)
+scrapetui/__init__.py:30:80: E501 line too long (91 > 79 characters)
+scrapetui/__init__.py:31:1: F401 '.core.database.check_database_exists' imported but unused
+scrapetui/__init__.py:50:1: F401 '.ai.content_similarity.SentenceTransformer' imported but unused
+scrapetui/__init__.py:50:80: E501 line too long (80 > 79 characters)
+scrapetui/__init__.py:72:80: E501 line too long (84 > 79 characters)
+scrapetui/__init__.py:73:1: E302 expected 2 blank lines, found 1
+scrapetui/__init__.py:74:1: E305 expected 2 blank lines after class or function definition, found 0
+scrapetui/__init__.py:100:80: E501 line too long (83 > 79 characters)
+scrapetui/ai/content_similarity.py:8:1: F401 'typing.Optional' imported but unused
+scrapetui/ai/content_similarity.py:41:80: E501 line too long (81 > 79 characters)
+scrapetui/ai/content_similarity.py:80:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/content_similarity.py:85:80: E501 line too long (89 > 79 characters)
+scrapetui/ai/content_similarity.py:133:80: E501 line too long (84 > 79 characters)
+scrapetui/ai/content_similarity.py:146:80: E501 line too long (87 > 79 characters)
+scrapetui/ai/content_similarity.py:166:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/content_similarity.py:169:80: E501 line too long (101 > 79 characters)
+scrapetui/ai/content_similarity.py:177:80: E501 line too long (88 > 79 characters)
+scrapetui/ai/content_similarity.py:196:80: E501 line too long (101 > 79 characters)
+scrapetui/ai/entity_relationships.py:8:1: F401 'typing.Tuple' imported but unused
+scrapetui/ai/entity_relationships.py:8:1: F401 'typing.Optional' imported but unused
+scrapetui/ai/entity_relationships.py:10:1: F401 'json' imported but unused
+scrapetui/ai/entity_relationships.py:36:80: E501 line too long (88 > 79 characters)
+scrapetui/ai/entity_relationships.py:42:80: E501 line too long (126 > 79 characters)
+scrapetui/ai/entity_relationships.py:47:80: E501 line too long (87 > 79 characters)
+scrapetui/ai/entity_relationships.py:55:80: E501 line too long (94 > 79 characters)
+scrapetui/ai/entity_relationships.py:108:80: E501 line too long (96 > 79 characters)
+scrapetui/ai/entity_relationships.py:109:80: E501 line too long (89 > 79 characters)
+scrapetui/ai/entity_relationships.py:116:80: E501 line too long (89 > 79 characters)
+scrapetui/ai/entity_relationships.py:117:5: E129 visually indented line with same indent as next logical line
+scrapetui/ai/entity_relationships.py:117:80: E501 line too long (86 > 79 characters)
+scrapetui/ai/entity_relationships.py:144:80: E501 line too long (106 > 79 characters)
+scrapetui/ai/entity_relationships.py:152:80: E501 line too long (89 > 79 characters)
+scrapetui/ai/entity_relationships.py:154:13: E306 expected 1 blank line before a nested definition, found 0
+scrapetui/ai/entity_relationships.py:191:80: E501 line too long (100 > 79 characters)
+scrapetui/ai/entity_relationships.py:202:80: E501 line too long (81 > 79 characters)
+scrapetui/ai/entity_relationships.py:261:80: E501 line too long (90 > 79 characters)
+scrapetui/ai/entity_relationships.py:272:80: E501 line too long (90 > 79 characters)
+scrapetui/ai/entity_relationships.py:289:80: E501 line too long (86 > 79 characters)
+scrapetui/ai/entity_relationships.py:301:80: E501 line too long (93 > 79 characters)
+scrapetui/ai/entity_relationships.py:303:80: E501 line too long (83 > 79 characters)
+scrapetui/ai/entity_relationships.py:317:80: E501 line too long (94 > 79 characters)
+scrapetui/ai/processors.py:5:1: F401 'numpy as np' imported but unused
+scrapetui/ai/processors.py:41:80: E501 line too long (86 > 79 characters)
+scrapetui/ai/processors.py:48:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/processors.py:96:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/processors.py:128:80: E501 line too long (81 > 79 characters)
+scrapetui/ai/processors.py:131:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/processors.py:188:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/question_answering.py:13:1: F401 'numpy as np' imported but unused
+scrapetui/ai/question_answering.py:40:80: E501 line too long (81 > 79 characters)
+scrapetui/ai/question_answering.py:46:80: E501 line too long (85 > 79 characters)
+scrapetui/ai/question_answering.py:48:80: E501 line too long (87 > 79 characters)
+scrapetui/ai/question_answering.py:74:80: E501 line too long (95 > 79 characters)
+scrapetui/ai/question_answering.py:99:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/question_answering.py:116:80: E501 line too long (95 > 79 characters)
+scrapetui/ai/question_answering.py:125:80: E501 line too long (89 > 79 characters)
+scrapetui/ai/question_answering.py:147:13: F841 local variable 'top_article' is assigned to but never used
+scrapetui/ai/question_answering.py:154:80: E501 line too long (88 > 79 characters)
+scrapetui/ai/question_answering.py:161:80: E501 line too long (116 > 79 characters)
+scrapetui/ai/question_answering.py:175:80: E501 line too long (82 > 79 characters)
+scrapetui/ai/question_answering.py:186:80: E501 line too long (90 > 79 characters)
+scrapetui/ai/question_answering.py:191:80: E501 line too long (90 > 79 characters)
+scrapetui/ai/question_answering.py:221:80: E501 line too long (110 > 79 characters)
+scrapetui/ai/question_answering.py:245:80: E501 line too long (110 > 79 characters)
+scrapetui/ai/question_answering.py:250:80: E501 line too long (92 > 79 characters)
+scrapetui/ai/question_answering.py:379:80: E501 line too long (97 > 79 characters)
+scrapetui/ai/question_answering.py:408:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/question_answering.py:441:80: E501 line too long (84 > 79 characters)
+scrapetui/ai/summary_quality.py:11:1: F401 'json' imported but unused
+scrapetui/ai/summary_quality.py:25:80: E501 line too long (92 > 79 characters)
+scrapetui/ai/summary_quality.py:62:80: E501 line too long (84 > 79 characters)
+scrapetui/ai/summary_quality.py:69:80: E501 line too long (112 > 79 characters)
+scrapetui/ai/summary_quality.py:91:80: E501 line too long (97 > 79 characters)
+scrapetui/ai/summary_quality.py:97:80: E501 line too long (112 > 79 characters)
+scrapetui/ai/summary_quality.py:106:80: E501 line too long (88 > 79 characters)
+scrapetui/ai/summary_quality.py:113:80: E501 line too long (112 > 79 characters)
+scrapetui/ai/summary_quality.py:171:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/summary_quality.py:201:50: E741 ambiguous variable name 'l'
+scrapetui/ai/summary_quality.py:203:80: E501 line too long (81 > 79 characters)
+scrapetui/ai/summary_quality.py:205:80: E501 line too long (83 > 79 characters)
+scrapetui/ai/summary_quality.py:216:80: E501 line too long (81 > 79 characters)
+scrapetui/ai/summary_quality.py:225:80: E501 line too long (87 > 79 characters)
+scrapetui/ai/summary_quality.py:255:80: E501 line too long (99 > 79 characters)
+scrapetui/ai/summary_quality.py:266:80: E501 line too long (87 > 79 characters)
+scrapetui/ai/summary_quality.py:269:80: E501 line too long (99 > 79 characters)
+scrapetui/ai/summary_quality.py:271:80: E501 line too long (111 > 79 characters)
+scrapetui/ai/summary_quality.py:275:80: E501 line too long (92 > 79 characters)
+scrapetui/ai/summary_quality.py:278:80: E501 line too long (86 > 79 characters)
+scrapetui/ai/summary_quality.py:316:80: E501 line too long (90 > 79 characters)
+scrapetui/ai/summary_quality.py:358:80: E501 line too long (90 > 79 characters)
+scrapetui/ai/summary_quality.py:374:80: E501 line too long (95 > 79 characters)
+scrapetui/ai/summary_quality.py:376:80: E501 line too long (105 > 79 characters)
+scrapetui/ai/summary_quality.py:390:80: E501 line too long (84 > 79 characters)
+scrapetui/ai/summary_quality.py:435:80: E501 line too long (89 > 79 characters)
+scrapetui/ai/topic_modeling.py:4:1: F401 'typing.Optional' imported but unused
+scrapetui/ai/topic_modeling.py:121:80: E501 line too long (88 > 79 characters)
+scrapetui/ai/topic_modeling.py:250:80: E501 line too long (88 > 79 characters)
+scrapetui/ai/topic_modeling.py:368:80: E501 line too long (80 > 79 characters)
+scrapetui/ai/topic_modeling.py:373:80: E501 line too long (104 > 79 characters)
+scrapetui/ai/topic_modeling.py:378:80: E501 line too long (83 > 79 characters)
+scrapetui/api/app.py:13:80: E501 line too long (94 > 79 characters)
+scrapetui/api/app.py:57:80: E501 line too long (98 > 79 characters)
+scrapetui/api/app.py:58:80: E501 line too long (104 > 79 characters)
+scrapetui/api/app.py:76:80: E501 line too long (84 > 79 characters)
+scrapetui/api/app.py:94:80: E501 line too long (81 > 79 characters)
+scrapetui/api/app.py:95:80: E501 line too long (81 > 79 characters)
+scrapetui/api/app.py:101:80: E501 line too long (110 > 79 characters)
+scrapetui/api/app.py:102:80: E501 line too long (112 > 79 characters)
+scrapetui/api/app.py:103:80: E501 line too long (112 > 79 characters)
+scrapetui/api/app.py:104:80: E501 line too long (103 > 79 characters)
+scrapetui/api/app.py:105:80: E501 line too long (100 > 79 characters)
+scrapetui/api/app.py:106:80: E501 line too long (94 > 79 characters)
+scrapetui/api/app.py:117:80: E501 line too long (104 > 79 characters)
+scrapetui/api/app.py:120:80: E501 line too long (81 > 79 characters)
+scrapetui/api/auth.py:5:1: F401 'fastapi.HTTPException' imported but unused
+scrapetui/api/auth.py:5:1: F401 'fastapi.status' imported but unused
+scrapetui/api/auth.py:8:1: F401 '..core.auth.db_datetime_now' imported but unused
+scrapetui/api/auth.py:8:1: F401 '..core.auth.db_datetime_future' imported but unused
+scrapetui/api/auth.py:12:1: F401 '.dependencies.blacklist_token' imported but unused
+scrapetui/api/auth.py:12:1: F401 '.dependencies.ACCESS_TOKEN_EXPIRE_MINUTES' imported but unused
+scrapetui/api/auth.py:22:1: F401 '.exceptions.BadRequestException' imported but unused
+scrapetui/api/auth.py:56:80: E501 line too long (86 > 79 characters)
+scrapetui/api/auth.py:124:5: E722 do not use bare 'except'
+scrapetui/api/auth.py:159:80: E501 line too long (92 > 79 characters)
+scrapetui/api/auth.py:170:80: E501 line too long (80 > 79 characters)
+scrapetui/api/auth.py:186:80: E501 line too long (88 > 79 characters)
+scrapetui/api/auth.py:190:80: E501 line too long (86 > 79 characters)
+scrapetui/api/auth.py:215:80: E501 line too long (80 > 79 characters)
+scrapetui/api/dependencies.py:6:1: F401 'fastapi.HTTPException' imported but unused
+scrapetui/api/dependencies.py:6:1: F401 'fastapi.status' imported but unused
+scrapetui/api/dependencies.py:30:80: E501 line too long (86 > 79 characters)
+scrapetui/api/dependencies.py:46:80: E501 line too long (92 > 79 characters)
+scrapetui/api/dependencies.py:50:80: E501 line too long (83 > 79 characters)
+scrapetui/api/dependencies.py:65:80: E501 line too long (83 > 79 characters)
+scrapetui/api/dependencies.py:68:80: E501 line too long (83 > 79 characters)
+scrapetui/api/dependencies.py:86:80: E501 line too long (82 > 79 characters)
+scrapetui/api/dependencies.py:125:80: E501 line too long (94 > 79 characters)
+scrapetui/api/dependencies.py:134:80: E501 line too long (98 > 79 characters)
+scrapetui/api/dependencies.py:179:80: E501 line too long (80 > 79 characters)
+scrapetui/api/dependencies.py:188:80: E501 line too long (80 > 79 characters)
+scrapetui/api/dependencies.py:230:80: E501 line too long (84 > 79 characters)
+scrapetui/api/dependencies.py:243:5: E722 do not use bare 'except'
+scrapetui/api/exceptions.py:9:80: E501 line too long (94 > 79 characters)
+scrapetui/api/exceptions.py:17:80: E501 line too long (81 > 79 characters)
+scrapetui/api/exceptions.py:38:80: E501 line too long (80 > 79 characters)
+scrapetui/api/exceptions.py:52:80: E501 line too long (86 > 79 characters)
+scrapetui/api/exceptions.py:59:80: E501 line too long (90 > 79 characters)
+scrapetui/api/middleware.py:4:1: F401 'typing.Optional' imported but unused
+scrapetui/api/middleware.py:6:1: F401 'datetime.datetime' imported but unused
+scrapetui/api/middleware.py:6:1: F401 'datetime.timedelta' imported but unused
+scrapetui/api/middleware.py:8:1: F401 'fastapi.Response' imported but unused
+scrapetui/api/middleware.py:14:1: F401 '.exceptions.TooManyRequestsException' imported but unused
+scrapetui/api/middleware.py:38:80: E501 line too long (95 > 79 characters)
+scrapetui/api/middleware.py:55:80: E501 line too long (122 > 79 characters)
+scrapetui/api/middleware.py:70:80: E501 line too long (92 > 79 characters)
+scrapetui/api/models.py:5:1: F401 'pydantic.validator' imported but unused
+scrapetui/api/models.py:189:80: E501 line too long (97 > 79 characters)
+scrapetui/api/routers/ai.py:1:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/ai.py:31:1: F401 '..dependencies.get_current_user' imported but unused
+scrapetui/api/routers/ai.py:39:80: E501 line too long (80 > 79 characters)
+scrapetui/api/routers/ai.py:83:80: E501 line too long (86 > 79 characters)
+scrapetui/api/routers/ai.py:133:80: E501 line too long (87 > 79 characters)
+scrapetui/api/routers/ai.py:141:80: E501 line too long (80 > 79 characters)
+scrapetui/api/routers/ai.py:147:80: E501 line too long (81 > 79 characters)
+scrapetui/api/routers/ai.py:207:80: E501 line too long (85 > 79 characters)
+scrapetui/api/routers/ai.py:210:80: E501 line too long (118 > 79 characters)
+scrapetui/api/routers/ai.py:213:80: E501 line too long (83 > 79 characters)
+scrapetui/api/routers/ai.py:223:80: E501 line too long (89 > 79 characters)
+scrapetui/api/routers/ai.py:235:80: E501 line too long (88 > 79 characters)
+scrapetui/api/routers/ai.py:272:80: E501 line too long (85 > 79 characters)
+scrapetui/api/routers/ai.py:278:80: E501 line too long (89 > 79 characters)
+scrapetui/api/routers/ai.py:287:80: E501 line too long (88 > 79 characters)
+scrapetui/api/routers/ai.py:324:80: E501 line too long (85 > 79 characters)
+scrapetui/api/routers/ai.py:327:80: E501 line too long (84 > 79 characters)
+scrapetui/api/routers/ai.py:330:80: E501 line too long (89 > 79 characters)
+scrapetui/api/routers/ai.py:339:80: E501 line too long (88 > 79 characters)
+scrapetui/api/routers/ai.py:367:80: E501 line too long (80 > 79 characters)
+scrapetui/api/routers/ai.py:380:80: E501 line too long (96 > 79 characters)
+scrapetui/api/routers/ai.py:390:80: E501 line too long (80 > 79 characters)
+scrapetui/api/routers/ai.py:393:80: E501 line too long (97 > 79 characters)
+scrapetui/api/routers/ai.py:394:80: E501 line too long (81 > 79 characters)
+scrapetui/api/routers/ai.py:420:80: E501 line too long (81 > 79 characters)
+scrapetui/api/routers/ai.py:456:13: F841 local variable 'articles' is assigned to but never used
+scrapetui/api/routers/ai.py:469:80: E501 line too long (88 > 79 characters)
+scrapetui/api/routers/ai.py:482:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/ai.py:498:80: E501 line too long (80 > 79 characters)
+scrapetui/api/routers/ai.py:505:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/ai.py:525:80: E501 line too long (96 > 79 characters)
+scrapetui/api/routers/ai.py:546:80: E501 line too long (92 > 79 characters)
+scrapetui/api/routers/ai.py:562:80: E501 line too long (95 > 79 characters)
+scrapetui/api/routers/ai.py:610:80: E501 line too long (97 > 79 characters)
+scrapetui/api/routers/ai.py:619:80: E501 line too long (92 > 79 characters)
+scrapetui/api/routers/ai.py:648:80: E501 line too long (80 > 79 characters)
+scrapetui/api/routers/ai.py:661:80: E501 line too long (92 > 79 characters)
+scrapetui/api/routers/ai.py:675:80: E501 line too long (104 > 79 characters)
+scrapetui/api/routers/articles.py:3:1: F401 'typing.List' imported but unused
+scrapetui/api/routers/articles.py:13:1: F401 '..models.ArticleSearchRequest' imported but unused
+scrapetui/api/routers/articles.py:21:80: E501 line too long (83 > 79 characters)
+scrapetui/api/routers/articles.py:27:80: E501 line too long (88 > 79 characters)
+scrapetui/api/routers/articles.py:97:80: E501 line too long (84 > 79 characters)
+scrapetui/api/routers/articles.py:99:80: E501 line too long (90 > 79 characters)
+scrapetui/api/routers/articles.py:134:80: E501 line too long (85 > 79 characters)
+scrapetui/api/routers/articles.py:199:80: E501 line too long (84 > 79 characters)
+scrapetui/api/routers/articles.py:234:80: E501 line too long (83 > 79 characters)
+scrapetui/api/routers/articles.py:269:80: E501 line too long (96 > 79 characters)
+scrapetui/api/routers/articles.py:282:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/articles.py:348:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/articles.py:355:80: E501 line too long (92 > 79 characters)
+scrapetui/api/routers/articles.py:375:80: E501 line too long (96 > 79 characters)
+scrapetui/api/routers/articles.py:388:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/articles.py:431:80: E501 line too long (80 > 79 characters)
+scrapetui/api/routers/articles.py:434:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/scrapers.py:22:80: E501 line too long (83 > 79 characters)
+scrapetui/api/routers/scrapers.py:30:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/scrapers.py:49:80: E501 line too long (80 > 79 characters)
+scrapetui/api/routers/scrapers.py:89:80: E501 line too long (81 > 79 characters)
+scrapetui/api/routers/scrapers.py:125:80: E501 line too long (90 > 79 characters)
+scrapetui/api/routers/scrapers.py:170:80: E501 line too long (83 > 79 characters)
+scrapetui/api/routers/scrapers.py:179:80: E501 line too long (92 > 79 characters)
+scrapetui/api/routers/scrapers.py:183:80: E501 line too long (83 > 79 characters)
+scrapetui/api/routers/scrapers.py:214:80: E501 line too long (84 > 79 characters)
+scrapetui/api/routers/scrapers.py:225:80: E501 line too long (90 > 79 characters)
+scrapetui/api/routers/scrapers.py:267:80: E501 line too long (83 > 79 characters)
+scrapetui/api/routers/scrapers.py:276:80: E501 line too long (94 > 79 characters)
+scrapetui/api/routers/scrapers.py:280:80: E501 line too long (85 > 79 characters)
+scrapetui/api/routers/scrapers.py:283:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/scrapers.py:286:80: E501 line too long (90 > 79 characters)
+scrapetui/api/routers/scrapers.py:360:80: E501 line too long (96 > 79 characters)
+scrapetui/api/routers/scrapers.py:380:80: E501 line too long (94 > 79 characters)
+scrapetui/api/routers/tags.py:12:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/users.py:21:80: E501 line too long (82 > 79 characters)
+scrapetui/api/routers/users.py:146:80: E501 line too long (84 > 79 characters)
+scrapetui/api/routers/users.py:350:80: E501 line too long (83 > 79 characters)
+scrapetui/api/routers/users.py:467:9: F401 '..dependencies.get_session_token_from_request' imported but unused
+scrapetui/api/routers/users.py:468:9: F401 'fastapi.Request' imported but unused
+scrapetui/api/routers/users.py:469:9: F401 'starlette.requests.Request as StarletteRequest' imported but unused
+scrapetui/api/routers/users.py:472:80: E501 line too long (86 > 79 characters)
+scrapetui/api/routers/users.py:490:80: E501 line too long (80 > 79 characters)
+scrapetui/api/routers/users.py:493:80: E501 line too long (93 > 79 characters)
+scrapetui/api/routers/users.py:531:80: E501 line too long (87 > 79 characters)
+scrapetui/api/routers/users.py:534:80: E501 line too long (81 > 79 characters)
+scrapetui/api/routers/users.py:537:80: E501 line too long (82 > 79 characters)
+scrapetui/cli/__init__.py:5:1: F401 'typing.Optional' imported but unused
+scrapetui/cli/__init__.py:27:80: E501 line too long (80 > 79 characters)
+scrapetui/cli/__init__.py:43:80: E501 line too long (81 > 79 characters)
+scrapetui/cli/__init__.py:64:1: E305 expected 2 blank lines after class or function definition, found 1
+scrapetui/cli/commands/ai.py:25:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/ai.py:26:80: E501 line too long (96 > 79 characters)
+scrapetui/cli/commands/ai.py:28:80: E501 line too long (94 > 79 characters)
+scrapetui/cli/commands/ai.py:56:80: E501 line too long (91 > 79 characters)
+scrapetui/cli/commands/ai.py:74:80: E501 line too long (84 > 79 characters)
+scrapetui/cli/commands/ai.py:75:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/ai.py:76:80: E501 line too long (95 > 79 characters)
+scrapetui/cli/commands/ai.py:126:80: E501 line too long (84 > 79 characters)
+scrapetui/cli/commands/ai.py:127:80: E501 line too long (95 > 79 characters)
+scrapetui/cli/commands/ai.py:185:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/ai.py:201:80: E501 line too long (81 > 79 characters)
+scrapetui/cli/commands/ai.py:210:80: E501 line too long (116 > 79 characters)
+scrapetui/cli/commands/ai.py:227:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/ai.py:240:80: E501 line too long (82 > 79 characters)
+scrapetui/cli/commands/ai.py:241:80: E501 line too long (96 > 79 characters)
+scrapetui/cli/commands/ai.py:248:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/ai.py:268:80: E501 line too long (94 > 79 characters)
+scrapetui/cli/commands/ai.py:279:80: E501 line too long (89 > 79 characters)
+scrapetui/cli/commands/ai.py:291:80: E501 line too long (102 > 79 characters)
+scrapetui/cli/commands/ai.py:292:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/ai.py:329:80: E501 line too long (105 > 79 characters)
+scrapetui/cli/commands/articles.py:21:80: E501 line too long (81 > 79 characters)
+scrapetui/cli/commands/articles.py:22:80: E501 line too long (105 > 79 characters)
+scrapetui/cli/commands/articles.py:59:80: E501 line too long (81 > 79 characters)
+scrapetui/cli/commands/articles.py:64:80: E501 line too long (104 > 79 characters)
+scrapetui/cli/commands/articles.py:67:80: E501 line too long (98 > 79 characters)
+scrapetui/cli/commands/articles.py:83:80: E501 line too long (84 > 79 characters)
+scrapetui/cli/commands/articles.py:110:20: F541 f-string is missing placeholders
+scrapetui/cli/commands/articles.py:112:20: F541 f-string is missing placeholders
+scrapetui/cli/commands/articles.py:122:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/articles.py:151:80: E501 line too long (80 > 79 characters)
+scrapetui/cli/commands/db.py:7:1: F401 'pathlib.Path' imported but unused
+scrapetui/cli/commands/db.py:32:80: E501 line too long (96 > 79 characters)
+scrapetui/cli/commands/db.py:47:80: E501 line too long (84 > 79 characters)
+scrapetui/cli/commands/db.py:76:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/db.py:124:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/export.py:143:80: E501 line too long (94 > 79 characters)
+scrapetui/cli/commands/export.py:149:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/export.py:151:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/export.py:161:80: E501 line too long (91 > 79 characters)
+scrapetui/cli/commands/export.py:164:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/export.py:184:80: E501 line too long (80 > 79 characters)
+scrapetui/cli/commands/export.py:192:80: E501 line too long (81 > 79 characters)
+scrapetui/cli/commands/export.py:193:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/export.py:194:30: E128 continuation line under-indented for visual indent
+scrapetui/cli/commands/export.py:202:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/export.py:235:80: E501 line too long (95 > 79 characters)
+scrapetui/cli/commands/export.py:241:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/export.py:244:80: E501 line too long (92 > 79 characters)
+scrapetui/cli/commands/export.py:254:80: E501 line too long (81 > 79 characters)
+scrapetui/cli/commands/export.py:277:80: E501 line too long (80 > 79 characters)
+scrapetui/cli/commands/export.py:319:80: E501 line too long (80 > 79 characters)
+scrapetui/cli/commands/export.py:328:80: E501 line too long (96 > 79 characters)
+scrapetui/cli/commands/export.py:334:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/export.py:336:80: E501 line too long (89 > 79 characters)
+scrapetui/cli/commands/export.py:337:80: E501 line too long (85 > 79 characters)
+scrapetui/cli/commands/export.py:339:80: E501 line too long (84 > 79 characters)
+scrapetui/cli/commands/export.py:340:17: E128 continuation line under-indented for visual indent
+scrapetui/cli/commands/export.py:352:80: E501 line too long (82 > 79 characters)
+scrapetui/cli/commands/export.py:355:80: E501 line too long (89 > 79 characters)
+scrapetui/cli/commands/export.py:375:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/export.py:376:80: E501 line too long (91 > 79 characters)
+scrapetui/cli/commands/export.py:397:80: E501 line too long (80 > 79 characters)
+scrapetui/cli/commands/export.py:429:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/export.py:430:80: E501 line too long (85 > 79 characters)
+scrapetui/cli/commands/export.py:442:80: E501 line too long (94 > 79 characters)
+scrapetui/cli/commands/export.py:448:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/export.py:450:80: E501 line too long (89 > 79 characters)
+scrapetui/cli/commands/export.py:451:80: E501 line too long (85 > 79 characters)
+scrapetui/cli/commands/export.py:453:80: E501 line too long (82 > 79 characters)
+scrapetui/cli/commands/export.py:454:15: E128 continuation line under-indented for visual indent
+scrapetui/cli/commands/export.py:466:80: E501 line too long (100 > 79 characters)
+scrapetui/cli/commands/export.py:469:80: E501 line too long (90 > 79 characters)
+scrapetui/cli/commands/export.py:489:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/export.py:490:80: E501 line too long (91 > 79 characters)
+scrapetui/cli/commands/export.py:511:80: E501 line too long (80 > 79 characters)
+scrapetui/cli/commands/export.py:543:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/export.py:544:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/scrape.py:5:1: F401 'typing.Optional' imported but unused
+scrapetui/cli/commands/scrape.py:26:80: E501 line too long (84 > 79 characters)
+scrapetui/cli/commands/scrape.py:27:80: E501 line too long (91 > 79 characters)
+scrapetui/cli/commands/scrape.py:29:80: E501 line too long (98 > 79 characters)
+scrapetui/cli/commands/scrape.py:30:80: E501 line too long (95 > 79 characters)
+scrapetui/cli/commands/scrape.py:37:80: E501 line too long (104 > 79 characters)
+scrapetui/cli/commands/scrape.py:56:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/scrape.py:92:80: E501 line too long (103 > 79 characters)
+scrapetui/cli/commands/scrape.py:93:80: E501 line too long (85 > 79 characters)
+scrapetui/cli/commands/scrape.py:106:80: E501 line too long (80 > 79 characters)
+scrapetui/cli/commands/scrape.py:123:80: E501 line too long (108 > 79 characters)
+scrapetui/cli/commands/scrape.py:148:28: F541 f-string is missing placeholders
+scrapetui/cli/commands/scrape.py:149:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/scrape.py:154:80: E501 line too long (91 > 79 characters)
+scrapetui/cli/commands/scrape.py:169:80: E501 line too long (98 > 79 characters)
+scrapetui/cli/commands/scrape.py:170:80: E501 line too long (95 > 79 characters)
+scrapetui/cli/commands/scrape.py:177:80: E501 line too long (80 > 79 characters)
+scrapetui/cli/commands/scrape.py:185:80: E501 line too long (107 > 79 characters)
+scrapetui/cli/commands/scrape.py:191:28: F541 f-string is missing placeholders
+scrapetui/cli/commands/scrape.py:192:80: E501 line too long (99 > 79 characters)
+scrapetui/cli/commands/scrape.py:201:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/scrape.py:215:80: E501 line too long (86 > 79 characters)
+scrapetui/cli/commands/scrape.py:251:80: E501 line too long (103 > 79 characters)
+scrapetui/cli/commands/scrape.py:252:80: E501 line too long (85 > 79 characters)
+scrapetui/cli/commands/scrape.py:265:80: E501 line too long (88 > 79 characters)
+scrapetui/cli/commands/scrape.py:267:80: E501 line too long (99 > 79 characters)
+scrapetui/cli/commands/scrape.py:268:80: E501 line too long (89 > 79 characters)
+scrapetui/cli/commands/scrape.py:274:80: E501 line too long (108 > 79 characters)
+scrapetui/cli/commands/scrape.py:300:28: F541 f-string is missing placeholders
+scrapetui/cli/commands/scrape.py:301:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/scrape.py:306:80: E501 line too long (100 > 79 characters)
+scrapetui/cli/commands/scrape.py:319:80: E501 line too long (88 > 79 characters)
+scrapetui/cli/commands/scrape.py:320:80: E501 line too long (82 > 79 characters)
+scrapetui/cli/commands/scrape.py:321:80: E501 line too long (98 > 79 characters)
+scrapetui/cli/commands/scrape.py:327:80: E501 line too long (90 > 79 characters)
+scrapetui/cli/commands/scrape.py:344:80: E501 line too long (115 > 79 characters)
+scrapetui/cli/commands/scrape.py:349:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/scrape.py:355:80: E501 line too long (81 > 79 characters)
+scrapetui/cli/commands/scrape.py:359:80: E501 line too long (85 > 79 characters)
+scrapetui/cli/commands/scrape.py:394:80: E501 line too long (111 > 79 characters)
+scrapetui/cli/commands/scrape.py:395:80: E501 line too long (93 > 79 characters)
+scrapetui/cli/commands/scrape.py:406:80: E501 line too long (96 > 79 characters)
+scrapetui/cli/commands/scrape.py:408:80: E501 line too long (107 > 79 characters)
+scrapetui/cli/commands/scrape.py:409:80: E501 line too long (97 > 79 characters)
+scrapetui/cli/commands/scrape.py:415:80: E501 line too long (116 > 79 characters)
+scrapetui/cli/commands/scrape.py:432:80: E501 line too long (92 > 79 characters)
+scrapetui/cli/commands/scrape.py:439:80: E501 line too long (90 > 79 characters)
+scrapetui/cli/commands/scrape.py:443:20: F541 f-string is missing placeholders
+scrapetui/cli/commands/scrape.py:446:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/scrape.py:448:80: E501 line too long (128 > 79 characters)
+scrapetui/cli/commands/user.py:23:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/user.py:31:80: E501 line too long (94 > 79 characters)
+scrapetui/cli/commands/user.py:64:80: E501 line too long (95 > 79 characters)
+scrapetui/cli/commands/user.py:71:80: E501 line too long (93 > 79 characters)
+scrapetui/cli/commands/user.py:80:80: E501 line too long (97 > 79 characters)
+scrapetui/cli/commands/user.py:94:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/user.py:105:80: E501 line too long (110 > 79 characters)
+scrapetui/cli/commands/user.py:110:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/user.py:114:80: E501 line too long (118 > 79 characters)
+scrapetui/cli/commands/user.py:120:80: E501 line too long (87 > 79 characters)
+scrapetui/cli/commands/user.py:121:80: E501 line too long (83 > 79 characters)
+scrapetui/cli/commands/user.py:130:80: E501 line too long (81 > 79 characters)
+scrapetui/config.py:103:80: E501 line too long (111 > 79 characters)
+scrapetui/config.py:120:80: E501 line too long (90 > 79 characters)
+scrapetui/config.py:122:80: E501 line too long (86 > 79 characters)
+scrapetui/config.py:124:80: E501 line too long (84 > 79 characters)
+scrapetui/config.py:138:80: E501 line too long (80 > 79 characters)
+scrapetui/core/auth.py:10:1: F401 '..utils.errors.AuthenticationError' imported but unused
+scrapetui/core/auth.py:10:1: F401 '..utils.errors.DatabaseError' imported but unused
+scrapetui/core/auth.py:16:1: E302 expected 2 blank lines, found 1
+scrapetui/core/auth.py:105:80: E501 line too long (86 > 79 characters)
+scrapetui/core/auth.py:110:80: E501 line too long (98 > 79 characters)
+scrapetui/core/auth.py:136:80: E501 line too long (91 > 79 characters)
+scrapetui/core/auth.py:142:80: E501 line too long (81 > 79 characters)
+scrapetui/core/auth.py:196:80: E501 line too long (93 > 79 characters)
+scrapetui/core/auth.py:203:80: E501 line too long (80 > 79 characters)
+scrapetui/core/auth.py:227:80: E501 line too long (101 > 79 characters)
+scrapetui/core/auth.py:259:80: E501 line too long (88 > 79 characters)
+scrapetui/core/auth.py:270:80: E501 line too long (88 > 79 characters)
+scrapetui/core/auth.py:271:80: E501 line too long (92 > 79 characters)
+scrapetui/core/auth.py:274:80: E501 line too long (88 > 79 characters)
+scrapetui/core/cache.py:141:80: E501 line too long (82 > 79 characters)
+scrapetui/core/cache.py:175:80: E501 line too long (89 > 79 characters)
+scrapetui/core/cache.py:255:80: E501 line too long (86 > 79 characters)
+scrapetui/core/database.py:34:80: E501 line too long (81 > 79 characters)
+scrapetui/core/database.py:69:80: E501 line too long (87 > 79 characters)
+scrapetui/core/database_async.py:11:1: F401 'typing.Tuple' imported but unused
+scrapetui/core/database_async.py:129:80: E501 line too long (83 > 79 characters)
+scrapetui/core/database_async.py:165:80: E501 line too long (82 > 79 characters)
+scrapetui/core/database_async.py:175:80: E501 line too long (85 > 79 characters)
+scrapetui/core/database_async.py:194:80: E501 line too long (80 > 79 characters)
+scrapetui/core/database_async.py:211:80: E501 line too long (82 > 79 characters)
+scrapetui/core/database_async.py:234:80: E501 line too long (84 > 79 characters)
+scrapetui/core/database_async.py:255:80: E501 line too long (84 > 79 characters)
+scrapetui/core/database_async.py:362:80: E501 line too long (86 > 79 characters)
+scrapetui/core/database_async.py:364:80: E501 line too long (90 > 79 characters)
+scrapetui/core/database_async.py:383:80: E501 line too long (80 > 79 characters)
+scrapetui/core/database_async.py:433:80: E501 line too long (87 > 79 characters)
+scrapetui/core/permissions.py:3:1: F401 'typing.Optional' imported but unused
+scrapetui/database/migrations.py:48:80: E501 line too long (80 > 79 characters)
+scrapetui/database/migrations.py:83:80: E501 line too long (80 > 79 characters)
+scrapetui/database/migrations.py:93:80: E501 line too long (93 > 79 characters)
+scrapetui/database/migrations.py:130:80: E501 line too long (91 > 79 characters)
+scrapetui/database/migrations.py:133:80: E501 line too long (87 > 79 characters)
+scrapetui/database/migrations.py:141:80: E501 line too long (89 > 79 characters)
+scrapetui/database/migrations.py:148:80: E501 line too long (81 > 79 characters)
+scrapetui/database/migrations.py:150:80: E501 line too long (81 > 79 characters)
+scrapetui/database/migrations.py:151:80: E501 line too long (91 > 79 characters)
+scrapetui/database/migrations.py:152:80: E501 line too long (93 > 79 characters)
+scrapetui/database/migrations.py:159:80: E501 line too long (80 > 79 characters)
+scrapetui/database/migrations.py:164:80: E501 line too long (83 > 79 characters)
+scrapetui/database/migrations.py:178:80: E501 line too long (80 > 79 characters)
+scrapetui/database/migrations.py:207:80: E501 line too long (100 > 79 characters)
+scrapetui/database/migrations.py:208:80: E501 line too long (101 > 79 characters)
+scrapetui/database/migrations.py:231:80: E501 line too long (80 > 79 characters)
+scrapetui/database/migrations.py:291:80: E501 line too long (84 > 79 characters)
+scrapetui/database/queries.py:214:80: E501 line too long (91 > 79 characters)
+scrapetui/database/schema.py:20:80: E501 line too long (81 > 79 characters)
+scrapetui/database/schema.py:120:80: E501 line too long (84 > 79 characters)
+scrapetui/database/schema.py:255:80: E501 line too long (81 > 79 characters)
+scrapetui/database/schema.py:258:80: E501 line too long (82 > 79 characters)
+scrapetui/database/schema.py:268:80: E501 line too long (85 > 79 characters)
+scrapetui/database/schema.py:269:80: E501 line too long (81 > 79 characters)
+scrapetui/database/schema.py:272:80: E501 line too long (89 > 79 characters)
+scrapetui/database/schema.py:273:80: E501 line too long (87 > 79 characters)
+scrapetui/database/schema.py:274:80: E501 line too long (97 > 79 characters)
+scrapetui/database/schema.py:275:80: E501 line too long (97 > 79 characters)
+scrapetui/database/schema.py:277:80: E501 line too long (89 > 79 characters)
+scrapetui/database/schema.py:278:80: E501 line too long (89 > 79 characters)
+scrapetui/database/schema.py:279:80: E501 line too long (89 > 79 characters)
+scrapetui/database/schema.py:282:80: E501 line too long (80 > 79 characters)
+scrapetui/database/schema.py:289:80: E501 line too long (83 > 79 characters)
+scrapetui/database/schema.py:293:80: E501 line too long (81 > 79 characters)
+scrapetui/database/schema.py:314:80: E501 line too long (89 > 79 characters)
+scrapetui/database/schema.py:316:80: E501 line too long (93 > 79 characters)
+scrapetui/database/schema.py:320:80: E501 line too long (95 > 79 characters)
+scrapetui/database/schema.py:324:80: E501 line too long (97 > 79 characters)
+scrapetui/database/schema.py:326:80: E501 line too long (91 > 79 characters)
+scrapetui/database/schema.py:330:80: E501 line too long (94 > 79 characters)
+scrapetui/database/schema.py:332:80: E501 line too long (102 > 79 characters)
+scrapetui/database/schema.py:335:80: E501 line too long (91 > 79 characters)
+scrapetui/database/schema.py:338:80: E501 line too long (96 > 79 characters)
+scrapetui/database/schema.py:341:80: E501 line too long (124 > 79 characters)
+scrapetui/database/schema.py:344:80: E501 line too long (141 > 79 characters)
+scrapetui/database/schema.py:347:80: E501 line too long (119 > 79 characters)
+scrapetui/database/schema.py:350:80: E501 line too long (107 > 79 characters)
+scrapetui/database/schema.py:366:80: E501 line too long (81 > 79 characters)
+scrapetui/models/article.py:128:80: E501 line too long (119 > 79 characters)
+scrapetui/models/scraper.py:53:80: E501 line too long (91 > 79 characters)
+scrapetui/models/scraper.py:90:80: E501 line too long (82 > 79 characters)
+scrapetui/models/scraper.py:96:80: E501 line too long (90 > 79 characters)
+scrapetui/models/scraper.py:99:80: E501 line too long (102 > 79 characters)
+scrapetui/models/scraper.py:101:80: E501 line too long (83 > 79 characters)
+scrapetui/models/scraper.py:106:80: E501 line too long (98 > 79 characters)
+scrapetui/models/session.py:91:80: E501 line too long (82 > 79 characters)
+scrapetui/models/session.py:109:80: E501 line too long (82 > 79 characters)
+scrapetui/models/user.py:58:80: E501 line too long (81 > 79 characters)
+scrapetui/models/user.py:102:80: E501 line too long (84 > 79 characters)
+scrapetui/scrapers/base.py:163:80: E501 line too long (83 > 79 characters)
+scrapetui/scrapers/base.py:210:80: E501 line too long (104 > 79 characters)
+scrapetui/scrapers/builtin/generic.py:31:80: E501 line too long (94 > 79 characters)
+scrapetui/scrapers/builtin/generic.py:37:80: E501 line too long (87 > 79 characters)
+scrapetui/scrapers/builtin/generic.py:44:80: E501 line too long (89 > 79 characters)
+scrapetui/scrapers/builtin/news.py:72:80: E501 line too long (90 > 79 characters)
+scrapetui/scrapers/manager.py:6:1: F401 'typing.Type' imported but unused
+scrapetui/scrapers/manager.py:9:1: F401 '.base.ScraperMetadata' imported but unused
+scrapetui/scrapers/manager.py:17:1: E302 expected 2 blank lines, found 1
+scrapetui/scrapers/manager.py:24:1: E302 expected 2 blank lines, found 1
+scrapetui/scrapers/manager.py:63:80: E501 line too long (94 > 79 characters)
+scrapetui/scrapers/manager.py:93:80: E501 line too long (90 > 79 characters)
+scrapetui/scrapers/manager.py:110:17: E129 visually indented line with same indent as next logical line
+scrapetui/scrapers/manager.py:117:80: E501 line too long (96 > 79 characters)
+scrapetui/scrapers/manager.py:120:80: E501 line too long (95 > 79 characters)
+scrapetui/scrapers/manager.py:132:80: E501 line too long (87 > 79 characters)
+scrapetui/scrapers/manager.py:172:80: E501 line too long (83 > 79 characters)
+scrapetui/scrapers/manager.py:191:80: E501 line too long (98 > 79 characters)
+scrapetui/scrapers/manager.py:229:80: E501 line too long (83 > 79 characters)
+scrapetui/scrapers/manager.py:233:80: E501 line too long (102 > 79 characters)
+scrapetui/scrapers/manager.py:235:80: E501 line too long (88 > 79 characters)
+scrapetui/utils/logging.py:6:1: F401 'typing.Optional' imported but unused
+tests/api/conftest.py:14:1: F401 'scrapetui.config.get_config' imported but unused
+tests/api/conftest.py:23:80: E501 line too long (80 > 79 characters)
+tests/api/conftest.py:26:80: E501 line too long (82 > 79 characters)
+tests/api/conftest.py:34:80: E501 line too long (90 > 79 characters)
+tests/api/conftest.py:60:80: E501 line too long (88 > 79 characters)
+tests/api/conftest.py:61:80: E501 line too long (86 > 79 characters)
+tests/api/conftest.py:62:80: E501 line too long (87 > 79 characters)
+tests/api/conftest.py:109:80: E501 line too long (80 > 79 characters)
+tests/api/conftest.py:111:80: E501 line too long (81 > 79 characters)
+tests/api/conftest.py:130:80: E501 line too long (80 > 79 characters)
+tests/api/conftest.py:132:80: E501 line too long (81 > 79 characters)
+tests/api/test_ai.py:3:1: F401 'pytest' imported but unused
+tests/api/test_ai.py:7:80: E501 line too long (93 > 79 characters)
+tests/api/test_ai.py:26:80: E501 line too long (82 > 79 characters)
+tests/api/test_ai.py:41:80: E501 line too long (102 > 79 characters)
+tests/api/test_ai.py:58:80: E501 line too long (93 > 79 characters)
+tests/api/test_ai.py:75:80: E501 line too long (92 > 79 characters)
+tests/api/test_ai.py:89:80: E501 line too long (92 > 79 characters)
+tests/api/test_ai.py:107:80: E501 line too long (91 > 79 characters)
+tests/api/test_ai.py:126:80: E501 line too long (82 > 79 characters)
+tests/api/test_ai.py:139:80: E501 line too long (86 > 79 characters)
+tests/api/test_ai.py:142:80: E501 line too long (105 > 79 characters)
+tests/api/test_articles.py:3:1: F401 'pytest' imported but unused
+tests/api/test_articles.py:7:80: E501 line too long (84 > 79 characters)
+tests/api/test_articles.py:19:80: E501 line too long (95 > 79 characters)
+tests/api/test_articles.py:40:80: E501 line too long (82 > 79 characters)
+tests/api/test_articles.py:83:80: E501 line too long (81 > 79 characters)
+tests/api/test_articles.py:99:80: E501 line too long (85 > 79 characters)
+tests/api/test_articles.py:116:80: E501 line too long (100 > 79 characters)
+tests/api/test_articles.py:127:80: E501 line too long (85 > 79 characters)
+tests/api/test_articles.py:144:80: E501 line too long (100 > 79 characters)
+tests/api/test_auth.py:3:1: F401 'pytest' imported but unused
+tests/api/test_misc.py:3:1: F401 'pytest' imported but unused
+tests/api/test_misc.py:5:1: F401 'time' imported but unused
+tests/api/test_misc.py:91:80: E501 line too long (86 > 79 characters)
+tests/api/test_scrapers.py:3:1: F401 'pytest' imported but unused
+tests/api/test_scrapers.py:167:80: E501 line too long (99 > 79 characters)
+tests/api/test_tags.py:3:1: F401 'pytest' imported but unused
+tests/api/test_users.py:3:1: F401 'pytest' imported but unused
+tests/api/test_users.py:43:80: E501 line too long (80 > 79 characters)
+tests/cli/test_cli_integration.py:5:80: E501 line too long (96 > 79 characters)
+tests/cli/test_cli_integration.py:17:1: F401 'sys' imported but unused
+tests/cli/test_cli_integration.py:84:80: E501 line too long (83 > 79 characters)
+tests/cli/test_cli_integration.py:105:80: E501 line too long (109 > 79 characters)
+tests/cli/test_cli_integration.py:106:80: E501 line too long (83 > 79 characters)
+tests/cli/test_cli_integration.py:112:80: E501 line too long (113 > 79 characters)
+tests/cli/test_cli_integration.py:114:17: F541 f-string is missing placeholders
+tests/cli/test_cli_integration.py:129:80: E501 line too long (106 > 79 characters)
+tests/cli/test_cli_integration.py:168:80: E501 line too long (89 > 79 characters)
+tests/cli/test_cli_integration.py:170:80: E501 line too long (90 > 79 characters)
+tests/cli/test_cli_integration.py:191:80: E501 line too long (103 > 79 characters)
+tests/cli/test_cli_integration.py:201:80: E501 line too long (89 > 79 characters)
+tests/cli/test_cli_integration.py:209:80: E501 line too long (88 > 79 characters)
+tests/cli/test_cli_integration.py:215:80: E501 line too long (101 > 79 characters)
+tests/cli/test_cli_integration.py:230:9: E306 expected 1 blank line before a nested definition, found 0
+tests/cli/test_cli_integration.py:242:80: E501 line too long (82 > 79 characters)
+tests/cli/test_cli_integration.py:245:80: E501 line too long (90 > 79 characters)
+tests/cli/test_cli_integration.py:247:80: E501 line too long (97 > 79 characters)
+tests/cli/test_cli_integration.py:254:80: E501 line too long (87 > 79 characters)
+tests/cli/test_cli_integration.py:276:80: E501 line too long (89 > 79 characters)
+tests/cli/test_cli_integration.py:376:9: F401 'openpyxl' imported but unused
+tests/cli/test_cli_integration.py:401:9: F401 'reportlab' imported but unused
+tests/cli/test_cli_integration.py:431:80: E501 line too long (88 > 79 characters)
+tests/cli/test_cli_integration.py:447:80: E501 line too long (86 > 79 characters)
+tests/cli/test_cli_integration.py:448:80: E501 line too long (108 > 79 characters)
+tests/cli/test_cli_integration.py:460:80: E501 line too long (86 > 79 characters)
+tests/cli/test_cli_integration.py:461:80: E501 line too long (108 > 79 characters)
+tests/cli/test_cli_integration.py:473:80: E501 line too long (96 > 79 characters)
+tests/cli/test_cli_integration.py:485:80: E501 line too long (99 > 79 characters)
+tests/cli/test_cli_integration.py:498:80: E501 line too long (98 > 79 characters)
+tests/cli/test_cli_integration.py:510:80: E501 line too long (96 > 79 characters)
+tests/cli/test_cli_integration.py:564:80: E501 line too long (95 > 79 characters)
+tests/cli/test_cli_integration.py:575:80: E501 line too long (93 > 79 characters)
+tests/cli/test_cli_integration.py:583:80: E501 line too long (116 > 79 characters)
+tests/cli/test_cli_integration.py:588:80: E501 line too long (104 > 79 characters)
+tests/cli/test_cli_integration.py:602:80: E501 line too long (85 > 79 characters)
+tests/conftest.py:9:1: F401 'unittest.mock.patch' imported but unused
+tests/conftest.py:16:1: E402 module level import not at top of file
+tests/conftest.py:24:80: E501 line too long (88 > 79 characters)
+tests/conftest.py:82:80: E501 line too long (81 > 79 characters)
+tests/conftest.py:100:80: E501 line too long (82 > 79 characters)
+tests/conftest.py:128:80: E501 line too long (90 > 79 characters)
+tests/conftest.py:130:80: E501 line too long (80 > 79 characters)
+tests/conftest.py:165:80: E501 line too long (88 > 79 characters)
+tests/conftest.py:166:80: E501 line too long (86 > 79 characters)
+tests/conftest.py:167:80: E501 line too long (87 > 79 characters)
+tests/integration/test_scraper_integration.py:3:1: F401 'pytest' imported but unused
+tests/integration/test_scraper_integration.py:4:1: F401 'tempfile' imported but unused
+tests/integration/test_scraper_integration.py:5:1: F401 'pathlib.Path' imported but unused
+tests/integration/test_scraper_integration.py:8:1: F401 'scrapetui.scrapers.base.HTMLScraper' imported but unused
+tests/integration/test_scraper_integration.py:8:1: F401 'scrapetui.scrapers.base.ScraperMetadata' imported but unused
+tests/integration/test_scraper_integration.py:8:1: F401 'scrapetui.scrapers.base.ScraperResult' imported but unused
+tests/integration/test_scraper_integration.py:8:80: E501 line too long (92 > 79 characters)
+tests/integration/test_scraper_integration.py:91:80: E501 line too long (105 > 79 characters)
+tests/test_advanced_ai.py:15:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/test_advanced_ai.py:22:80: E501 line too long (85 > 79 characters)
+tests/test_advanced_ai.py:31:80: E501 line too long (81 > 79 characters)
+tests/test_advanced_ai.py:45:80: E501 line too long (195 > 79 characters)
+tests/test_advanced_ai.py:47:80: E501 line too long (134 > 79 characters)
+tests/test_advanced_ai.py:56:80: E501 line too long (96 > 79 characters)
+tests/test_advanced_ai.py:65:80: E501 line too long (153 > 79 characters)
+tests/test_advanced_ai.py:86:80: E501 line too long (83 > 79 characters)
+tests/test_advanced_ai.py:106:80: E501 line too long (84 > 79 characters)
+tests/test_advanced_ai.py:130:80: E501 line too long (88 > 79 characters)
+tests/test_advanced_ai.py:153:80: E501 line too long (83 > 79 characters)
+tests/test_advanced_ai.py:162:80: E501 line too long (89 > 79 characters)
+tests/test_advanced_ai.py:165:80: E501 line too long (98 > 79 characters)
+tests/test_advanced_ai.py:209:80: E501 line too long (98 > 79 characters)
+tests/test_advanced_ai.py:211:80: E501 line too long (80 > 79 characters)
+tests/test_advanced_ai.py:227:80: E501 line too long (84 > 79 characters)
+tests/test_advanced_ai.py:236:80: E501 line too long (95 > 79 characters)
+tests/test_advanced_ai.py:241:80: E501 line too long (89 > 79 characters)
+tests/test_advanced_ai.py:242:80: E501 line too long (91 > 79 characters)
+tests/test_advanced_ai.py:243:80: E501 line too long (83 > 79 characters)
+tests/test_advanced_ai.py:246:80: E501 line too long (87 > 79 characters)
+tests/test_advanced_ai.py:311:80: E501 line too long (84 > 79 characters)
+tests/test_advanced_ai.py:323:80: E501 line too long (84 > 79 characters)
+tests/test_advanced_ai.py:325:80: E501 line too long (87 > 79 characters)
+tests/test_advanced_ai.py:327:80: E501 line too long (89 > 79 characters)
+tests/test_advanced_ai.py:341:80: E501 line too long (87 > 79 characters)
+tests/test_advanced_ai.py:346:80: E501 line too long (84 > 79 characters)
+tests/test_advanced_ai.py:353:80: E501 line too long (84 > 79 characters)
+tests/test_advanced_ai.py:355:80: E501 line too long (83 > 79 characters)
+tests/test_advanced_ai.py:393:80: E501 line too long (101 > 79 characters)
+tests/test_advanced_ai.py:397:80: E501 line too long (118 > 79 characters)
+tests/test_advanced_ai.py:406:80: E501 line too long (140 > 79 characters)
+tests/test_advanced_ai.py:410:80: E501 line too long (83 > 79 characters)
+tests/test_advanced_ai.py:413:80: E501 line too long (80 > 79 characters)
+tests/test_advanced_ai.py:418:80: E501 line too long (90 > 79 characters)
+tests/test_advanced_ai.py:425:80: E501 line too long (85 > 79 characters)
+tests/test_advanced_ai.py:430:80: E501 line too long (81 > 79 characters)
+tests/test_advanced_ai.py:439:80: E501 line too long (175 > 79 characters)
+tests/test_advanced_ai.py:453:80: E501 line too long (80 > 79 characters)
+tests/test_advanced_ai.py:460:80: E501 line too long (85 > 79 characters)
+tests/test_advanced_ai.py:463:80: E501 line too long (83 > 79 characters)
+tests/test_advanced_ai.py:480:80: E501 line too long (97 > 79 characters)
+tests/test_advanced_ai.py:485:80: E501 line too long (180 > 79 characters)
+tests/test_advanced_ai.py:494:80: E501 line too long (133 > 79 characters)
+tests/test_advanced_ai.py:497:80: E501 line too long (99 > 79 characters)
+tests/test_advanced_ai.py:509:80: E501 line too long (83 > 79 characters)
+tests/test_advanced_ai.py:515:80: E501 line too long (83 > 79 characters)
+tests/test_advanced_ai.py:516:80: E501 line too long (122 > 79 characters)
+tests/test_advanced_ai.py:518:80: E501 line too long (98 > 79 characters)
+tests/test_advanced_ai.py:519:80: E501 line too long (97 > 79 characters)
+tests/test_advanced_ai.py:523:80: E501 line too long (89 > 79 characters)
+tests/test_advanced_ai.py:526:80: E501 line too long (87 > 79 characters)
+tests/test_ai_providers.py:5:1: F401 'unittest.mock.Mock' imported but unused
+tests/test_ai_providers.py:5:1: F401 'unittest.mock.patch' imported but unused
+tests/test_ai_providers.py:5:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/test_ai_providers.py:12:80: E501 line too long (85 > 79 characters)
+tests/test_ai_providers.py:125:80: E501 line too long (100 > 79 characters)
+tests/test_ai_providers.py:130:24: F541 f-string is missing placeholders
+tests/test_ai_providers.py:130:80: E501 line too long (92 > 79 characters)
+tests/test_analytics.py:6:1: F401 'sqlite3' imported but unused
+tests/test_analytics.py:9:1: F401 'unittest.mock.Mock' imported but unused
+tests/test_analytics.py:9:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/test_analytics.py:10:1: F401 'os' imported but unused
+tests/test_analytics.py:19:80: E501 line too long (91 > 79 characters)
+tests/test_analytics.py:20:1: E402 module level import not at top of file
+tests/test_analytics.py:22:80: E501 line too long (85 > 79 characters)
+tests/test_analytics.py:37:80: E501 line too long (80 > 79 characters)
+tests/test_analytics.py:72:80: E501 line too long (99 > 79 characters)
+tests/test_analytics.py:86:80: E501 line too long (82 > 79 characters)
+tests/test_analytics.py:87:80: E501 line too long (109 > 79 characters)
+tests/test_analytics.py:89:80: E501 line too long (82 > 79 characters)
+tests/test_analytics.py:90:80: E501 line too long (109 > 79 characters)
+tests/test_analytics.py:92:80: E501 line too long (85 > 79 characters)
+tests/test_analytics.py:93:80: E501 line too long (115 > 79 characters)
+tests/test_analytics.py:97:80: E501 line too long (114 > 79 characters)
+tests/test_analytics.py:98:80: E501 line too long (114 > 79 characters)
+tests/test_analytics.py:99:80: E501 line too long (114 > 79 characters)
+tests/test_analytics.py:100:80: E501 line too long (117 > 79 characters)
+tests/test_analytics.py:170:80: E501 line too long (89 > 79 characters)
+tests/test_analytics.py:182:80: E501 line too long (88 > 79 characters)
+tests/test_analytics.py:194:80: E501 line too long (91 > 79 characters)
+tests/test_analytics.py:206:80: E501 line too long (93 > 79 characters)
+tests/test_analytics.py:207:80: E501 line too long (86 > 79 characters)
+tests/test_analytics.py:293:80: E501 line too long (97 > 79 characters)
+tests/test_analytics.py:303:80: E501 line too long (84 > 79 characters)
+tests/test_analytics.py:305:80: E501 line too long (99 > 79 characters)
+tests/test_analytics.py:307:80: E501 line too long (108 > 79 characters)
+tests/test_analytics.py:343:80: E501 line too long (87 > 79 characters)
+tests/test_analytics.py:344:80: E501 line too long (87 > 79 characters)
+tests/test_analytics.py:348:80: E501 line too long (80 > 79 characters)
+tests/test_analytics.py:349:80: E501 line too long (110 > 79 characters)
+tests/test_analytics.py:352:80: E501 line too long (80 > 79 characters)
+tests/test_analytics.py:353:80: E501 line too long (110 > 79 characters)
+tests/test_analytics.py:377:80: E501 line too long (96 > 79 characters)
+tests/test_analytics.py:397:80: E501 line too long (84 > 79 characters)
+tests/test_analytics.py:412:80: E501 line too long (84 > 79 characters)
+tests/test_analytics.py:416:80: E501 line too long (101 > 79 characters)
+tests/test_analytics.py:425:9: F841 local variable 'articles_per_day' is assigned to but never used
+tests/test_analytics.py:426:80: E501 line too long (80 > 79 characters)
+tests/test_analytics.py:437:9: E722 do not use bare 'except'
+tests/test_bulk_operations.py:115:80: E501 line too long (87 > 79 characters)
+tests/test_bulk_operations.py:134:80: E501 line too long (87 > 79 characters)
+tests/test_bulk_operations.py:152:80: E501 line too long (83 > 79 characters)
+tests/test_bulk_operations.py:231:80: E501 line too long (91 > 79 characters)
+tests/test_bulk_operations.py:249:80: E501 line too long (89 > 79 characters)
+tests/test_bulk_operations.py:277:80: E501 line too long (87 > 79 characters)
+tests/test_config_and_presets.py:14:80: E501 line too long (85 > 79 characters)
+tests/test_config_and_presets.py:80:80: E501 line too long (81 > 79 characters)
+tests/test_config_and_presets.py:108:9: F401 'sqlite3' imported but unused
+tests/test_database.py:14:80: E501 line too long (85 > 79 characters)
+tests/test_database.py:121:80: E501 line too long (83 > 79 characters)
+tests/test_database.py:156:80: E501 line too long (81 > 79 characters)
+tests/test_database.py:171:80: E501 line too long (83 > 79 characters)
+tests/test_database.py:276:80: E501 line too long (88 > 79 characters)
+tests/test_database.py:285:80: E501 line too long (84 > 79 characters)
+tests/test_database.py:394:80: E501 line too long (86 > 79 characters)
+tests/test_duplicate_detection.py:15:80: E501 line too long (85 > 79 characters)
+tests/test_duplicate_detection.py:30:80: E501 line too long (114 > 79 characters)
+tests/test_duplicate_detection.py:35:80: E501 line too long (114 > 79 characters)
+tests/test_duplicate_detection.py:40:80: E501 line too long (123 > 79 characters)
+tests/test_duplicate_detection.py:45:80: E501 line too long (121 > 79 characters)
+tests/test_duplicate_detection.py:50:80: E501 line too long (117 > 79 characters)
+tests/test_duplicate_detection.py:62:80: E501 line too long (82 > 79 characters)
+tests/test_duplicate_detection.py:67:80: E501 line too long (83 > 79 characters)
+tests/test_duplicate_detection.py:72:80: E501 line too long (96 > 79 characters)
+tests/test_duplicate_detection.py:117:80: E501 line too long (126 > 79 characters)
+tests/test_duplicate_detection.py:119:80: E501 line too long (90 > 79 characters)
+tests/test_duplicate_detection.py:163:80: E501 line too long (92 > 79 characters)
+tests/test_duplicate_detection.py:338:80: E501 line too long (91 > 79 characters)
+tests/test_enhanced_export.py:16:1: F401 'sys' imported but unused
+tests/test_enhanced_export.py:17:1: F401 'datetime.datetime' imported but unused
+tests/test_enhanced_export.py:25:80: E501 line too long (85 > 79 characters)
+tests/test_enhanced_export.py:73:80: E501 line too long (83 > 79 characters)
+tests/test_enhanced_export.py:81:80: E501 line too long (84 > 79 characters)
+tests/test_enhanced_export.py:83:80: E501 line too long (84 > 79 characters)
+tests/test_enhanced_export.py:85:80: E501 line too long (84 > 79 characters)
+tests/test_enhanced_export.py:87:80: E501 line too long (84 > 79 characters)
+tests/test_enhanced_export.py:89:80: E501 line too long (84 > 79 characters)
+tests/test_enhanced_export.py:94:80: E501 line too long (123 > 79 characters)
+tests/test_enhanced_export.py:100:80: E501 line too long (91 > 79 characters)
+tests/test_enhanced_export.py:106:80: E501 line too long (104 > 79 characters)
+tests/test_enhanced_export.py:489:80: E501 line too long (82 > 79 characters)
+tests/test_entity_relationships.py:9:1: F401 'scrapetui.get_db_connection' imported but unused
+tests/test_entity_relationships.py:19:80: E501 line too long (84 > 79 characters)
+tests/test_entity_relationships.py:20:80: E501 line too long (88 > 79 characters)
+tests/test_entity_relationships.py:21:80: E501 line too long (86 > 79 characters)
+tests/test_entity_relationships.py:34:80: E501 line too long (145 > 79 characters)
+tests/test_entity_relationships.py:39:80: E501 line too long (156 > 79 characters)
+tests/test_entity_relationships.py:44:80: E501 line too long (152 > 79 characters)
+tests/test_entity_relationships.py:55:80: E501 line too long (103 > 79 characters)
+tests/test_entity_relationships.py:63:80: E501 line too long (83 > 79 characters)
+tests/test_entity_relationships.py:65:80: E501 line too long (93 > 79 characters)
+tests/test_entity_relationships.py:71:80: E501 line too long (91 > 79 characters)
+tests/test_entity_relationships.py:73:80: E501 line too long (110 > 79 characters)
+tests/test_entity_relationships.py:86:80: E501 line too long (82 > 79 characters)
+tests/test_entity_relationships.py:97:80: E501 line too long (89 > 79 characters)
+tests/test_entity_relationships.py:99:80: E501 line too long (82 > 79 characters)
+tests/test_entity_relationships.py:107:80: E501 line too long (103 > 79 characters)
+tests/test_entity_relationships.py:122:80: E501 line too long (97 > 79 characters)
+tests/test_entity_relationships.py:125:80: E501 line too long (82 > 79 characters)
+tests/test_entity_relationships.py:135:80: E501 line too long (86 > 79 characters)
+tests/test_entity_relationships.py:138:80: E501 line too long (108 > 79 characters)
+tests/test_entity_relationships.py:148:80: E501 line too long (89 > 79 characters)
+tests/test_entity_relationships.py:154:80: E501 line too long (95 > 79 characters)
+tests/test_entity_relationships.py:176:80: E501 line too long (108 > 79 characters)
+tests/test_entity_relationships.py:185:80: E501 line too long (92 > 79 characters)
+tests/test_entity_relationships.py:188:80: E501 line too long (108 > 79 characters)
+tests/test_entity_relationships.py:196:80: E501 line too long (82 > 79 characters)
+tests/test_entity_relationships.py:202:80: E501 line too long (84 > 79 characters)
+tests/test_entity_relationships.py:207:80: E501 line too long (96 > 79 characters)
+tests/test_entity_relationships.py:221:80: E501 line too long (95 > 79 characters)
+tests/test_entity_relationships.py:228:13: F841 local variable 'cursor' is assigned to but never used
+tests/test_entity_relationships.py:231:80: E501 line too long (82 > 79 characters)
+tests/test_entity_relationships.py:251:80: E501 line too long (81 > 79 characters)
+tests/test_entity_relationships.py:255:80: E501 line too long (95 > 79 characters)
+tests/test_entity_relationships.py:270:80: E501 line too long (91 > 79 characters)
+tests/test_entity_relationships.py:272:80: E501 line too long (108 > 79 characters)
+tests/test_entity_relationships.py:279:80: E501 line too long (82 > 79 characters)
+tests/test_entity_relationships.py:291:80: E501 line too long (82 > 79 characters)
+tests/test_entity_relationships.py:294:80: E501 line too long (95 > 79 characters)
+tests/test_entity_relationships.py:297:13: F841 local variable 'cursor' is assigned to but never used
+tests/test_entity_relationships.py:300:80: E501 line too long (82 > 79 characters)
+tests/test_entity_relationships.py:311:80: E501 line too long (92 > 79 characters)
+tests/test_entity_relationships.py:313:80: E501 line too long (108 > 79 characters)
+tests/test_entity_relationships.py:323:80: E501 line too long (86 > 79 characters)
+tests/test_entity_relationships.py:328:80: E501 line too long (88 > 79 characters)
+tests/test_entity_relationships.py:332:80: E501 line too long (110 > 79 characters)
+tests/test_json_export.py:9:1: F401 'pytest' imported but unused
+tests/test_performance.py:21:1: F401 'sqlite3' imported but unused
+tests/test_performance.py:22:1: F401 'typing.Tuple' imported but unused
+tests/test_performance.py:31:1: E402 module level import not at top of file
+tests/test_performance.py:32:1: E402 module level import not at top of file
+tests/test_performance.py:35:80: E501 line too long (85 > 79 characters)
+tests/test_performance.py:76:80: E501 line too long (82 > 79 characters)
+tests/test_performance.py:79:80: E501 line too long (98 > 79 characters)
+tests/test_performance.py:105:80: E501 line too long (86 > 79 characters)
+tests/test_performance.py:123:80: E501 line too long (91 > 79 characters)
+tests/test_performance.py:133:80: E501 line too long (92 > 79 characters)
+tests/test_performance.py:133:85: E231 missing whitespace after ','
+tests/test_performance.py:180:80: E501 line too long (114 > 79 characters)
+tests/test_performance.py:181:80: E501 line too long (103 > 79 characters)
+tests/test_performance.py:184:80: E501 line too long (82 > 79 characters)
+tests/test_performance.py:210:80: E501 line too long (88 > 79 characters)
+tests/test_performance.py:230:80: E501 line too long (84 > 79 characters)
+tests/test_performance.py:250:80: E501 line too long (87 > 79 characters)
+tests/test_performance.py:273:80: E501 line too long (93 > 79 characters)
+tests/test_performance.py:295:80: E501 line too long (103 > 79 characters)
+tests/test_performance.py:296:80: E501 line too long (80 > 79 characters)
+tests/test_performance.py:312:80: E501 line too long (87 > 79 characters)
+tests/test_performance.py:313:80: E501 line too long (90 > 79 characters)
+tests/test_performance.py:315:80: E501 line too long (80 > 79 characters)
+tests/test_performance.py:321:80: E501 line too long (82 > 79 characters)
+tests/test_performance.py:346:80: E501 line too long (90 > 79 characters)
+tests/test_question_answering.py:11:1: F401 'scrapetui.get_db_connection' imported but unused
+tests/test_question_answering.py:22:80: E501 line too long (110 > 79 characters)
+tests/test_question_answering.py:24:80: E501 line too long (125 > 79 characters)
+tests/test_question_answering.py:25:80: E501 line too long (87 > 79 characters)
+tests/test_question_answering.py:33:80: E501 line too long (110 > 79 characters)
+tests/test_question_answering.py:34:80: E501 line too long (134 > 79 characters)
+tests/test_question_answering.py:35:80: E501 line too long (93 > 79 characters)
+tests/test_question_answering.py:36:80: E501 line too long (107 > 79 characters)
+tests/test_question_answering.py:44:80: E501 line too long (84 > 79 characters)
+tests/test_question_answering.py:45:80: E501 line too long (96 > 79 characters)
+tests/test_question_answering.py:46:80: E501 line too long (103 > 79 characters)
+tests/test_question_answering.py:47:80: E501 line too long (94 > 79 characters)
+tests/test_question_answering.py:61:80: E501 line too long (94 > 79 characters)
+tests/test_question_answering.py:62:80: E501 line too long (83 > 79 characters)
+tests/test_question_answering.py:63:80: E501 line too long (92 > 79 characters)
+tests/test_question_answering.py:77:80: E501 line too long (131 > 79 characters)
+tests/test_question_answering.py:81:80: E501 line too long (83 > 79 characters)
+tests/test_question_answering.py:92:80: E501 line too long (85 > 79 characters)
+tests/test_question_answering.py:96:80: E501 line too long (83 > 79 characters)
+tests/test_question_answering.py:112:80: E501 line too long (83 > 79 characters)
+tests/test_question_answering.py:125:80: E501 line too long (149 > 79 characters)
+tests/test_question_answering.py:129:80: E501 line too long (84 > 79 characters)
+tests/test_question_answering.py:153:9: F841 local variable 'result' is assigned to but never used
+tests/test_question_answering.py:153:80: E501 line too long (84 > 79 characters)
+tests/test_question_answering.py:199:80: E501 line too long (82 > 79 characters)
+tests/test_question_answering.py:240:80: E501 line too long (81 > 79 characters)
+tests/test_question_answering.py:248:80: E501 line too long (101 > 79 characters)
+tests/test_question_answering.py:252:80: E501 line too long (87 > 79 characters)
+tests/test_question_answering.py:282:80: E501 line too long (87 > 79 characters)
+tests/test_question_answering.py:306:80: E501 line too long (86 > 79 characters)
+tests/test_question_answering.py:324:80: E501 line too long (84 > 79 characters)
+tests/test_question_answering.py:342:80: E501 line too long (84 > 79 characters)
+tests/test_question_answering.py:359:80: E501 line too long (84 > 79 characters)
+tests/test_question_answering.py:378:80: E501 line too long (84 > 79 characters)
+tests/test_question_answering.py:402:80: E501 line too long (90 > 79 characters)
+tests/test_question_answering.py:403:80: E501 line too long (91 > 79 characters)
+tests/test_question_answering.py:419:80: E501 line too long (84 > 79 characters)
+tests/test_question_answering.py:431:80: E501 line too long (84 > 79 characters)
+tests/test_question_answering.py:446:80: E501 line too long (84 > 79 characters)
+tests/test_scheduling.py:10:1: F401 'datetime.timedelta' imported but unused
+tests/test_scheduling.py:11:1: F401 'unittest.mock.Mock' imported but unused
+tests/test_scheduling.py:11:1: F401 'unittest.mock.patch' imported but unused
+tests/test_scheduling.py:18:80: E501 line too long (90 > 79 characters)
+tests/test_scheduling.py:19:1: E402 module level import not at top of file
+tests/test_scheduling.py:21:80: E501 line too long (85 > 79 characters)
+tests/test_scheduling.py:49:80: E501 line too long (84 > 79 characters)
+tests/test_scheduling.py:107:80: E501 line too long (81 > 79 characters)
+tests/test_scheduling.py:108:80: E501 line too long (83 > 79 characters)
+tests/test_scheduling.py:163:80: E501 line too long (80 > 79 characters)
+tests/test_scheduling.py:180:80: E501 line too long (81 > 79 characters)
+tests/test_scheduling.py:196:80: E501 line too long (80 > 79 characters)
+tests/test_scheduling.py:215:80: E501 line too long (80 > 79 characters)
+tests/test_scheduling.py:222:80: E501 line too long (88 > 79 characters)
+tests/test_scheduling.py:256:80: E501 line too long (80 > 79 characters)
+tests/test_scheduling.py:274:80: E501 line too long (84 > 79 characters)
+tests/test_scheduling.py:293:80: E501 line too long (83 > 79 characters)
+tests/test_scheduling.py:318:80: E501 line too long (96 > 79 characters)
+tests/test_scheduling.py:328:80: E501 line too long (86 > 79 characters)
+tests/test_scheduling.py:343:80: E501 line too long (86 > 79 characters)
+tests/test_scheduling.py:351:80: E501 line too long (84 > 79 characters)
+tests/test_scheduling.py:359:80: E501 line too long (86 > 79 characters)
+tests/test_scraping.py:4:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/test_scraping.py:5:1: F401 'pathlib.Path' imported but unused
+tests/test_summary_quality.py:9:1: F401 'scrapetui.get_db_connection' imported but unused
+tests/test_summary_quality.py:19:80: E501 line too long (88 > 79 characters)
+tests/test_summary_quality.py:26:80: E501 line too long (93 > 79 characters)
+tests/test_summary_quality.py:27:80: E501 line too long (85 > 79 characters)
+tests/test_summary_quality.py:40:80: E501 line too long (82 > 79 characters)
+tests/test_summary_quality.py:115:80: E501 line too long (81 > 79 characters)
+tests/test_summary_quality.py:127:9: F841 local variable 'metrics' is assigned to but never used
+tests/test_summary_quality.py:133:15: E262 inline comment should start with '# '
+tests/test_summary_quality.py:133:32: W291 trailing whitespace
+tests/test_summary_quality.py:135:16: W291 trailing whitespace
+tests/test_summary_quality.py:136:5: E301 expected 1 blank line, found 0
+tests/test_summary_quality.py:138:9: F841 local variable 'metrics' is assigned to but never used
+tests/test_summary_quality.py:143:16: W291 trailing whitespace
+tests/test_summary_quality.py:146:16: W291 trailing whitespace
+tests/test_summary_quality.py:147:5: E301 expected 1 blank line, found 0
+tests/test_summary_quality.py:149:9: F841 local variable 'metrics' is assigned to but never used
+tests/test_summary_quality.py:162:80: E501 line too long (80 > 79 characters)
+tests/test_summary_quality.py:173:80: E501 line too long (81 > 79 characters)
+tests/test_summary_quality.py:208:80: E501 line too long (90 > 79 characters)
+tests/test_summary_quality.py:239:80: E501 line too long (90 > 79 characters)
+tests/test_summary_quality.py:289:9: F841 local variable 'simple_summary' is assigned to but never used
+tests/test_summary_quality.py:292:9: F841 local variable 'complex_summary' is assigned to but never used
+tests/test_summary_quality.py:315:80: E501 line too long (90 > 79 characters)
+tests/test_summary_quality.py:341:80: E501 line too long (90 > 79 characters)
+tests/test_summary_quality.py:370:80: E501 line too long (136 > 79 characters)
+tests/test_summary_quality.py:402:80: E501 line too long (80 > 79 characters)
+tests/test_summary_quality.py:405:80: E501 line too long (81 > 79 characters)
+tests/test_summary_quality.py:413:80: E501 line too long (97 > 79 characters)
+tests/test_summary_quality.py:415:80: E501 line too long (81 > 79 characters)
+tests/test_summary_quality.py:426:80: E501 line too long (85 > 79 characters)
+tests/test_summary_quality.py:429:9: F841 local variable 'e' is assigned to but never used
+tests/test_topic_modeling.py:9:1: F401 'datetime.datetime' imported but unused
+tests/test_topic_modeling.py:10:1: F401 'scrapetui.get_db_connection' imported but unused
+tests/test_topic_modeling.py:20:80: E501 line too long (177 > 79 characters)
+tests/test_topic_modeling.py:25:80: E501 line too long (167 > 79 characters)
+tests/test_topic_modeling.py:30:80: E501 line too long (168 > 79 characters)
+tests/test_topic_modeling.py:35:80: E501 line too long (168 > 79 characters)
+tests/test_topic_modeling.py:40:80: E501 line too long (177 > 79 characters)
+tests/test_topic_modeling.py:181:80: E501 line too long (81 > 79 characters)
+tests/test_topic_modeling.py:289:80: E501 line too long (88 > 79 characters)
+tests/test_utils.py:5:1: F401 'datetime.datetime' imported but unused
+tests/test_utils.py:9:1: F401 'pytest' imported but unused
+tests/test_utils.py:16:1: E402 module level import not at top of file
+tests/test_utils.py:18:80: E501 line too long (85 > 79 characters)
+tests/test_utils.py:135:9: F811 redefinition of unused 'datetime' from line 5
+tests/test_utils.py:146:9: F811 redefinition of unused 'datetime' from line 5
+tests/test_utils.py:156:9: F811 redefinition of unused 'datetime' from line 5
+tests/test_utils.py:233:80: E501 line too long (81 > 79 characters)
+tests/test_utils.py:259:80: E501 line too long (89 > 79 characters)
+tests/test_v2_auth_phase1.py:16:1: F401 'sqlite3' imported but unused
+tests/test_v2_auth_phase1.py:18:1: F401 'shutil' imported but unused
+tests/test_v2_auth_phase1.py:21:1: F401 'unittest.mock.patch' imported but unused
+tests/test_v2_auth_phase1.py:27:1: E402 module level import not at top of file
+tests/test_v2_auth_phase1.py:47:80: E501 line too long (81 > 79 characters)
+tests/test_v2_auth_phase1.py:114:80: E501 line too long (89 > 79 characters)
+tests/test_v2_auth_phase1.py:278:80: E501 line too long (88 > 79 characters)
+tests/test_v2_auth_phase1.py:325:80: E501 line too long (85 > 79 characters)
+tests/test_v2_auth_phase1.py:350:80: E501 line too long (80 > 79 characters)
+tests/test_v2_auth_phase1.py:356:80: E501 line too long (88 > 79 characters)
+tests/test_v2_auth_phase1.py:362:80: E501 line too long (89 > 79 characters)
+tests/test_v2_auth_phase1.py:415:80: E501 line too long (90 > 79 characters)
+tests/test_v2_auth_phase1.py:437:80: E501 line too long (83 > 79 characters)
+tests/test_v2_auth_phase1.py:453:80: E501 line too long (81 > 79 characters)
+tests/test_v2_auth_phase1.py:467:80: E501 line too long (85 > 79 characters)
+tests/test_v2_phase3_isolation.py:4:80: E501 line too long (86 > 79 characters)
+tests/test_v2_phase3_isolation.py:9:1: F401 'sqlite3' imported but unused
+tests/test_v2_phase3_isolation.py:10:1: F401 'datetime.timedelta' imported but unused
+tests/test_v2_phase3_isolation.py:11:1: F401 'sys' imported but unused
+tests/test_v2_phase3_isolation.py:12:1: F401 'os' imported but unused
+tests/test_v2_phase3_isolation.py:19:80: E501 line too long (85 > 79 characters)
+tests/test_v2_phase3_isolation.py:42:80: E501 line too long (81 > 79 characters)
+tests/test_v2_phase3_isolation.py:68:80: E501 line too long (80 > 79 characters)
+tests/test_v2_phase3_isolation.py:75:80: E501 line too long (91 > 79 characters)
+tests/test_v2_phase3_isolation.py:77:80: E501 line too long (102 > 79 characters)
+tests/test_v2_phase3_isolation.py:82:80: E501 line too long (91 > 79 characters)
+tests/test_v2_phase3_isolation.py:84:80: E501 line too long (102 > 79 characters)
+tests/test_v2_phase3_isolation.py:89:80: E501 line too long (91 > 79 characters)
+tests/test_v2_phase3_isolation.py:91:80: E501 line too long (106 > 79 characters)
+tests/test_v2_phase3_isolation.py:109:80: E501 line too long (85 > 79 characters)
+tests/test_v2_phase3_isolation.py:115:80: E501 line too long (85 > 79 characters)
+tests/test_v2_phase3_isolation.py:144:80: E501 line too long (85 > 79 characters)
+tests/test_v2_phase3_isolation.py:150:80: E501 line too long (85 > 79 characters)
+tests/test_v2_phase3_isolation.py:170:80: E501 line too long (85 > 79 characters)
+tests/test_v2_phase3_isolation.py:195:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:197:80: E501 line too long (80 > 79 characters)
+tests/test_v2_phase3_isolation.py:200:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:202:80: E501 line too long (80 > 79 characters)
+tests/test_v2_phase3_isolation.py:220:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:222:80: E501 line too long (80 > 79 characters)
+tests/test_v2_phase3_isolation.py:226:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:228:80: E501 line too long (82 > 79 characters)
+tests/test_v2_phase3_isolation.py:246:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:251:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:287:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:325:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:364:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:382:80: E501 line too long (89 > 79 characters)
+tests/test_v2_phase3_isolation.py:392:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:410:80: E501 line too long (89 > 79 characters)
+tests/test_v2_phase3_isolation.py:420:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:438:80: E501 line too long (89 > 79 characters)
+tests/test_v2_phase3_isolation.py:448:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:471:80: E501 line too long (87 > 79 characters)
+tests/test_v2_phase3_isolation.py:530:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:531:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:545:80: E501 line too long (92 > 79 characters)
+tests/test_v2_phase3_isolation.py:565:80: E501 line too long (89 > 79 characters)
+tests/test_v2_phase3_isolation.py:568:80: E501 line too long (100 > 79 characters)
+tests/test_v2_phase3_isolation.py:617:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:623:80: E501 line too long (85 > 79 characters)
+tests/test_v2_phase3_isolation.py:625:80: E501 line too long (81 > 79 characters)
+tests/test_v2_phase3_isolation.py:658:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:697:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:702:80: E501 line too long (90 > 79 characters)
+tests/test_v2_phase3_isolation.py:707:80: E501 line too long (85 > 79 characters)
+tests/test_v2_phase3_isolation.py:713:80: E501 line too long (85 > 79 characters)
+tests/test_v2_ui_phase2.py:10:1: F401 'datetime.datetime' imported but unused
+tests/test_v2_ui_phase2.py:10:1: F401 'datetime.timedelta' imported but unused
+tests/test_v2_ui_phase2.py:17:80: E501 line too long (82 > 79 characters)
+tests/test_v2_ui_phase2.py:19:1: E402 module level import not at top of file
+tests/test_v2_ui_phase2.py:41:80: E501 line too long (81 > 79 characters)
+tests/test_v2_ui_phase2.py:80:80: E501 line too long (90 > 79 characters)
+tests/test_v2_ui_phase2.py:86:80: E501 line too long (81 > 79 characters)
+tests/test_v2_ui_phase2.py:87:80: E501 line too long (94 > 79 characters)
+tests/test_v2_ui_phase2.py:100:80: E501 line too long (83 > 79 characters)
+tests/test_v2_ui_phase2.py:111:80: E501 line too long (100 > 79 characters)
+tests/test_v2_ui_phase2.py:112:80: E501 line too long (104 > 79 characters)
+tests/test_v2_ui_phase2.py:113:80: E501 line too long (107 > 79 characters)
+tests/test_v2_ui_phase2.py:130:80: E501 line too long (93 > 79 characters)
+tests/test_v2_ui_phase2.py:135:80: E501 line too long (92 > 79 characters)
+tests/test_v2_ui_phase2.py:260:80: E501 line too long (98 > 79 characters)
+tests/test_v2_ui_phase2.py:270:80: E501 line too long (97 > 79 characters)
+tests/test_v2_ui_phase2.py:284:80: E501 line too long (99 > 79 characters)
+tests/test_v2_ui_phase2.py:309:80: E501 line too long (91 > 79 characters)
+tests/test_v2_ui_phase2.py:314:33: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+tests/test_v2_ui_phase2.py:326:80: E501 line too long (98 > 79 characters)
+tests/test_v2_ui_phase2.py:339:80: E501 line too long (97 > 79 characters)
+tests/test_v2_ui_phase2.py:347:80: E501 line too long (102 > 79 characters)
+tests/test_v2_ui_phase2.py:350:80: E501 line too long (102 > 79 characters)
+tests/test_v2_ui_phase2.py:351:33: E712 comparison to False should be 'if cond is False:' or 'if not cond:'
+tests/test_v2_ui_phase2.py:354:80: E501 line too long (102 > 79 characters)
+tests/test_v2_ui_phase2.py:357:80: E501 line too long (102 > 79 characters)
+tests/test_v2_ui_phase2.py:358:33: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+tests/test_v2_ui_phase2.py:393:33: E712 comparison to True should be 'if cond is True:' or 'if cond:'
+tests/test_v2_ui_phase2.py:429:80: E501 line too long (96 > 79 characters)
+tests/test_v2_ui_phase2.py:433:80: E501 line too long (106 > 79 characters)
+tests/test_v2_ui_phase2.py:448:80: E501 line too long (107 > 79 characters)
+tests/test_v2_ui_phase2.py:494:80: E501 line too long (100 > 79 characters)
+tests/test_v2_ui_phase2.py:501:80: E501 line too long (100 > 79 characters)
+tests/test_v2_ui_phase2.py:518:80: E501 line too long (91 > 79 characters)
+tests/test_v2_ui_phase2.py:521:80: E501 line too long (100 > 79 characters)
+tests/test_v2_ui_phase2.py:561:80: E501 line too long (103 > 79 characters)
+tests/test_v2_ui_phase2.py:568:80: E501 line too long (97 > 79 characters)
+tests/test_v2_ui_phase2.py:574:80: E501 line too long (92 > 79 characters)
+tests/test_v2_ui_phase2.py:582:80: E501 line too long (85 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:4:1: F401 'pytest' imported but unused
+tests/unit/test_ai_processors_duplicates.py:70:80: E501 line too long (83 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:71:80: E501 line too long (82 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:86:80: E501 line too long (84 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:87:80: E501 line too long (83 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:101:80: E501 line too long (91 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:106:80: E501 line too long (91 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:194:80: E501 line too long (92 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:198:80: E501 line too long (81 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:213:80: E501 line too long (81 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:224:80: E501 line too long (92 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:228:80: E501 line too long (81 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:253:80: E501 line too long (94 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:254:80: E501 line too long (101 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:255:80: E501 line too long (95 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:260:80: E501 line too long (92 > 79 characters)
+tests/unit/test_ai_processors_duplicates.py:264:80: E501 line too long (81 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:4:1: F401 'pytest' imported but unused
+tests/unit/test_ai_processors_keywords.py:82:80: E501 line too long (82 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:87:80: E501 line too long (83 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:124:80: E501 line too long (88 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:125:80: E501 line too long (83 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:126:80: E501 line too long (90 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:128:80: E501 line too long (81 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:154:80: E501 line too long (92 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:184:80: E501 line too long (92 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:188:80: E501 line too long (81 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:194:80: E501 line too long (86 > 79 characters)
+tests/unit/test_ai_processors_keywords.py:210:80: E501 line too long (81 > 79 characters)
+tests/unit/test_ai_processors_ner.py:4:1: F401 'pytest' imported but unused
+tests/unit/test_ai_processors_ner.py:70:80: E501 line too long (86 > 79 characters)
+tests/unit/test_ai_processors_ner.py:146:80: E501 line too long (92 > 79 characters)
+tests/unit/test_ai_processors_ner.py:150:80: E501 line too long (81 > 79 characters)
+tests/unit/test_ai_processors_ner.py:219:80: E501 line too long (81 > 79 characters)
+tests/unit/test_cache.py:3:1: F401 'pytest' imported but unused
+tests/unit/test_cache.py:5:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/unit/test_cache.py:7:1: F401 'scrapetui.core.cache.Cache' imported but unused
+tests/unit/test_database.py:7:1: F401 'unittest.mock.patch' imported but unused
+tests/unit/test_database.py:367:80: E501 line too long (84 > 79 characters)
+tests/unit/test_database.py:434:80: E501 line too long (101 > 79 characters)
+tests/unit/test_database_async.py:14:1: F401 'asyncio' imported but unused
+tests/unit/test_database_async.py:23:80: E501 line too long (85 > 79 characters)
+tests/unit/test_database_async.py:29:1: E402 module level import not at top of file
+tests/unit/test_database_async.py:102:80: E501 line too long (83 > 79 characters)
+tests/unit/test_database_async.py:264:80: E501 line too long (82 > 79 characters)
+tests/unit/test_database_async.py:348:80: E501 line too long (82 > 79 characters)
+tests/unit/test_database_async.py:352:80: E501 line too long (83 > 79 characters)
+tests/unit/test_database_async.py:436:80: E501 line too long (82 > 79 characters)
+tests/unit/test_database_async.py:466:80: E501 line too long (82 > 79 characters)
+tests/unit/test_database_async.py:490:80: E501 line too long (81 > 79 characters)
+tests/unit/test_database_async.py:513:80: E501 line too long (81 > 79 characters)
+tests/unit/test_database_async.py:538:80: E501 line too long (82 > 79 characters)
+tests/unit/test_database_async.py:594:80: E501 line too long (85 > 79 characters)
+tests/unit/test_database_async.py:627:80: E501 line too long (80 > 79 characters)
+tests/unit/test_database_async.py:635:80: E501 line too long (102 > 79 characters)
+tests/unit/test_database_async.py:636:80: E501 line too long (108 > 79 characters)
+tests/unit/test_database_async.py:637:80: E501 line too long (102 > 79 characters)
+tests/unit/test_database_async.py:654:80: E501 line too long (80 > 79 characters)
+tests/unit/test_models.py:3:1: F401 'pytest' imported but unused
+tests/unit/test_models.py:5:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/unit/test_models.py:87:80: E501 line too long (89 > 79 characters)
+tests/unit/test_models.py:199:80: E501 line too long (87 > 79 characters)
+tests/unit/test_models.py:213:80: E501 line too long (87 > 79 characters)
+tests/unit/test_models.py:311:80: E501 line too long (81 > 79 characters)
+tests/unit/test_models.py:333:80: E501 line too long (80 > 79 characters)
+tests/unit/test_scrapers.py:4:1: F401 'unittest.mock.MagicMock' imported but unused
+tests/unit/test_scrapers.py:16:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:32:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:45:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:60:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:73:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:88:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:102:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:116:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:128:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:137:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:148:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:156:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:165:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:174:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:202:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:228:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:236:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:246:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:254:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:265:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:278:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:288:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:296:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:303:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:311:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:319:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:327:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:336:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:343:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:360:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:378:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:396:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:404:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:411:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:425:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:434:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:442:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:453:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:465:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:479:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:490:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:505:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:517:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:521:80: E501 line too long (92 > 79 characters)
+tests/unit/test_scrapers.py:529:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:538:1: E302 expected 2 blank lines, found 1
+tests/unit/test_scrapers.py:548:1: E302 expected 2 blank lines, found 1
+3     E111 indentation is not a multiple of 4
+2     E114 indentation is not a multiple of 4 (comment)
+4     E117 over-indented (comment)
+10    E128 continuation line under-indented for visual indent
+2     E129 visually indented line with same indent as next logical line
+44    E225 missing whitespace around operator
+1     E228 missing whitespace around modulo operator
+192   E231 missing whitespace after ','
+3     E261 at least two spaces before inline comment
+1     E262 inline comment should start with '# '
+6     E301 expected 1 blank line, found 0
+50    E302 expected 2 blank lines, found 1
+2     E305 expected 2 blank lines after class or function definition, found 0
+7     E306 expected 1 blank line before a nested definition, found 0
+49    E402 module level import not at top of file
+1768  E501 line too long (84 > 79 characters)
+31    E701 multiple statements on one line (colon)
+32    E702 multiple statements on one line (semicolon)
+4     E712 comparison to True should be 'if cond is True:' or 'if cond:'
+12    E722 do not use bare 'except'
+1     E741 ambiguous variable name 'l'
+124   F401 'apscheduler.triggers.date.DateTrigger' imported but unused
+9     F541 f-string is missing placeholders
+3     F811 redefinition of unused 'datetime' from line 5
+13    F841 local variable 'type_radio' is assigned to but never used
+7     W291 trailing whitespace
+2380

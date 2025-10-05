@@ -4,7 +4,6 @@ import pytest
 import tempfile
 import sqlite3
 from pathlib import Path
-from unittest.mock import patch
 
 from scrapetui.database.schema import (
     get_schema,

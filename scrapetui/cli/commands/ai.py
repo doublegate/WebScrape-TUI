@@ -18,7 +18,6 @@ logger = get_logger(__name__)
 @click.group()
 def ai():
     """AI-powered content analysis commands."""
-    pass
 
 
 @ai.command()

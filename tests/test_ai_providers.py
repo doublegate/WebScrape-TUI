@@ -2,7 +2,6 @@
 """Tests for AI provider abstraction layer."""
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
 # Import from monolithic scrapetui.py using importlib.util

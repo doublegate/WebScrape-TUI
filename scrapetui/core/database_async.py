@@ -8,7 +8,7 @@ performance and scalability in async contexts (FastAPI, async CLI).
 import aiosqlite
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 
 logger = logging.getLogger(__name__)

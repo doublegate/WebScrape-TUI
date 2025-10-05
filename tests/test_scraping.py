@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Web scraping functionality tests for WebScrape-TUI."""
 
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
+from unittest.mock import Mock, patch
 
 import pytest
 import requests

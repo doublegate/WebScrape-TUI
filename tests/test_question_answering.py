@@ -8,7 +8,7 @@ and source attribution.
 import pytest
 import json
 from datetime import datetime
-from scrapetui import QuestionAnsweringManager, get_db_connection
+from scrapetui import QuestionAnsweringManager
 
 
 @pytest.fixture
@@ -73,9 +73,8 @@ class TestSingleArticleQA:
     def test_answer_question_single_article(self, single_article, mocker):
         """Test answering question from single article."""
         # Mock AI provider
-        mocker.patch('scrapetui.get_ai_provider', return_value=mocker.Mock(
-            get_summary=lambda *args, **kwargs: "Climate change is caused primarily by human activities like burning fossil fuels."
-        ))
+        mocker.patch('scrapetui.get_ai_provider', return_value=mocker.Mock(get_summary=lambda *args,
+                     ** kwargs: "Climate change is caused primarily by human activities like burning fossil fuels."))
 
         question = "What causes climate change?"
         result = QuestionAnsweringManager.answer_question(question, single_article)
@@ -121,9 +120,11 @@ class TestMultiArticleSynthesis:
 
     def test_answer_from_multiple_articles(self, sample_articles, mocker):
         """Test synthesizing answer from multiple articles."""
-        mocker.patch('scrapetui.get_ai_provider', return_value=mocker.Mock(
-            get_summary=lambda *args, **kwargs: "Python is used for web development (Django, Flask) and machine learning (scikit-learn, TensorFlow)."
-        ))
+        mocker.patch(
+            'scrapetui.get_ai_provider',
+            return_value=mocker.Mock(
+                get_summary=lambda *args,
+                **kwargs: "Python is used for web development (Django, Flask) and machine learning (scikit-learn, TensorFlow)."))
 
         question = "What is Python used for?"
         result = QuestionAnsweringManager.answer_question(question, sample_articles)

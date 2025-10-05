@@ -4,7 +4,6 @@
 import click
 import sys
 import shutil
-from pathlib import Path
 
 from ...core.database import init_db, check_database_exists, get_db_path
 from ...utils.logging import get_logger
@@ -15,7 +14,6 @@ logger = get_logger(__name__)
 @click.group()
 def db():
     """Database management commands."""
-    pass
 
 
 @db.command()

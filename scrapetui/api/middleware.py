@@ -1,17 +1,15 @@
 """API middleware for rate limiting, logging, and error handling."""
 
 import time
-from typing import Dict, Optional
+from typing import Dict
 from collections import defaultdict
-from datetime import datetime, timedelta
 
-from fastapi import Request, Response
+from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from ..utils.logging import get_logger
 from ..config import get_config
-from .exceptions import TooManyRequestsException
 
 logger = get_logger(__name__)
 config = get_config()
@@ -52,10 +50,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return JSONResponse(
                 status_code=429,
                 content={
-                    "detail": f"Rate limit exceeded. Max {self.max_requests} requests per {self.window_seconds} seconds.",
-                    "retry_after": self.window_seconds
-                }
-            )
+                    "detail": f"Rate limit exceeded. Max {
+                        self.max_requests} requests per {
+                        self.window_seconds} seconds.",
+                    "retry_after": self.window_seconds})
 
         # Add current request
         self.request_counts[client_ip].append(current_time)

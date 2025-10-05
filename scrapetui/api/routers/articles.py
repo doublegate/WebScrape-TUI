@@ -1,6 +1,6 @@
 """Article management API endpoints."""
 
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query
@@ -14,8 +14,7 @@ from ..models import (
     ArticleCreate,
     ArticleUpdate,
     ArticleResponse,
-    ArticleListResponse,
-    ArticleSearchRequest
+    ArticleListResponse
 )
 from ..dependencies import get_current_user, require_user
 from ..exceptions import NotFoundException, ForbiddenException, BadRequestException

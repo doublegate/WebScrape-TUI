@@ -7,11 +7,11 @@ from datetime import datetime, timedelta
 
 from .database import get_db_connection
 from ..utils.logging import get_logger
-from ..utils.errors import AuthenticationError, DatabaseError
 from ..constants import DEFAULT_ADMIN_USERNAME, DEFAULT_ADMIN_PASSWORD
 
 # Lazy logger initialization to avoid import-time side effects
 _logger = None
+
 
 def _get_lazy_logger():
     """Get logger lazily."""

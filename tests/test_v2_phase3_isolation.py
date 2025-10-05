@@ -6,10 +6,7 @@ and filter presets introduced in Phase 3 of the multi-user system.
 """
 
 import pytest
-import sqlite3
-from datetime import datetime, timedelta
-import sys
-import os
+from datetime import datetime
 import tempfile
 from pathlib import Path
 import importlib.util

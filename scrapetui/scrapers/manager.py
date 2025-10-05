@@ -3,10 +3,10 @@
 import importlib
 import importlib.util
 from pathlib import Path
-from typing import Dict, List, Optional, Type
+from typing import Dict, List, Optional
 import sys
 
-from .base import BaseScraper, ScraperResult, ScraperMetadata
+from .base import BaseScraper, ScraperResult
 from ..utils.logging import get_logger
 from ..config import get_config
 
@@ -14,12 +14,14 @@ from ..config import get_config
 _logger = None
 _config = None
 
+
 def _get_lazy_logger():
     """Get logger lazily."""
     global _logger
     if _logger is None:
         _logger = get_logger(__name__)
     return _logger
+
 
 def _get_lazy_config():
     """Get config lazily."""
@@ -104,10 +106,10 @@ class ScraperManager:
             attr = getattr(module, attr_name)
 
             # Check if it's a scraper class
-            if (isinstance(attr, type) and
-                issubclass(attr, BaseScraper) and
-                attr != BaseScraper and
-                not attr_name.startswith('_')):
+            if (isinstance(attr, type)
+                and issubclass(attr, BaseScraper)
+                and attr != BaseScraper
+                    and not attr_name.startswith('_')):
 
                 try:
                     scraper = attr()

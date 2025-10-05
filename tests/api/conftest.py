@@ -11,7 +11,6 @@ from fastapi.testclient import TestClient
 from scrapetui.api.app import app
 from scrapetui.core.database import get_db_connection
 from scrapetui.core.auth import hash_password
-from scrapetui.config import get_config
 
 
 @pytest.fixture(scope="function")

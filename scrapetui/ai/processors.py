@@ -2,7 +2,6 @@
 """AI processing functions for article analysis."""
 
 import spacy
-import numpy as np
 from typing import List, Dict, Any, Optional
 from difflib import SequenceMatcher
 from sklearn.feature_extraction.text import TfidfVectorizer

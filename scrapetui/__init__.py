@@ -28,7 +28,7 @@ Version: 2.1.0
 
 # Provide imports from new modular structure where available
 # For backward compatibility, tests should migrate to import from scrapetui.core.* directly
-from .core.database import get_db_connection, check_database_exists, init_db
+from .core.database import get_db_connection, init_db
 from .core.auth import (
     hash_password,
     verify_password,
@@ -47,7 +47,7 @@ from .ai.topic_modeling import TopicModelingManager
 from .ai.question_answering import QuestionAnsweringManager
 from .ai.entity_relationships import EntityRelationshipManager
 from .ai.summary_quality import SummaryQualityManager
-from .ai.content_similarity import ContentSimilarityManager, SentenceTransformer
+from .ai.content_similarity import ContentSimilarityManager
 
 
 # Backward-compatible wrapper for migrate_database_to_v2()
@@ -70,7 +70,11 @@ def migrate_database_to_v2() -> bool:
 
 # Placeholder exports for items not yet migrated - tests may need updates
 # These will return None/empty to avoid breaking imports while we complete migration
+
+
 def load_env_file(): pass
+
+
 ConfigManager = None
 AIProvider = None
 GeminiProvider = None

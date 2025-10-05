@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """Tests for v1.6.0 features: Data Visualization & Advanced Analytics."""
 
+import importlib.util
 import pytest
 import tempfile
-import sqlite3
 from pathlib import Path
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch, MagicMock
-import os
+from unittest.mock import patch
 import time
 import random
 
@@ -17,7 +16,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # Import from monolithic scrapetui.py file directly
 # We need to import the .py file, not the package directory which has AnalyticsManager=None
-import importlib.util
 _scrapetui_path = Path(__file__).parent.parent / 'scrapetui.py'
 _spec = importlib.util.spec_from_file_location("scrapetui_monolith", _scrapetui_path)
 _scrapetui_module = importlib.util.module_from_spec(_spec)
@@ -66,7 +64,7 @@ def analytics_test_db(temp_db):
                 sentiment = None
                 summary = None
 
-            timestamp = now - timedelta(days=i-1)
+            timestamp = now - timedelta(days=i - 1)
 
             cursor = conn.execute("""
                 INSERT INTO scraped_data (title, url, link, summary, sentiment, timestamp, user_id)
@@ -374,7 +372,7 @@ class TestAnalyticsIntegration:
 
             # Link some tags to articles
             for i in range(10):
-                conn.execute(f"INSERT INTO article_tags (article_id, tag_id) VALUES (1, {i+4})")
+                conn.execute(f"INSERT INTO article_tags (article_id, tag_id) VALUES (1, {i + 4})")
 
             conn.commit()
 
@@ -422,7 +420,7 @@ class TestAnalyticsEdgeCases:
         assert stats['total_articles'] == 11
 
         # Timeline should only show last 30 days
-        articles_per_day = stats['articles_per_day']
+        stats['articles_per_day']
         # Old article should not appear in per-day breakdown (only last 30 days)
 
     def test_export_report_with_invalid_path(self, analytics_test_db):
@@ -434,7 +432,7 @@ class TestAnalyticsEdgeCases:
             result = AnalyticsManager.export_statistics_report(invalid_path)
             # Should return False on failure
             assert result is False
-        except:
+        except BaseException:
             # Or raise an exception - both are acceptable
             pass
 

@@ -1,11 +1,9 @@
 """Unit tests for cache module."""
 
-import pytest
 import time
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from scrapetui.core.cache import (
-    Cache,
     MemoryCache,
     cached,
     get_cache,

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field, EmailStr, validator, ConfigDict
+from pydantic import BaseModel, Field, EmailStr, ConfigDict
 
 
 # === Authentication Models ===
@@ -170,7 +170,6 @@ class TagBase(BaseModel):
 
 class TagCreate(TagBase):
     """Tag creation request."""
-    pass
 
 
 class TagResponse(TagBase):

@@ -114,7 +114,8 @@ class TestExactDuplicateDetection:
         # Articles 1 and 2 should be exact duplicates
         found_exact = False
         for dup in duplicates:
-            if (dup['article1_id'] == 1 and dup['article2_id'] == 2) or (dup['article1_id'] == 2 and dup['article2_id'] == 1):
+            if (dup['article1_id'] == 1 and dup['article2_id'] == 2) or (
+                    dup['article1_id'] == 2 and dup['article2_id'] == 1):
                 found_exact = True
                 assert dup['similarity_score'] >= 95  # Very high similarity (0-100 scale)
 

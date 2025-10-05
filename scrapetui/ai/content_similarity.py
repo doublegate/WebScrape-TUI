@@ -5,7 +5,7 @@ This module provides content similarity search using sentence embeddings
 and cosine similarity to find related articles.
 """
 
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Any, Tuple
 import numpy as np
 
 try:

@@ -1,8 +1,6 @@
 """Unit tests for model classes."""
 
-import pytest
 from datetime import datetime
-from unittest.mock import MagicMock
 
 from scrapetui.models import User, Article, ScraperProfile, Tag, Session, Role
 
