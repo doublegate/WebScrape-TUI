@@ -50,9 +50,10 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return JSONResponse(
                 status_code=429,
                 content={
-                    "detail": f"Rate limit exceeded. Max {
-                        self.max_requests} requests per {
-                        self.window_seconds} seconds.",
+                    "detail": (
+                        f"Rate limit exceeded. Max {self.max_requests} "
+                        f"requests per {self.window_seconds} seconds."
+                    ),
                     "retry_after": self.window_seconds})
 
         # Add current request

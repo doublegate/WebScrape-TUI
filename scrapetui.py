@@ -2554,21 +2554,13 @@ class AnalyticsManager:
                 f.write("-" * 80 + "\n")
                 f.write(f"Total Articles: {stats.get('total_articles', 0)}\n")
                 f.write(
-                    f"Articles with Summaries: {
-                        stats.get(
-                            'articles_with_summaries',
-                            0)} ({
-                        stats.get(
-                            'summary_percentage',
-                            0):.1f}%)\n")
+                    f"Articles with Summaries: "
+                    f"{stats.get('articles_with_summaries', 0)} "
+                    f"({stats.get('summary_percentage', 0):.1f}%)\n")
                 f.write(
-                    f"Articles with Sentiment: {
-                        stats.get(
-                            'articles_with_sentiment',
-                            0)} ({
-                        stats.get(
-                            'sentiment_percentage',
-                            0):.1f}%)\n\n")
+                    f"Articles with Sentiment: "
+                    f"{stats.get('articles_with_sentiment', 0)} "
+                    f"({stats.get('sentiment_percentage', 0):.1f}%)\n\n")
 
                 f.write("SENTIMENT DISTRIBUTION\n")
                 f.write("-" * 80 + "\n")

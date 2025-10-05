@@ -444,8 +444,8 @@ def bulk(profiles, limit, user_id):
         click.echo(f"  Profiles processed: {len(results_summary)}/{len(profile_list)}")
 
         logger.info(
-            f"CLI bulk scrape: {total_inserted} inserted, {total_skipped} skipped from {
-                len(results_summary)} profiles")
+            f"CLI bulk scrape: {total_inserted} inserted, {total_skipped} skipped "
+            f"from {len(results_summary)} profiles")
 
     except Exception as e:
         logger.error(f"Bulk scraping failed: {e}", exc_info=True)
