@@ -81,6 +81,8 @@ uvicorn[standard]>=0.24.0
 python-jose[cryptography]>=3.3.0
 # Form data handling for FastAPI
 python-multipart>=0.0.6
+# Async SQLite database support (v2.2.0 - Sprint 4)
+aiosqlite>=0.19.0
 
 # Optional Development Dependencies (uncomment for development)
 # pytest>=7.0.0                    # Testing framework
@@ -184,4 +186,6 @@ python-multipart>=0.0.6
 # v1.9.0: + gensim, networkx, rouge-score, fuzzywuzzy, python-Levenshtein (5 packages)
 # v1.9.5: Bug fix release, no new dependencies
 # v2.0.0: + bcrypt (1 package) - Multi-user support
-# Total: 22 production packages
+# v2.1.0: + fastapi, uvicorn, python-jose, python-multipart (4 packages) - REST API
+# v2.2.0: + aiosqlite (1 package) - Sprint 4 async database
+# Total: 27 production packages

@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, Field, EmailStr, validator
+from pydantic import BaseModel, Field, EmailStr, validator, ConfigDict
 
 
 # === Authentication Models ===
@@ -59,8 +59,7 @@ class UserResponse(UserBase):
     last_login: Optional[datetime] = None
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # === Article Models ===
@@ -98,8 +97,7 @@ class ArticleResponse(ArticleBase):
     user_id: int
     tags: Optional[List[str]] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ArticleListResponse(BaseModel):
@@ -145,8 +143,7 @@ class ScraperProfileResponse(ScraperProfileBase):
     user_id: int
     is_shared: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ScrapeRequest(BaseModel):
@@ -181,8 +178,7 @@ class TagResponse(TagBase):
     id: int
     article_count: Optional[int] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # === AI Models ===
@@ -335,8 +331,7 @@ class UserProfileResponse(BaseModel):
     article_count: int
     scraper_count: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserProfileUpdate(BaseModel):
@@ -351,8 +346,7 @@ class UserSessionResponse(BaseModel):
     expires_at: datetime
     is_current: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # === Error Models ===

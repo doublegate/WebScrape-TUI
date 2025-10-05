@@ -1,5 +1,7 @@
 """FastAPI application for WebScrape-TUI REST API."""
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -17,47 +19,11 @@ from . import auth
 logger = get_logger(__name__)
 config = get_config()
 
-# Create FastAPI app
-app = FastAPI(
-    title="WebScrape-TUI API",
-    description="REST API for web scraping, article management, and AI-powered content analysis. "
-                "Supports multi-user authentication, RBAC, advanced AI features, and background tasks.",
-    version="2.2.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
-    contact={
-        "name": "WebScrape-TUI",
-        "url": "https://github.com/doublegate/WebScrape-TUI"
-    },
-    license_info={
-        "name": "MIT",
-    }
-)
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure based on config.api_cors_origins in production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Add custom middleware
-app.add_middleware(ErrorHandlingMiddleware)
-app.add_middleware(RequestLoggingMiddleware)
-app.add_middleware(
-    RateLimitMiddleware,
-    max_requests=config.api_rate_limit_per_minute,
-    window_seconds=60
-)
-
-
-# Startup event
-@app.on_event("startup")
-async def startup_event():
-    """Initialize application on startup."""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan manager for startup and shutdown events."""
+    # Startup
     logger.info("Starting WebScrape-TUI API server...")
 
     # Initialize database if needed
@@ -77,14 +43,50 @@ async def startup_event():
 
     logger.info("API server startup complete")
 
+    yield
 
-# Shutdown event
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Cleanup on shutdown."""
+    # Shutdown
     logger.info("Shutting down WebScrape-TUI API server...")
     cleanup_expired_sessions()
     logger.info("API server shutdown complete")
+
+
+# Create FastAPI app
+app = FastAPI(
+    title="WebScrape-TUI API",
+    description="REST API for web scraping, article management, and AI-powered content analysis. "
+                "Supports multi-user authentication, RBAC, advanced AI features, and background tasks.",
+    version="2.2.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
+    contact={
+        "name": "WebScrape-TUI",
+        "url": "https://github.com/doublegate/WebScrape-TUI"
+    },
+    license_info={
+        "name": "MIT",
+    },
+    lifespan=lifespan
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configure based on config.api_cors_origins in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Add custom middleware
+app.add_middleware(ErrorHandlingMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(
+    RateLimitMiddleware,
+    max_requests=config.api_rate_limit_per_minute,
+    window_seconds=60
+)
 
 
 # Register routers (v1 API)

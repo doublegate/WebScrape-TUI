@@ -1,6 +1,6 @@
 """FastAPI dependencies for authentication and authorization."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import Depends, HTTPException, status
@@ -41,9 +41,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     to_encode = data.copy()
 
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode.update({"exp": expire, "type": "access"})
 
@@ -62,7 +62,7 @@ def create_refresh_token(data: dict) -> str:
         Encoded JWT refresh token
     """
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    expire = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
     to_encode.update({"exp": expire, "type": "refresh"})
 
     encoded_jwt = jwt.encode(to_encode, config.api_jwt_secret, algorithm=ALGORITHM)
@@ -123,7 +123,7 @@ def blacklist_token(token: str) -> None:
         with get_db_connection() as conn:
             conn.execute(
                 "INSERT OR IGNORE INTO token_blacklist (token, blacklisted_at) VALUES (?, ?)",
-                (token, datetime.utcnow().isoformat())
+                (token, datetime.now(timezone.utc).isoformat())
             )
             conn.commit()
             logger.info("Token blacklisted successfully")

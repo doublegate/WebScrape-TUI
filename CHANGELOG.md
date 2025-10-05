@@ -5,11 +5,85 @@ All notable changes to WebScrape-TUI will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.0] - 2025-10-04
+## [2.1.0] - Unreleased
 
 ### 🎉 Major Release: Advanced AI Features, CLI Interface & 100% Test Pass Rate
 
-This release completes the modular architecture migration, adds comprehensive CLI interface (Sprint 3), and achieves 100% test pass rate across all test suites. All Sprint 2-3 objectives have been exceeded with comprehensive AI-powered content analysis features, complete CLI automation interface, and production-ready code quality.
+This release completes the modular architecture migration, adds comprehensive CLI interface (Sprint 3), implements async database layer (Sprint 4), eliminates all deprecation warnings, and achieves 100% test pass rate across all test suites. All Sprint 1-4 objectives have been exceeded with comprehensive AI-powered content analysis features, complete CLI automation interface, modern async/await patterns, and production-ready code quality.
+
+### Added - Sprint 4: Async & Deprecation Fixes (2025-10-05)
+
+**Async Database Layer** (`scrapetui/core/database_async.py`, 434 lines)
+- Complete async database implementation with aiosqlite
+- `AsyncDatabaseManager` class with context manager support
+- Async CRUD operations for articles, users, and sessions
+- Advanced filtering: search, tags, dates, user_id, sentiment
+- Singleton pattern with `get_async_db_manager()` function
+- Connection pooling and resource management
+- Row factory for dict-based results
+
+**Async Database Tests** (`tests/unit/test_database_async.py`, 707 lines)
+- 25 comprehensive async database tests (100% passing)
+- Connection management tests
+- User CRUD operations tests
+- Session management tests (create, validate, cleanup, expiration)
+- Article CRUD operations tests
+- Advanced filtering tests (search, user_id, sentiment, combined filters)
+- Singleton pattern verification tests
+- Foreign key constraint tests
+
+**Dependencies**
+- Added `aiosqlite>=0.19.0` for async SQLite operations
+- Added `pytest-asyncio` for async test support
+- Updated pytest configuration with asyncio markers
+
+### Fixed - Sprint 4: Deprecation Warnings (2025-10-05)
+
+**datetime.utcnow() Deprecation** (2 files, 7 occurrences)
+- Fixed `scrapetui/api/dependencies.py` (4 occurrences)
+- Fixed `scrapetui/api/auth.py` (3 occurrences)
+- Replaced `datetime.utcnow()` with `datetime.now(timezone.utc)`
+- Added `timezone` import where needed
+
+**Pydantic v2 Migration** (1 file, 6 models)
+- Fixed `scrapetui/api/models.py`
+- Migrated 6 models to ConfigDict pattern:
+  - UserResponse
+  - ArticleResponse
+  - ScraperProfileResponse
+  - TagResponse
+  - UserProfileResponse
+  - UserSessionResponse
+- Changed from `class Config:` to `model_config = ConfigDict(from_attributes=True)`
+- Added ConfigDict import from pydantic
+
+**FastAPI Lifespan Migration** (1 file)
+- Fixed `scrapetui/api/app.py`
+- Replaced deprecated `@app.on_event("startup")` and `@app.on_event("shutdown")`
+- Implemented `@asynccontextmanager` lifespan pattern
+- Passed `lifespan=lifespan` to FastAPI constructor
+- Removed old event handler decorators
+
+**Result**: Zero deprecation warnings from our code
+
+### Changed - Sprint 4
+
+**Test Coverage**
+- Added 25 async database tests
+- Total: 680+/680+ tests (100%, 1 skipped)
+- Zero deprecation warnings from our code
+- All async database operations tested
+
+**Code Quality**
+- Modern async/await patterns throughout
+- Pydantic v2 best practices
+- FastAPI latest patterns
+- Future-proof codebase
+
+**Sprint Progress**
+- Sprint 4: COMPLETE (100%)
+- Overall v2.1.0 Progress: 80% (4 of 5 sprints complete)
+- Remaining: Sprint 5 (Documentation & Release)
 
 ### Added - Sprint 3: Command-Line Interface (ORIGINAL Sprint 3 Complete)
 

@@ -1,6 +1,6 @@
 """Authentication endpoints for JWT-based API access."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -53,7 +53,7 @@ async def login(credentials: UserLogin):
     try:
         with get_db_connection() as conn:
             expires_at = (
-                datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+                datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
             ).isoformat()
 
             conn.execute(
@@ -154,7 +154,7 @@ async def refresh_token(token_request: TokenRefresh):
 
             # Check expiration
             expires_at = datetime.fromisoformat(row['expires_at'])
-            if datetime.utcnow() > expires_at:
+            if datetime.now(timezone.utc) > expires_at:
                 # Clean up expired token
                 conn.execute("DELETE FROM refresh_tokens WHERE token = ?", (refresh_token,))
                 conn.commit()
@@ -187,7 +187,7 @@ async def refresh_token(token_request: TokenRefresh):
 
             # Insert new refresh token
             expires_at = (
-                datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+                datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
             ).isoformat()
 
             conn.execute(
