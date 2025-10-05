@@ -779,25 +779,27 @@ WebScrape-TUI includes comprehensive documentation in the `docs/` directory:
 
 ### Core Documentation
 
+- **[Project Status](docs/PROJECT-STATUS.md)** - Current development state, test results, achievements, and progress tracking
+- **[Roadmap](docs/ROADMAP.md)** - Remaining Sprint 4-5 work, future enhancements, and timeline estimates
+- **[Technical Debt](docs/TECHNICAL_DEBT.md)** - Known issues, deprecation warnings, improvements needed
+- **[CLI Reference](docs/CLI.md)** - Complete command-line interface documentation with examples
+- **[API Reference](docs/API.md)** - REST API endpoints, authentication, and usage examples
 - **[Architecture Guide](docs/ARCHITECTURE.md)** - System design, components, data flow, and extension points
 - **[Development Guide](docs/DEVELOPMENT.md)** - Setup, workflows, testing, code style, and contribution guidelines
-- **[API Documentation](docs/API.md)** - Manager classes, AI providers, database functions, and data structures
-- **[Roadmap](docs/ROADMAP.md)** - Future features, milestones, and contribution opportunities
-- **[Project Status](docs/PROJECT-STATUS.md)** - Current health, metrics, and progress tracking
 - **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Comprehensive problem-solving guide with solutions
-- **[Technical Debt](docs/TECHNICAL_DEBT.md)** - Legacy test migration tracker and infrastructure improvements
-- **[Test Infrastructure Fixes](docs/TEST_INFRASTRUCTURE_FIXES.md)** - Complete documentation of CI/CD fixes
 
 ### Quick Links
 
 | Need | Document |
 |------|----------|
+| Current project status | [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md) |
+| What's next | [docs/ROADMAP.md](docs/ROADMAP.md) |
+| Known issues | [docs/TECHNICAL_DEBT.md](docs/TECHNICAL_DEBT.md) |
+| CLI automation | [docs/CLI.md](docs/CLI.md) |
+| REST API usage | [docs/API.md](docs/API.md) |
 | Understanding the codebase | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 | Contributing code | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) |
-| Using APIs programmatically | [docs/API.md](docs/API.md) |
 | Solving problems | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) |
-| Planning contributions | [docs/ROADMAP.md](docs/ROADMAP.md) |
-| Checking project health | [docs/PROJECT-STATUS.md](docs/PROJECT-STATUS.md) |
 
 See [docs/README.md](docs/README.md) for a complete documentation index and reading paths.
 

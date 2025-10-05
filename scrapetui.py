@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-WebScrape-TUI v1.0 - Text User Interface Web Scraping Application
+WebScrape-TUI v2.1.0 (Pre-RC) - Text User Interface Web Scraping Application
 
 A comprehensive Python-based terminal application for web scraping, data management,
 and AI-powered content analysis built with the Textual framework.
@@ -83,13 +83,13 @@ PENDING FEATURES & IMPROVEMENTS:
 • Content deduplication algorithms
 
 CONFIGURATION:
-- Database: scraped_data_tui_v1.0.db (configurable via .env)
-- Logs: scraper_tui_v1.0.log (configurable via .env)
-- Styles: web_scraper_tui_v1.0.tcss
+- Database: scraped_data_tui_v2.db (configurable via .env)
+- Logs: scraper_tui_v2.log (configurable via .env)
+- Styles: web_scraper_tui_v2.tcss
 - API Keys: Set GEMINI_API_KEY in .env file for AI features
 - Environment: Configure via .env file (copy from .env.example)
 
-VERSION: 1.0 (Stable Release)
+VERSION: 2.1.0 (Pre-Release Candidate)
 AUTHOR: WebScrape-TUI Development Team
 LICENSE: MIT
 PYTHON: Requires Python 3.8+
@@ -4695,7 +4695,7 @@ class LoginModal(ModalScreen[Optional[int]]):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Label("🔐 Login to WebScrape-TUI v2.0.0", id="login-title")
+            yield Label("🔐 Login to WebScrape-TUI v2.1.0", id="login-title")
             yield Label("Please enter your credentials:")
             yield Input(placeholder="Username", id="username")
             yield Input(placeholder="Password", password=True, id="password")
@@ -7403,7 +7403,7 @@ class StatusBar(Static):
 
 
 class WebScraperApp(App[None]):
-    CSS_PATH = "web_scraper_tui_v1.0.tcss"
+    CSS_PATH = "web_scraper_tui_v2.tcss"
     BINDINGS = [
         Binding("q,ctrl+c", "quit", "Quit", priority=True),
         Binding("r", "refresh_data", "Refresh"),
@@ -9717,7 +9717,7 @@ def print_startup_banner():
 ║   ╚══╝╚══╝ ╚══════╝╚═════╝ ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚══════╝  ║
 ║                                                                              ║
 ║                       Text User Interface Web Scraper                        ║
-║                                Version 1.9.5                                 ║
+║                           Version 2.1.0 (Pre-RC)                             ║
 ║                                                                              ║
 ║   ╔══════════════════════════════════════════════════════════════════════╗   ║
 ║   ║                              Features                                ║   ║
@@ -9801,7 +9801,7 @@ AddEditScraperModal Static.warning-text { color: $warning; padding: 0 1; text-al
 .scraper-item-name{text-style:bold;}
 .scraper-item-subtext{color:$text-muted;text-style:italic;}
     """
-    css_file = Path("web_scraper_tui_v1.0.tcss")
+    css_file = Path("web_scraper_tui_v2.tcss")
     if not css_file.exists():
         with open(css_file, "w", encoding="utf-8") as f:
             f.write(css_file_content)
