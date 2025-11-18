@@ -62,10 +62,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `password_changed_at`, `force_password_change` - Password management
   - `article_quota`, `scraper_quota` - Resource quotas
 
+**TUI Integration** (`scrapetui/tui/security_modals.py`):
+- EnhancedChangePasswordModal with real-time strength feedback
+- PasswordResetRequestModal for admin-initiated resets
+- AccountSecurityModal showing security status and quotas
+- AuditLogViewerModal for viewing security events (admin only)
+- QuotaManagementModal for managing user quotas (admin only)
+- New keyboard shortcuts: Ctrl+Shift+S, Ctrl+Shift+A, Ctrl+Shift+Q, Ctrl+Shift+R
+
+**CLI Commands** (`scrapetui/cli/commands/security.py`):
+- `scrapetui-cli security password reset-token <username>` - Generate password reset token
+- `scrapetui-cli security password force-change <username>` - Force password change on next login
+- `scrapetui-cli security account lock/unlock <username>` - Lock/unlock user accounts
+- `scrapetui-cli security account status <username>` - View account security status
+- `scrapetui-cli security audit view` - View audit log entries with filtering
+- `scrapetui-cli security audit stats` - View audit log statistics
+- `scrapetui-cli security audit cleanup` - Clean up old audit log entries
+- `scrapetui-cli security quota show/set <username>` - Manage user quotas
+- `scrapetui-cli security quota summary` - System-wide quota usage summary
+
+**API Endpoints** (`scrapetui/api/security.py`):
+- POST `/api/v1/security/login` - Enhanced authentication with rate limiting
+- POST `/api/v1/security/password/validate` - Validate password strength
+- POST `/api/v1/security/password/change` - Change password with policy validation
+- POST `/api/v1/security/password/reset/generate` - Generate reset token (admin)
+- POST `/api/v1/security/password/reset/use` - Use reset token to change password
+- GET `/api/v1/security/account/status` - Get account security status
+- POST `/api/v1/security/account/{username}/lock` - Lock account (admin)
+- POST `/api/v1/security/account/{username}/unlock` - Unlock account (admin)
+- GET `/api/v1/security/quotas` - Get user quota status
+- POST `/api/v1/security/quotas/set` - Set user quotas (admin)
+- GET `/api/v1/security/audit/logs` - Get audit log entries (admin)
+- GET `/api/v1/security/audit/stats` - Get audit statistics (admin)
+- DELETE `/api/v1/security/audit/cleanup` - Clean up old audit logs (admin)
+
+**Database Migration** (`scrapetui/database/migrations/v2_2_0.py`):
+- Automatic migration from v2.1.0 to v2.2.0
+- Creates backup before migration (`.db.backup-v2.1.0-TIMESTAMP`)
+- Adds 3 new tables and 9 new columns to users table
+- Initializes default quotas and password timestamps
+- Sets unlimited quotas for admin users
+- Rollback capability for failed migrations
+
 **Testing**:
-- 40+ new unit tests for password policy validation
+- 40+ new unit tests for password policy validation (test_password_policy.py)
+- 30+ new unit tests for rate limiting (test_rate_limit.py)
+- 40+ new unit tests for audit logging (test_audit.py)
+- 30+ new unit tests for quotas (test_quotas.py)
+- 40+ new unit tests for password reset (test_password_reset.py)
+- 30+ new unit tests for enhanced auth (test_auth_enhanced.py)
+- 20+ new unit tests for migration (test_migration_v2_2_0.py)
 - Comprehensive test coverage for all new modules
-- All existing tests still passing (680+ total)
+- All existing tests still passing (850+ total tests)
 
 **Configuration**:
 - New environment variables for security settings

@@ -14,7 +14,7 @@ from .middleware import RateLimitMiddleware, RequestLoggingMiddleware, ErrorHand
 
 # Import routers (will be created)
 from .routers import articles, scrapers, users, tags, ai
-from . import auth
+from . import auth, security
 
 logger = get_logger(__name__)
 config = get_config()
@@ -91,6 +91,7 @@ app.add_middleware(
 
 # Register routers (v1 API)
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+app.include_router(security.router)  # Security router has its own prefix
 app.include_router(articles.router, prefix="/api/v1/articles", tags=["Articles"])
 app.include_router(scrapers.router, prefix="/api/v1/scrapers", tags=["Scrapers"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
@@ -117,6 +118,7 @@ async def root():
         "description": "REST API for web scraping, article management, and AI-powered content analysis",
         "features": [
             "Multi-user authentication with RBAC",
+            "Enterprise security (v2.2.0: password policy, rate limiting, audit logs, quotas)",
             "Advanced AI features (NER, Q&A, topic modeling, similarity search)",
             "Background task processing",
             "Rate limiting (100 req/min standard, 10 req/min AI endpoints)"
