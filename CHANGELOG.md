@@ -7,6 +7,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - v2.2.0 Security & Administration Enhancements (2025-11-18)
+
+**New Security Features**:
+- **Password Complexity Requirements** (`scrapetui/core/password_policy.py`)
+  - Configurable minimum length (default: 12 characters)
+  - Character requirements (uppercase, lowercase, numbers, special characters)
+  - Password strength scoring (0-100)
+  - Common password blacklist (top 100 most common passwords)
+  - Sequential and repeated character detection
+  - Username similarity checking
+  - Strength levels: weak, medium, strong, very_strong
+
+- **Login Rate Limiting & Account Lockout** (`scrapetui/core/rate_limit.py`)
+  - Failed login attempt tracking
+  - Configurable lockout threshold (default: 5 attempts)
+  - Configurable lockout duration (default: 15 minutes)
+  - Automatic account unlock after duration
+  - Admin manual unlock capability
+  - IP address tracking for login attempts
+
+- **Audit Logging System** (`scrapetui/core/audit.py`)
+  - Comprehensive security event logging
+  - 25+ event types (authentication, password, account, data, admin, security)
+  - JSON-structured event data
+  - Configurable retention period (default: 90 days)
+  - Event filtering and search capabilities
+  - Audit log statistics and reporting
+
+**New User Management Features**:
+- **Password Reset System** (`scrapetui/core/password_reset.py`)
+  - Cryptographically secure reset tokens (256-bit)
+  - Configurable token expiration (default: 24 hours)
+  - One-time use tokens
+  - Admin-initiated password resets
+  - Force password change on first login
+  - Automatic session invalidation on password change
+
+- **User Quotas** (`scrapetui/core/quotas.py`)
+  - Article quota per user (default: 10,000)
+  - Scraper profile quota per user (default: 100)
+  - Configurable quotas per user or role
+  - Admin users bypass quotas
+  - Quota usage tracking and reporting
+  - Quota exceeded event logging
+
+**Database Schema Updates**:
+- New table: `login_attempts` - Track login attempts for rate limiting
+- New table: `password_reset_tokens` - Manage password reset tokens
+- New table: `audit_log` - Store security and administrative events
+- Updated `users` table with new columns:
+  - `account_locked`, `locked_until` - Account lockout management
+  - `failed_login_attempts`, `last_failed_login` - Rate limiting tracking
+  - `password_changed_at`, `force_password_change` - Password management
+  - `article_quota`, `scraper_quota` - Resource quotas
+
+**Testing**:
+- 40+ new unit tests for password policy validation
+- Comprehensive test coverage for all new modules
+- All existing tests still passing (680+ total)
+
+**Configuration**:
+- New environment variables for security settings
+- Configurable password policy requirements
+- Configurable rate limiting thresholds
+- Configurable quota limits
+
+**Benefits**:
+- Enhanced security against brute force attacks
+- Better user account management
+- Comprehensive audit trail for compliance
+- Resource usage control and monitoring
+- Production-ready security hardening
+
 ### Changed - Code Quality Improvements (2025-10-05)
 
 **Flake8 Code Quality Cleanup - 97% Violation Reduction**
