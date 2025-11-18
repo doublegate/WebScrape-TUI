@@ -1,18 +1,30 @@
-# WebScrape-TUI v2.1.0
+# WebScrape-TUI v2.2.0
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Textual](https://img.shields.io/badge/TUI-Textual-green.svg)](https://textual.textualize.io/)
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
-[![Tests](https://img.shields.io/badge/tests-680%2B%20passing-brightgreen.svg)](https://github.com/doublegate/WebScrape-TUI/actions)
+[![Version](https://img.shields.io/badge/version-2.2.0--dev-blue.svg)](https://github.com/doublegate/WebScrape-TUI/releases)
+[![Tests](https://img.shields.io/badge/tests-720%2B%20passing-brightgreen.svg)](https://github.com/doublegate/WebScrape-TUI/actions)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/doublegate/WebScrape-TUI)
-[![Status](https://img.shields.io/badge/status-released-success.svg)](https://github.com/doublegate/WebScrape-TUI/releases/tag/v2.1.0)
+[![Status](https://img.shields.io/badge/status-development-yellow.svg)](https://github.com/doublegate/WebScrape-TUI)
 
 A comprehensive Python-based Text User Interface (TUI) application for web scraping, data management, and AI-powered content analysis built with the modern Textual framework.
 
 ![WebScrape-TUI Banner](WebScrape-TUI.png)
 
 ## 🚀 Features
+
+### 🔐 Enterprise Security (v2.2.0 - NEW!)
+
+- **Password Complexity Requirements**: Configurable password policies with strength scoring (weak/medium/strong/very strong)
+- **Login Rate Limiting**: Automatic account lockout after failed attempts (configurable threshold)
+- **Comprehensive Audit Logging**: Track all security events with 25+ event types
+- **Password Reset System**: Secure token-based password reset with expiration
+- **User Quotas**: Resource limits for articles and scraper profiles per user
+- **Account Lockout Protection**: Manual and automatic unlock capabilities
+- **Common Password Detection**: Blacklist of 100+ commonly used passwords
+- **Sequential Character Detection**: Prevent weak passwords like "abc123" or "qwerty"
+- **CLI Security Commands**: Full administrative control from command line
 
 ### 👥 Multi-User Authentication & Access Control (v2.0.0)
 
