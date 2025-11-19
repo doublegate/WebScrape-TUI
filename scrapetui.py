@@ -157,6 +157,26 @@ import secrets
 import shutil
 import bcrypt
 
+# v2.2.0 Security Features
+from scrapetui.core.auth_enhanced import (
+    authenticate_user_enhanced,
+    create_user_with_policy,
+    change_password_with_policy,
+    logout_user
+)
+from scrapetui.core.password_policy import PasswordPolicy, validate_password
+from scrapetui.core.rate_limit import get_rate_limiter
+from scrapetui.core.audit import get_audit_logger, AuditEventType
+from scrapetui.core.quotas import get_quota_manager
+from scrapetui.core.password_reset import get_password_reset_manager
+from scrapetui.tui.security_modals import (
+    EnhancedChangePasswordModal,
+    PasswordResetRequestModal,
+    AccountSecurityModal,
+    AuditLogViewerModal,
+    QuotaManagementModal
+)
+
 # APScheduler imports for scheduling functionality
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -4727,7 +4747,7 @@ class LoginModal(ModalScreen[Optional[int]]):
 
     def compose(self) -> ComposeResult:
         with Vertical():
-            yield Label("🔐 Login to WebScrape-TUI v2.1.0", id="login-title")
+            yield Label("🔐 Login to WebScrape-TUI v2.2.0", id="login-title")
             yield Label("Please enter your credentials:")
             yield Input(placeholder="Username", id="username")
             yield Input(placeholder="Password", password=True, id="password")
@@ -4767,13 +4787,18 @@ class LoginModal(ModalScreen[Optional[int]]):
             )
             return
 
-        # Call authentication function from Phase 1
-        user_id = authenticate_user(username, password)
+        # v2.2.0: Use enhanced authentication with rate limiting and audit logging
+        user_id, session_token, message = authenticate_user_enhanced(
+            username,
+            password,
+            ip_address="127.0.0.1",  # Local TUI access
+            user_agent="WebScrape-TUI"
+        )
 
         if user_id:
             self.dismiss(user_id)
         else:
-            self.app.notify("Invalid credentials", severity="error")
+            self.app.notify(message, severity="error")
             self.query_one("#password", Input).value = ""
             self.query_one("#password", Input).focus()
 
@@ -4875,7 +4900,15 @@ class UserProfileModal(ModalScreen[None]):
                 self.app.notify("Failed to update email", severity="error")
 
         elif event.button.id == "password-btn":
-            self.app.push_screen(ChangePasswordModal(self.user_id))
+            # v2.2.0: Use enhanced password change modal with policy validation
+            username = self.user_data.get('username', 'unknown')
+            self.app.push_screen(
+                EnhancedChangePasswordModal(
+                    self.user_id,
+                    username,
+                    PasswordPolicy()  # Use default policy
+                )
+            )
 
         else:
             self.dismiss()
@@ -5215,34 +5248,21 @@ class CreateUserModal(ModalScreen[bool]):
                 )
                 return
 
-            if len(password) < 8:
-                self.app.notify(
-                    "Password must be at least 8 characters",
-                    severity="error"
-                )
-                return
+            # v2.2.0: Create user with password policy validation
+            user_id, message = create_user_with_policy(
+                username,
+                password,
+                email=email or None,
+                role=role,
+                force_password_change=False,
+                created_by=self.app.current_user_id
+            )
 
-            # Create user
-            try:
-                password_hash = hash_password(password)
-                with get_db_connection() as conn:
-                    conn.execute("""
-                        INSERT INTO users (username, email, password_hash, role)
-                        VALUES (?, ?, ?, ?)
-                    """, (username, email or None, password_hash, role))
-                    conn.commit()
-
-                self.app.notify(
-                    f"User '{username}' created successfully",
-                    severity="information"
-                )
+            if user_id:
+                self.app.notify(message, severity="information")
                 self.dismiss(True)
-
-            except sqlite3.IntegrityError:
-                self.app.notify("Username already exists", severity="error")
-            except Exception as e:
-                logger.error(f"Error creating user: {e}")
-                self.app.notify("Failed to create user", severity="error")
+            else:
+                self.app.notify(message, severity="error")
         else:
             self.dismiss(False)
 
@@ -7500,6 +7520,11 @@ class WebScraperApp(App[None]):
         Binding("ctrl+alt+c", "cluster_articles", "Cluster Articles"),
         Binding("ctrl+alt+h", "view_qa_history", "Q&A History"),
         Binding("ctrl+alt+m", "evaluate_summary", "Summary Quality"),
+        # v2.2.0 Security features
+        Binding("ctrl+alt+s", "view_security_status", "Security"),
+        Binding("ctrl+alt+a", "view_audit_log", "Audit Log"),
+        Binding("ctrl+alt+o", "manage_quotas", "Quotas"),
+        Binding("ctrl+shift+z", "password_reset_token", "Reset Token"),
         Binding("f1,ctrl+h", "toggle_help", "Help")
     ]
     dark = reactive(True, layout=True)
@@ -8090,10 +8115,61 @@ class WebScraperApp(App[None]):
     def action_logout(self) -> None:
         """Log out current user (v2.0.0) - Ctrl+Shift+L."""
         if self.session_token:
-            logout_session(self.session_token)
+            # v2.2.0: Use enhanced logout with audit logging
+            logout_user(self.session_token, self.current_user_id)
 
         self.notify("Logged out successfully. Exiting...", severity="information")
         self.exit()
+
+    # v2.2.0 Security action methods
+    def action_view_security_status(self) -> None:
+        """Show account security status (Ctrl+Alt+S)."""
+        if self.current_user_id is None:
+            self.notify("Not logged in", severity="warning")
+            return
+
+        self.push_screen(
+            AccountSecurityModal(
+                self.current_user_id,
+                self.current_username
+            )
+        )
+
+    def action_view_audit_log(self) -> None:
+        """View audit log - admin only (Ctrl+Alt+A)."""
+        if not self._check_admin_permission():
+            return
+
+        self.push_screen(AuditLogViewerModal(self.current_user_id))
+
+    def action_manage_quotas(self) -> None:
+        """Manage user quotas - admin only (Ctrl+Alt+O)."""
+        if not self._check_admin_permission():
+            return
+
+        self.push_screen(
+            QuotaManagementModal(
+                self.current_user_id,
+                target_user_id=None  # Will prompt for username
+            )
+        )
+
+    def action_password_reset_token(self) -> None:
+        """Generate password reset token - admin only (Ctrl+Shift+Z)."""
+        if not self._check_admin_permission():
+            return
+
+        self.push_screen(PasswordResetRequestModal(self.current_user_id))
+
+    def _check_admin_permission(self) -> bool:
+        """Check if current user is admin (v2.2.0 helper)."""
+        if self.current_user_role != "admin":
+            self.notify(
+                "This feature requires administrator privileges",
+                severity="error"
+            )
+            return False
+        return True
 
     async def action_toggle_dark_mode(self) -> None:
         self.dark = not self.dark
