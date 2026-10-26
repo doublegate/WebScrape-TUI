@@ -56,7 +56,7 @@ def test_get_current_user_no_token(client: TestClient):
     """Test getting current user without token."""
     response = client.get("/api/auth/me")
 
-    assert response.status_code == 403  # No auth header
+    assert response.status_code == 401  # No auth header
 
 
 def test_get_current_user_invalid_token(client: TestClient):

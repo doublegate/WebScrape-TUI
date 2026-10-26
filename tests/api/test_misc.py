@@ -86,7 +86,7 @@ def test_auth_required_endpoints(client: TestClient):
 
     for endpoint in endpoints:
         response = client.get(endpoint)
-        assert response.status_code == 403, f"Endpoint {endpoint} should require auth"
+        assert response.status_code == 401, f"Endpoint {endpoint} should require auth"
 
 
 def test_admin_only_endpoints(client: TestClient, user_auth_headers: dict):

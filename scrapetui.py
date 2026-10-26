@@ -313,7 +313,7 @@ def hash_password(password: str) -> str:
         Bcrypt hash string
     """
     salt = bcrypt.gensalt(rounds=12)
-    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+    return bcrypt.hashpw(password.encode('utf-8')[:72], salt).decode('utf-8')
 
 
 def verify_password(password: str, password_hash: str) -> bool:
@@ -329,7 +329,7 @@ def verify_password(password: str, password_hash: str) -> bool:
     """
     try:
         return bcrypt.checkpw(
-            password.encode('utf-8'),
+            password.encode('utf-8')[:72],
             password_hash.encode('utf-8')
         )
     except Exception as e:
@@ -6337,7 +6337,7 @@ class FilterPresetModal(ModalScreen[Optional[str]]):
                 try:
                     item = list(list_view.children)[list_view.index]
                     label = item.query_one(Label)
-                    preset_name = label.renderable
+                    preset_name = str(getattr(label, "content", getattr(label, "renderable", "")))
                     if preset_name != "(No saved presets)":
                         self.dismiss(preset_name)
                         return
@@ -6350,7 +6350,7 @@ class FilterPresetModal(ModalScreen[Optional[str]]):
                 try:
                     item = list(list_view.children)[list_view.index]
                     label = item.query_one(Label)
-                    preset_name = label.renderable
+                    preset_name = str(getattr(label, "content", getattr(label, "renderable", "")))
                     if preset_name != "(No saved presets)":
                         if FilterPresetManager.delete_preset(preset_name):
                             self.app.notify(f"Deleted preset: {preset_name}", severity="information")
