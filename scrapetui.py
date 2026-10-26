@@ -6337,7 +6337,7 @@ class FilterPresetModal(ModalScreen[Optional[str]]):
                 try:
                     item = list(list_view.children)[list_view.index]
                     label = item.query_one(Label)
-                    preset_name = label.renderable
+                    preset_name = str(getattr(label, "content", getattr(label, "renderable", "")))
                     if preset_name != "(No saved presets)":
                         self.dismiss(preset_name)
                         return
@@ -6350,7 +6350,7 @@ class FilterPresetModal(ModalScreen[Optional[str]]):
                 try:
                     item = list(list_view.children)[list_view.index]
                     label = item.query_one(Label)
-                    preset_name = label.renderable
+                    preset_name = str(getattr(label, "content", getattr(label, "renderable", "")))
                     if preset_name != "(No saved presets)":
                         if FilterPresetManager.delete_preset(preset_name):
                             self.app.notify(f"Deleted preset: {preset_name}", severity="information")
