@@ -4,24 +4,24 @@
 # Install with: pip install -r requirements-dev.txt
 
 # Testing Framework
-pytest>=7.0.0                    # Testing framework
-pytest-cov>=4.0.0                # Coverage reporting
-pytest-asyncio>=0.21.0           # Async test support
-pytest-mock>=3.10.0              # Mocking support for tests
+pytest>=9.1.1                    # Testing framework
+pytest-cov>=7.1.0                # Coverage reporting
+pytest-asyncio>=1.4.1            # Async test support
+pytest-mock>=3.17.0              # Mocking support for tests
 pytest-timeout>=2.4.0            # Test timeout prevention
-httpx>=0.25.0                    # HTTP client for FastAPI TestClient
-email-validator>=2.0.0           # Email validation for pydantic models
+httpx>=0.28.1                    # HTTP client for FastAPI TestClient
+email-validator>=2.3.0           # Email validation for pydantic models
 
 # Code Quality
-black>=22.0.0                    # Code formatting
-flake8>=5.0.0                    # Code linting
-mypy>=0.991                      # Type checking
-isort>=5.10.0                    # Import sorting
+black>=26.10.1                   # Code formatting
+flake8>=7.4.1                    # Code linting
+mypy>=2.4.0                      # Type checking
+isort>=9.0.2                     # Import sorting
 
 # Development Tools
-ipython>=8.0.0                   # Enhanced Python shell
-ipdb>=0.13.0                     # Enhanced debugger
+ipython>=9.17.1                  # Enhanced Python shell
+ipdb>=0.13.13                    # Enhanced debugger
 
 # Documentation
-sphinx>=5.0.0                    # Documentation generator (optional)
-sphinx-rtd-theme>=1.0.0          # Read the Docs theme (optional)
+sphinx>=9.0.4                    # Documentation generator (optional)
+sphinx-rtd-theme>=3.1.0          # Read the Docs theme (optional)

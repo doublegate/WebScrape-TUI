@@ -33,7 +33,7 @@ def test_list_articles_no_auth(client: TestClient):
     """Test listing articles without authentication."""
     response = client.get("/api/articles")
 
-    assert response.status_code == 403
+    assert response.status_code == 401
 
 
 def test_get_article(client: TestClient, auth_headers: dict, sample_article: int):
