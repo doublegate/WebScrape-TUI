@@ -313,7 +313,7 @@ def hash_password(password: str) -> str:
         Bcrypt hash string
     """
     salt = bcrypt.gensalt(rounds=12)
-    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+    return bcrypt.hashpw(password.encode('utf-8')[:72], salt).decode('utf-8')
 
 
 def verify_password(password: str, password_hash: str) -> bool:
@@ -329,7 +329,7 @@ def verify_password(password: str, password_hash: str) -> bool:
     """
     try:
         return bcrypt.checkpw(
-            password.encode('utf-8'),
+            password.encode('utf-8')[:72],
             password_hash.encode('utf-8')
         )
     except Exception as e:
